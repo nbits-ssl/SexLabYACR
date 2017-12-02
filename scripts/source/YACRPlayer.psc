@@ -134,12 +134,10 @@ EndFunction
 Function _readySexAggr(Actor act)
 	act.SetGhost(true)
 	act.StopCombat()
+	act.StopCombatAlarm()
 EndFunction
 
 Function _readySexVictim(Actor act, Faction fact)
-	act.SetGhost(true)
-	act.StopCombatAlarm()
-	
 	if (self._isPlayer())
 	else
 		if (act.IsInFaction(CurrentFollowerFaction))
@@ -149,6 +147,10 @@ Function _readySexVictim(Actor act, Faction fact)
 		act.SetPlayerTeammate(false)
 		act.AddToFaction(fact)
 	endif
+	
+	act.SetGhost(true)
+	act.StopCombat()
+	act.StopCombatAlarm()
 EndFunction
 
 Function _endSexAggr(Actor act)
