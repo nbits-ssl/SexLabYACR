@@ -3,6 +3,8 @@ Scriptname YACRPlayer extends ReferenceAlias
 Form PreSource = None
 string SelfName
 Faction AggrFaction = None
+bool PlayerIsMale = false
+bool IsInCurrentFollowerFaction = false
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 
@@ -11,11 +13,20 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	SelfName = selfact.GetActorBase().GetName()
 	Weapon wpn = akSource as Weapon
 	
-	if (akAggressor == None || akProjectile || PreSource ==  akSource || !wpn)
+	if (PlayerIsMale || akAggressor == None || akProjectile || PreSource ==  akSource || !wpn)
 		AppUtil.Log("not if " + SelfName)
 		return
-	elseif (selfact.IsGhost())
-		AppUtil.Log("not if, isghost " + SelfName)
+	elseif (self._isPlayer())
+		if (selfact.GetActorBase().GetSex() != 1)
+			AppUtil.Log("not if, player isn't woman " + SelfName)
+			PlayerIsMale = true
+			return
+		elseif (selfact.GetAV("Health") <= 0)
+			AppUtil.Log("not if, player is dying " + SelfName)
+			return
+		endif
+	elseif (selfact.IsGhost() || selfact.IsDead())
+		AppUtil.Log("not if, isghost or dead " + SelfName)
 		return
 	elseif (akAggr.IsPlayerTeammate() || akAggr == PlayerActor)
 		AppUtil.Log("not if, onhit from teammate or player " + SelfName)
@@ -37,9 +48,14 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		Armor selfarmor = selfact.GetWornForm(0x00000004) as Armor
 
 		if (selfact.IsInFaction(SSLAnimatingFaction)) ; first check
-			AppUtil.Log("StopCombat " + SelfName)
-			selfact.StopCombat()
-			akAggr.StopCombat()
+			if (selfact.IsWeaponDrawn())
+				AppUtil.Log("detect invalid SSLAnimatingFaction, delete " + SelfName)
+				selfact.RemoveFromFaction(SSLAnimatingFaction)
+			else
+				AppUtil.Log("StopCombat " + SelfName)
+				selfact.StopCombat()
+				akAggr.StopCombat()
+			endif
 		elseif (selfarmor)
 			if (Config.enableArmorBreak)
 				if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < Config.armorBreakChanceCloth) || \
@@ -53,11 +69,11 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 			
 			if (Config.enableNoNakedRape && rndintRP < Config.rapeChanceNotNaked)
 				AppUtil.Log("doSex " + SelfName)
-				self.doSex(selfact, akAggr)
+				self.doSex(selfact, akAggr, AggrFaction)
 			endif
 		elseif (!selfarmor && rndintRP < Config.rapeChance)
 			AppUtil.Log("doSex " + SelfName)
-			self.doSex(selfact, akAggr)
+			self.doSex(selfact, akAggr, AggrFaction)
 		endif
 	endif
 	
@@ -107,18 +123,52 @@ Faction Function _getEnemyType(Actor act)
 	endif
 EndFunction
 
-Function _readySex(Actor act)
+bool Function _isPlayer()
+	if (HookName == "Player")
+		return true
+	else
+		return false
+	endif
+EndFunction
+
+Function _readySexAggr(Actor act)
 	act.SetGhost(true)
 	act.StopCombat()
-	; act.StopCombatAlarm()
 EndFunction
 
-Function _endSex(Actor act)
+Function _readySexVictim(Actor act, Faction fact)
+	act.SetGhost(true)
+	act.StopCombatAlarm()
+	
+	if (self._isPlayer())
+	else
+		if (act.IsInFaction(CurrentFollowerFaction))
+			act.RemoveFromFaction(CurrentFollowerFaction)
+			IsInCurrentFollowerFaction = true
+		endif
+		act.SetPlayerTeammate(false)
+		act.AddToFaction(fact)
+	endif
+EndFunction
+
+Function _endSexAggr(Actor act)
 	act.SetGhost(false)
-	act.SetAlpha(1.0)
 EndFunction
 
-Function doSex(Actor ActorLoser, Actor ActorWinner)
+Function _endSexVictim(Actor act, Faction fact)
+	act.SetGhost(false)
+	
+	if (self._isPlayer())
+	else
+		act.RemoveFromFaction(fact)
+		act.SetPlayerTeammate(true)
+		if (IsInCurrentFollowerFaction)
+			act.AddToFaction(CurrentFollowerFaction)
+		endif
+	endif
+EndFunction
+
+Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
 	if (ActorLoser.IsGhost() || ActorWinner.IsGhost())
 		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
 	elseif (Aggressor.GetActorRef() || ActorWinner.IsDead())
@@ -127,8 +177,8 @@ Function doSex(Actor ActorLoser, Actor ActorWinner)
 		AppUtil.Log("actloser already animating, pass doSex " + SelfName)
 	else
 		Aggressor.ForceRefTo(ActorWinner)
-		self._readySex(ActorLoser)
-		self._readySex(ActorWinner)
+		self._readySexVictim(ActorLoser, WinnerFaction)
+		self._readySexAggr(ActorWinner)
 		
 		sslBaseAnimation[] anims
 		if (ActorWinner.HasKeyWord(ActorTypeNPC))
@@ -154,8 +204,8 @@ Function doSex(Actor ActorLoser, Actor ActorWinner)
 		self._waitSetup(controller)
 		
 		if (controller)
-			Utility.Wait(1.5)
-			self._endSex(ActorWinner)
+			Utility.Wait(1.0)
+			self._endSexAggr(ActorWinner)
 			AppUtil.Log("aggr setghost disable " + SelfName)
 		else
 			AppUtil.Log("###FIXME### controller not found, recover setup " + SelfName)
@@ -192,17 +242,51 @@ Function _waitSetup(sslThreadController controller)
 		string threadstate = controller.GetState()
 		
 		if (threadstate == "Ending")
-			AppUtil.Log("###FIXME### state already ending, pass " + SelfName)
+			AppUtil.Log("###FIXME### state already ended, pass " + SelfName)
 		elseif (threadstate != "animating")
 			AppUtil.Log("wait setup " + SelfName + ", current state " + threadstate)
 			Utility.Wait(3.0)
 		else
-			AppUtil.Log("wait setup " + SelfName + ", break, go ahead !!")
+			AppUtil.Log("wait setup " + SelfName + ", break, go ahead.")
 		endif
 	else
 		AppUtil.Log("###FIXME### wait setup, no controller " + SelfName)
 	endif
 EndFunction
+
+Function EndSexEvent(Actor Loser, Actor Winner)
+	Loser.RemoveSpell(SSLYACRStopCombatMagic)
+	AppUtil.Log("EndSexEvent Loser " + Loser.GetActorBase().GetName())
+	UnregisterForModEvent("HookAnimationEnd_YACR" + HookName)
+	
+	Faction fact = self._getEnemyType(Winner)
+	self._endSexVictim(Loser, fact)
+	self._endSexAggr(Winner) ; for OnHit SetGhost
+	
+	if (Winner.IsDead())
+		ObjectReference wobj = Winner as ObjectReference
+		wobj.SetPosition(wobj.GetPositionX(), wobj.GetPositionY() + 10.0, wobj.GetPositionZ())
+		debug.sendAnimationEvent(wobj, "ragdoll")
+		AppUtil.Log("EndSexEvent winner is dead " + Loser.GetActorBase().GetName())
+	else
+		AppUtil.Log("EndSexEvent winner is live " + Loser.GetActorBase().GetName())
+	endif
+	Aggressor.Clear()
+	
+	GotoState("Busy")
+	Utility.Wait(2.0)
+	PreSource = None
+	GotoState("")
+EndFunction
+
+Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
+	if (aeCombatState == 0)
+		Actor selfact = self.GetActorRef()
+		selfact.EnableAI(false)
+		selfact.EnableAI()
+		AppUtil.Log("combatstatechanged, reset ai " + SelfName)
+	endif
+EndEvent
 
 ; ----------------------------------------------------------------------
 Event EndSexEventYACRPlayer(int tid, bool HasPlayer)
@@ -236,37 +320,6 @@ Event EndSexEventYACRFollower5(int tid, bool HasPlayer)
 EndEvent
 ; -----------------------------------------------------------------------
 
-Function EndSexEvent(Actor Loser, Actor Winner)
-	Loser.RemoveSpell(SSLYACRStopCombatMagic)
-	AppUtil.Log("EndSexEvent Loser " + Loser.GetActorBase().GetName())
-	UnregisterForModEvent("HookAnimationEnd_YACR" + HookName)
-
-	self._endSex(Loser)
-	self._endSex(Winner) ; for OnHit SetGhost
-	
-	if (Winner.IsDead())
-		debug.sendAnimationEvent(Winner as ObjectReference, "ragdoll")
-		AppUtil.Log("EndSexEvent winner is dead " + Loser.GetActorBase().GetName())
-	else
-		AppUtil.Log("EndSexEvent winner is live " + Loser.GetActorBase().GetName())
-	endif
-	Aggressor.Clear()
-	
-	GotoState("Busy")
-	Utility.Wait(2.0)
-	PreSource = None
-	GotoState("")
-EndFunction
-
-Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
-	if (aeCombatState == 0)
-		Actor selfact = self.GetActorRef()
-		selfact.EnableAI(false)
-		selfact.EnableAI()
-		AppUtil.Log("combatstatechanged, reset ai " + SelfName)
-	endif
-EndEvent
-
 YACRConfig Property Config Auto
 YACRUtil Property AppUtil Auto
 SexLabFramework Property SexLab  Auto
@@ -285,6 +338,7 @@ Faction Property FalmerFaction  Auto
 Faction Property GiantFaction  Auto
 Faction Property WerewolfFaction  Auto
 Faction Property DLC2RieklingFaction  Auto
+Faction Property ThalmorFaction  Auto  
 
 Keyword Property ArmorClothing  Auto  
 Keyword Property ArmorHeavy  Auto  
@@ -294,6 +348,5 @@ SPELL Property SSLYACRStopCombatMagic  Auto
 SPELL Property SSLYACRKillmoveArmorSpell  Auto  ; no longer needed
 String Property HookName  Auto
 
-Faction Property ThalmorFaction  Auto  
-
 Keyword Property ActorTypeNPC  Auto  
+Faction Property CurrentFollowerFaction  Auto  

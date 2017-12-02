@@ -53,7 +53,9 @@ EndState
 ;EndEvent
 
 Event OnDying(Actor akKiller)
-	debug.sendAnimationEvent(self.GetActorRef() as ObjectReference, "ragdoll")
+	ObjectReference wobj = self.GetActorRef() as ObjectReference
+	wobj.SetPosition(wobj.GetPositionX(), wobj.GetPositionY() + 10.0, wobj.GetPositionZ())
+	debug.sendAnimationEvent(wobj, "ragdoll")
 	AppUtil.Log("enemy OnDying, sendAnimationEvent " + self.GetActorRef().GetActorBase().GetName())
 EndEvent
 
