@@ -138,7 +138,14 @@ Function _readySexAggr(Actor act)
 EndFunction
 
 Function _readySexVictim(Actor act, Faction fact)
+	act.SetGhost(true)
+	
 	if (self._isPlayer())
+		fact.SetReaction(SSLYACRCalmFaction, 3) ; set friend
+		act.AddToFaction(SSLYACRCalmFaction)
+		
+		Game.ForceThirdPerson()
+		;Game.DisablePlayerControls(1, 1, 1, 0, 1, 1, 0, 0)
 	else
 		if (act.IsInFaction(CurrentFollowerFaction))
 			act.RemoveFromFaction(CurrentFollowerFaction)
@@ -148,7 +155,6 @@ Function _readySexVictim(Actor act, Faction fact)
 		act.AddToFaction(fact)
 	endif
 	
-	act.SetGhost(true)
 	act.StopCombat()
 	act.StopCombatAlarm()
 EndFunction
@@ -158,9 +164,9 @@ Function _endSexAggr(Actor act)
 EndFunction
 
 Function _endSexVictim(Actor act, Faction fact)
-	act.SetGhost(false)
-	
 	if (self._isPlayer())
+		act.RemoveFromFaction(SSLYACRCalmFaction)
+		fact.SetReaction(SSLYACRCalmFaction, 0) ; set neutral
 	else
 		act.RemoveFromFaction(fact)
 		act.SetPlayerTeammate(true)
@@ -168,6 +174,8 @@ Function _endSexVictim(Actor act, Faction fact)
 			act.AddToFaction(CurrentFollowerFaction)
 		endif
 	endif
+	
+	act.SetGhost(false)
 EndFunction
 
 Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
@@ -178,7 +186,7 @@ Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
 	elseif (ActorLoser.IsInFaction(SSLAnimatingFaction)) ; second check
 		AppUtil.Log("actloser already animating, pass doSex " + SelfName)
 	else
-		ActorLoser.AddSpell(SSLYACRStopCombatMagic)
+		ActorLoser.AddSpell(SSLYACRStopCombatMagic, false)
 		Aggressor.ForceRefTo(ActorWinner)
 		self._readySexVictim(ActorLoser, WinnerFaction)
 		self._readySexAggr(ActorWinner)
@@ -194,7 +202,7 @@ Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
 		sexActors[1] = ActorWinner
 		
 		AppUtil.Log("run SexLab " + SelfName)
-		int tid = self._quickSex(sexActors, anims, victim=ActorLoser)
+		int tid = self._quickSex(sexActors, anims, victim = ActorLoser)
 		sslThreadController controller = SexLab.GetController(tid)
 		
 		; wait for sync, max 12 sec.
@@ -258,14 +266,16 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	int stagecnt = Thread.Animation.StageCount
 	
 	if (Thread.Stage == stagecnt)
-		AppUtil.Log("endless sex loop... " + SelfName)
 		Utility.Wait(3.0)
 		int rndint = Utility.RandomInt(1, 100)
-		if (rndint < 25)
+		if (rndint < 10)
+			AppUtil.Log("endless sex loop...one more " + SelfName)
 			Thread.AdvanceStage(true)
-		elseif (rndint < 50)
+		elseif (rndint < 30)
+			AppUtil.Log("endless sex loop...one more from 2nd " + SelfName)
 			Thread.GoToStage(stagecnt - 2)
 		else
+			AppUtil.Log("endless sex loop...change anim " + SelfName)
 			Thread.ChangeAnimation()
 		endif
 	endif
@@ -340,3 +350,5 @@ String Property HookName  Auto
 
 Keyword Property ActorTypeNPC  Auto  
 Faction Property CurrentFollowerFaction  Auto  
+
+Faction Property SSLYACRCalmFaction  Auto  
