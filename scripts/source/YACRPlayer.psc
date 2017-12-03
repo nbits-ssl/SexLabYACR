@@ -178,6 +178,7 @@ Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
 	elseif (ActorLoser.IsInFaction(SSLAnimatingFaction)) ; second check
 		AppUtil.Log("actloser already animating, pass doSex " + SelfName)
 	else
+		ActorLoser.AddSpell(SSLYACRStopCombatMagic)
 		Aggressor.ForceRefTo(ActorWinner)
 		self._readySexVictim(ActorLoser, WinnerFaction)
 		self._readySexAggr(ActorWinner)
@@ -192,12 +193,9 @@ Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
 		sexActors[0] = ActorLoser
 		sexActors[1] = ActorWinner
 		
-		RegisterForModEvent("HookAnimationEnd_YACR" + HookName, "EndSexEventYACR" + HookName)
 		AppUtil.Log("run SexLab " + SelfName)
-		
-		int tid = self._quickSex(sexActors, anims, victim=ActorLoser, hook="YACR" + HookName)
+		int tid = self._quickSex(sexActors, anims, victim=ActorLoser)
 		sslThreadController controller = SexLab.GetController(tid)
-		ActorLoser.AddSpell(SSLYACRStopCombatMagic)
 		
 		; wait for sync, max 12 sec.
 		self._waitSetup(controller)
@@ -216,23 +214,22 @@ Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
 	endif
 EndFunction
 
-; code from SexLab's StartSex with disable beduse and disable leadin
-int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = none, string Hook = "")
-	; Claim a thread
+; code from SexLab's StartSex with disable beduse, disable leadin, and YACR Hook
+int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = none)
 	sslThreadModel Thread = SexLab.NewThread()
 	if !Thread
 		return -1
-	; Add actors list to thread
 	elseIf !Thread.AddActors(Positions, Victim)
 		return -1
 	endIf
-	; Configure our thread with passed arguments
 	Thread.SetAnimations(Anims)
 	Thread.DisableBedUse(true)
-	Thread.SetHook(Hook)
 	Thread.DisableLeadIn()
-
-	; Start the animation
+	
+	Thread.SetHook("YACR" + HookName)
+	RegisterForModEvent("HookStageStart_YACR" + HookName, "StageStartEventYACR")
+	RegisterForModEvent("HookAnimationEnd_YACR" + HookName, "EndSexEventYACR")
+	
 	if Thread.StartThread()
 		return Thread.tid
 	endIf
@@ -256,10 +253,32 @@ Function _waitSetup(sslThreadController controller)
 	endif
 EndFunction
 
+Event StageStartEventYACR(int tid, bool HasPlayer)
+	sslThreadController Thread = SexLab.GetController(tid)
+	int stagecnt = Thread.Animation.StageCount
+	
+	if (Thread.Stage == stagecnt)
+		AppUtil.Log("endless sex loop... " + SelfName)
+		Utility.Wait(3.0)
+		int rndint = Utility.RandomInt(1, 100)
+		if (rndint < 25)
+			Thread.AdvanceStage(true)
+		elseif (rndint < 50)
+			Thread.GoToStage(stagecnt - 2)
+		else
+			Thread.ChangeAnimation()
+		endif
+	endif
+EndEvent
+
+Event EndSexEventYACR(int tid, bool HasPlayer)
+	sslThreadController Thread = SexLab.GetController(tid)
+	EndSexEvent(Thread.Positions[0], Thread.Positions[1])
+EndEvent
+
 Function EndSexEvent(Actor Loser, Actor Winner)
 	Loser.RemoveSpell(SSLYACRStopCombatMagic)
 	AppUtil.Log("EndSexEvent Loser " + Loser.GetActorBase().GetName())
-	UnregisterForModEvent("HookAnimationEnd_YACR" + HookName)
 	
 	Faction fact = self._getEnemyType(Winner)
 	self._endSexVictim(Loser, fact)
@@ -290,37 +309,6 @@ Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
 	endif
 EndEvent
 
-; ----------------------------------------------------------------------
-Event EndSexEventYACRPlayer(int tid, bool HasPlayer)
-	sslThreadController Thread = SexLab.GetController(tid)
-	EndSexEvent(Thread.Positions[0], Thread.Positions[1])
-EndEvent
-
-Event EndSexEventYACRFollower1(int tid, bool HasPlayer)
-	sslThreadController Thread = SexLab.GetController(tid)
-	EndSexEvent(Thread.Positions[0], Thread.Positions[1])
-EndEvent
-
-Event EndSexEventYACRFollower2(int tid, bool HasPlayer)
-	sslThreadController Thread = SexLab.GetController(tid)
-	EndSexEvent(Thread.Positions[0], Thread.Positions[1])
-EndEvent
-
-Event EndSexEventYACRFollower3(int tid, bool HasPlayer)
-	sslThreadController Thread = SexLab.GetController(tid)
-	EndSexEvent(Thread.Positions[0], Thread.Positions[1])
-EndEvent
-
-Event EndSexEventYACRFollower4(int tid, bool HasPlayer)
-	sslThreadController Thread = SexLab.GetController(tid)
-	EndSexEvent(Thread.Positions[0], Thread.Positions[1])
-EndEvent
-
-Event EndSexEventYACRFollower5(int tid, bool HasPlayer)
-	sslThreadController Thread = SexLab.GetController(tid)
-	EndSexEvent(Thread.Positions[0], Thread.Positions[1])
-EndEvent
-; -----------------------------------------------------------------------
 
 YACRConfig Property Config Auto
 YACRUtil Property AppUtil Auto

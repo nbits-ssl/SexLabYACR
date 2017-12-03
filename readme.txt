@@ -59,6 +59,7 @@ SSL用の戦闘レイプMod。Defeatが自環境ではうまく動かないた�
 * Skyrim SexLab
 * LoversLab
 * SSL Defeat
+* SexLab RapeSpell
 * bbspink Skyrim エロMod晒しスレ
 * 質問スレかどこかで「裸になると戦闘中レイプされるシンプルなModありませんか？」
   と書いたどなたか。
