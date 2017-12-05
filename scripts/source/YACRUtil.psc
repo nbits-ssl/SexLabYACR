@@ -14,38 +14,23 @@ Faction Function GetEnemyType(Actor act)
 		return None
 	endif
 	
-	if (act.IsInFaction(BanditFaction))
-		return BanditFaction
-	elseif (act.IsInFaction(ThalmorFaction))
-		return ThalmorFaction
-	elseif (act.IsInFaction(PredatorFaction))
-		return PredatorFaction
-	elseif (act.IsInFaction(VampireFaction))
-		return VampireFaction
-	elseif (act.IsInFaction(DraugrFaction))
-		return DraugrFaction
-	elseif (act.IsInFaction(TrollFaction))
-		return TrollFaction
-	elseif (act.IsInFaction(ChaurusFaction))
-		return ChaurusFaction
-	elseif (act.IsInFaction(SkeeverFaction))
-		return SkeeverFaction
-	elseif (act.IsInFaction(FalmerFaction))
-		return FalmerFaction
-	elseif (act.IsInFaction(GiantFaction))
-		return GiantFaction
-	elseif (act.IsInFaction(WerewolfFaction))
-		return WerewolfFaction
-	elseif (act.IsInFaction(DLC2RieklingFaction))
-		return DLC2RieklingFaction
-	else
-		return None
-	endif
+	int x = AvailableEnemyFactions.Length
+	while x
+		x -= 1
+		AvailableEnemyFactions[x]
+		if (act.IsInFaction(AvailableEnemyFactions[x]))
+			return AvailableEnemyFactions[x]
+		endif
+	endwhile
+	
+	return None
 EndFunction
 
+; bandit, thalmor, vampire, draugr, falmer, wolf(only one helper), skeever
 Actor[] Function GetHelpers(faction fact)
-	if (fact == BanditFaction)
-		return self._getHelpers(SSLYACRHelperBanditSearcher)
+	int x = MultiplayEnemyFactions.Find(fact)
+	if (x)
+		return self._getHelpers(MultiplayEnemySearcher[x])
 	else
 		return None
 	endif
@@ -94,3 +79,7 @@ Faction Property DLC2RieklingFaction  Auto
 Faction Property ThalmorFaction  Auto  
 
 Quest Property SSLYACRHelperBanditSearcher  Auto  
+
+Faction[] Property AvailableEnemyFactions  Auto  
+Faction[] Property MultiplayEnemyFactions  Auto  
+Quest[] Property MultiplayEnemySearcher  Auto  

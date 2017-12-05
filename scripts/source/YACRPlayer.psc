@@ -6,6 +6,7 @@ Faction AggrFaction = None
 bool PlayerIsMale = false
 bool IsInCurrentFollowerFaction = false
 bool EndlessSexLoop = false
+sslThreadController updateController
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 
@@ -106,9 +107,9 @@ Function _readySexVictim(Actor act, Faction fact)
 		fact.SetReaction(SSLYACRCalmFaction, 3) ; set friend
 		act.AddToFaction(SSLYACRCalmFaction)
 		
-		Utility.Wait(0.5) ; FIXME, unknown effective work around
 		Game.ForceThirdPerson()
-		Game.DisablePlayerControls(1, 1, 1, 0, 1, 1, 0, 0)
+		Game.DisablePlayerControls(true, true, true, false, true, false, true, false)
+		; move, fight, camswitch, look, sneak, menu, activate, jornal
 	else
 		if (act.IsInFaction(CurrentFollowerFaction))
 			act.RemoveFromFaction(CurrentFollowerFaction)
@@ -355,25 +356,36 @@ Function _waitSetup(sslThreadController controller)
 EndFunction
 
 Event StageStartEventYACR(int tid, bool HasPlayer)
-	sslThreadController controller = SexLab.GetController(tid)
+	updateController = SexLab.GetController(tid)
+	sslThreadController controller = updateController
 	int stagecnt = controller.Animation.StageCount
 	
 	if (controller.Stage == stagecnt)
 		Utility.Wait(3.0)
 		int rndint = Utility.RandomInt(1, 100)
-		if (rndint < 15)
+		if (rndint < 20) ; 20%
 			AppUtil.Log("endless sex loop...one more " + SelfName)
 			controller.AdvanceStage(true)
-		elseif (rndint < 25)
+		elseif (rndint < 45) ; 25%
 			AppUtil.Log("endless sex loop...one more from 2nd " + SelfName)
 			controller.GoToStage(stagecnt - 2)
-		elseif (rndint < 50)
+		elseif (rndint < 75) ; 30%
 			EndlessSexLoop = true
 			controller.EndAnimation()
-		else
+		else ; 25%
 			AppUtil.Log("endless sex loop...change anim " + SelfName)
+			controller.GoToStage(stagecnt - 2)
 			controller.ChangeAnimation()
+			RegisterForSingleUpdate(5.0)
 		endif
+	endif
+EndEvent
+
+; from rapespell, genius!
+Event OnUpdate()
+	if (updateController)
+		updateController.OnUpdate()
+		RegisterForSingleUpdate(5.0)
 	endif
 EndEvent
 
