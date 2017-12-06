@@ -14,11 +14,12 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	Actor selfact = self.GetActorRef()
 	SelfName = selfact.GetActorBase().GetName()
 	Weapon wpn = akSource as Weapon
+	bool isplayer = self._isPlayer()
 	
 	if (PlayerIsMale || akAggressor == None || akProjectile || PreSource ==  akSource || !wpn)
 		AppUtil.Log("not if " + SelfName)
 		return
-	elseif (self._isPlayer())
+	elseif (isplayer)
 		if (selfact.GetActorBase().GetSex() != 1) 
 			AppUtil.Log("not if, player isn't woman " + SelfName)
 			PlayerIsMale = true
@@ -40,9 +41,12 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 
 	GotoState("Busy")
 	PreSource = akSource
+	float healthper = selfact.GetAVPercentage("health") * 100
 	AggrFaction = AppUtil.GetEnemyType(akAggressor as Actor)
 	
-	if (AggrFaction && !abHitBlocked && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
+	if (AggrFaction && !abHitBlocked && healthper > Config.GetHealthLimit(isplayer) \
+		&& wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
+		
 		AppUtil.Log("onhit success " + SelfName)
 		
 		int rndintRP = Utility.RandomInt(1, 100)
@@ -59,21 +63,20 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 				akAggr.StopCombat()
 			endif
 		elseif (selfarmor)
-			if (Config.enableArmorBreak)
-				if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < Config.armorBreakChanceCloth) || \
-					(selfarmor.HasKeyWord(ArmorLight) && rndintAB < Config.armorBreakChanceLightArmor) || \
-					(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < Config.armorBreakChanceHeavyArmor))
+			if (rndintRP < Config.GetRapeChanceNotNaked(isplayer))
+				AppUtil.Log("doSex " + SelfName)
+				self.doSex(selfact, akAggr, AggrFaction)
+			elseif (Config.GetEnableArmorBreak(isplayer))
+				int[] chances = Config.GetBreakChances(isplayer)
+				if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < chances[0]) || \
+					(selfarmor.HasKeyWord(ArmorLight) && rndintAB < chances[1]) || \
+					(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < chances[2]))
 					
 					selfact.RemoveItem(selfarmor)
 					AppUtil.Log(" Armor break " + SelfName)
 				endif
 			endif
-			
-			if (Config.enableNoNakedRape && rndintRP < Config.rapeChanceNotNaked)
-				AppUtil.Log("doSex " + SelfName)
-				self.doSex(selfact, akAggr, AggrFaction)
-			endif
-		elseif (!selfarmor && rndintRP < Config.rapeChance)
+		elseif (!selfarmor && rndintRP < Config.GetRapeChance(isplayer))
 			AppUtil.Log("doSex " + SelfName)
 			self.doSex(selfact, akAggr, AggrFaction)
 		endif

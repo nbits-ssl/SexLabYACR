@@ -2,7 +2,6 @@ Scriptname YACRConfig extends SKI_ConfigBase
 
 bool Property debugLogFlag = true Auto
 
-bool Property enableNoNakedRape = false Auto
 bool Property enableArmorBreak = true Auto
 int Property armorBreakChanceCloth = 50 Auto
 int Property armorBreakChanceLightArmor = 20 Auto
@@ -11,7 +10,6 @@ int Property rapeChance = 50 Auto
 int Property rapeChanceNotNaked = 10 Auto
 int Property healthLimit = 50 Auto
 
-bool Property enableNoNakedRapeNPC = false Auto
 bool Property enableArmorBreakNPC = true Auto
 int Property armorBreakChanceClothNPC = 50 Auto
 int Property armorBreakChanceLightArmorNPC = 20 Auto
@@ -22,7 +20,6 @@ int Property healthLimitNPC = 50 Auto
 
 int debugLogFlagID
 
-int enableNoNakedRapeID
 int enableArmorBreakID
 int armorBreakChanceClothID
 int armorBreakChanceLightArmorID
@@ -31,7 +28,6 @@ int rapeChanceID
 int rapeChanceNotNakedID
 int healthLimitID
 
-int enableNoNakedRapeNPCID
 int enableArmorBreakNPCID
 int armorBreakChanceClothNPCID
 int armorBreakChanceLightArmorNPCID
@@ -57,7 +53,6 @@ event OnPageReset(string page)
 		healthLimitID = AddSliderOption("$HealthLimit", healthLimit)
 		
 		AddHeaderOption("$RapeChance")
-		enableNoNakedRapeID = AddToggleOption("$EnableRapeToNotNaked", enableNoNakedRape)
 		rapeChanceID = AddSliderOption("$Naked", rapeChance)
 		rapeChanceNotNakedID = AddSliderOption("$NotNaked", rapeChanceNotNaked)
 		
@@ -74,7 +69,6 @@ event OnPageReset(string page)
 		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
 		
 		AddHeaderOption("$RapeChance")
-		enableNoNakedRapeNPCID = AddToggleOption("$EnableRapeToNotNaked", enableNoNakedRapeNPC)
 		rapeChanceNPCID = AddSliderOption("$Naked", rapeChanceNPC)
 		rapeChanceNotNakedNPCID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPC)
 		
@@ -86,6 +80,54 @@ event OnPageReset(string page)
 	;endif
 endevent
 
+int Function GetHealthLimit(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.healthLimit
+	else
+		return self.healthLimitNPC
+	endif
+EndFunction
+
+int Function GetRapeChance(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.rapeChance
+	else
+		return self.rapeChanceNPC
+	endif
+EndFunction
+
+int Function GetRapeChanceNotNaked(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.rapeChanceNotNaked
+	else
+		return self.rapeChanceNotNakedNPC
+	endif
+EndFunction
+
+bool Function GetEnableArmorBreak(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.enableArmorBreak
+	else
+		return self.enableArmorBreakNPC
+	endif
+EndFunction
+
+int[] Function GetBreakChances(bool IsPlayer = true)
+	int[] chances = new int[3]
+	
+	if (IsPlayer)
+		chances[0] = self.armorBreakChanceCloth
+		chances[1] = self.armorBreakChanceLightArmor
+		chances[2] = self.armorBreakChanceHeavyArmor
+	else
+		chances[0] = self.armorBreakChanceClothNPC
+		chances[1] = self.armorBreakChanceLightArmorNPC
+		chances[2] = self.armorBreakChanceHeavyArmorNPC
+	endif
+	
+	return chances
+EndFunction
+
 event OnOptionHighlight(int option)
 	if (option == healthLimitID || option == healthLimitNPCID)
 		SetInfoText("$HealthLimitInfo")
@@ -96,9 +138,11 @@ event OnOptionSelect(int option)
 	if (option == enableArmorBreakID)
 		enableArmorBreak = !enableArmorBreak
 		SetToggleOptionValue(enableArmorBreakID, enableArmorBreak)
-	elseif (option == enableNoNakedRapeID)
-		enableNoNakedRape = !enableNoNakedRape
-		SetToggleOptionValue(enableNoNakedRapeID, enableNoNakedRape)
+		
+	elseif (option == enableArmorBreakNPCID)
+		enableArmorBreakNPC = !enableArmorBreakNPC
+		SetToggleOptionValue(enableArmorBreakNPCID, enableArmorBreakNPC)
+		
 	elseif (option == debugLogFlagID)
 		debugLogFlag = !debugLogFlag
 		SetToggleOptionValue(debugLogFlagID, debugLogFlag)
@@ -131,6 +175,32 @@ event OnOptionSliderOpen(int option)
 		SetSliderDialogDefaultValue(armorBreakChanceHeavyArmor)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
+
+	elseif (option == rapeChanceNPCID)
+		SetSliderDialogStartValue(rapeChanceNPC)
+		SetSliderDialogDefaultValue(rapeChanceNPC)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	elseif (option == rapeChanceNotNakedNPCID)
+		SetSliderDialogStartValue(rapeChanceNotNakedNPC)
+		SetSliderDialogDefaultValue(rapeChanceNotNakedNPC)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	elseif (option == armorBreakChanceClothNPCID)
+		SetSliderDialogStartValue(armorBreakChanceClothNPC)
+		SetSliderDialogDefaultValue(armorBreakChanceClothNPC)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	elseif (option == armorBreakChanceLightArmorNPCID)
+		SetSliderDialogStartValue(armorBreakChanceLightArmorNPC)
+		SetSliderDialogDefaultValue(armorBreakChanceLightArmorNPC)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	elseif (option == armorBreakChanceHeavyArmorNPCID)
+		SetSliderDialogStartValue(armorBreakChanceHeavyArmorNPC)
+		SetSliderDialogDefaultValue(armorBreakChanceHeavyArmorNPC)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
 	endif
 endevent
 
@@ -150,5 +220,21 @@ event OnOptionSliderAccept(int option, float value)
 	elseif (option == armorBreakChanceHeavyArmorID)
 		armorBreakChanceHeavyArmor = value as Int
 		SetSliderOptionValue(armorBreakChanceHeavyArmorID, armorBreakChanceHeavyArmor)
+		
+	elseif (option == rapeChanceNPCID)
+		rapeChanceNPC = value as Int
+		SetSliderOptionValue(rapeChanceNPCID, rapeChanceNPC)
+	elseif (option == rapeChanceNotNakedNPCID)
+		rapeChanceNotNakedNPC = value as Int
+		SetSliderOptionValue(rapeChanceNotNakedNPCID, rapeChanceNotNakedNPC)
+	elseif (option == armorBreakChanceClothNPCID)
+		armorBreakChanceClothNPC = value as Int
+		SetSliderOptionValue(armorBreakChanceClothNPCID, armorBreakChanceClothNPC)
+	elseif (option == armorBreakChanceLightArmorNPCID)
+		armorBreakChanceLightArmorNPC = value as Int
+		SetSliderOptionValue(armorBreakChanceLightArmorNPCID, armorBreakChanceLightArmorNPC)
+	elseif (option == armorBreakChanceHeavyArmorNPCID)
+		armorBreakChanceHeavyArmorNPC = value as Int
+		SetSliderOptionValue(armorBreakChanceHeavyArmorNPCID, armorBreakChanceHeavyArmorNPC)
 	endif
 endevent
