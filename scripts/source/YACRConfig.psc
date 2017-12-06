@@ -3,6 +3,7 @@ Scriptname YACRConfig extends SKI_ConfigBase
 bool Property debugLogFlag = true Auto
 
 bool Property enableArmorBreak = true Auto
+bool Property enableEndlessRape = true Auto
 int Property armorBreakChanceCloth = 50 Auto
 int Property armorBreakChanceLightArmor = 20 Auto
 int Property armorBreakChanceHeavyArmor = 10 Auto
@@ -11,6 +12,7 @@ int Property rapeChanceNotNaked = 10 Auto
 int Property healthLimit = 50 Auto
 
 bool Property enableArmorBreakNPC = true Auto
+bool Property enableEndlessRapeNPC = true Auto
 int Property armorBreakChanceClothNPC = 50 Auto
 int Property armorBreakChanceLightArmorNPC = 20 Auto
 int Property armorBreakChanceHeavyArmorNPC = 10 Auto
@@ -21,6 +23,7 @@ int Property healthLimitNPC = 50 Auto
 int debugLogFlagID
 
 int enableArmorBreakID
+int enableEndlessRapeID
 int armorBreakChanceClothID
 int armorBreakChanceLightArmorID
 int armorBreakChanceHeavyArmorID
@@ -29,6 +32,7 @@ int rapeChanceNotNakedID
 int healthLimitID
 
 int enableArmorBreakNPCID
+int enableEndlessRapeNPCID
 int armorBreakChanceClothNPCID
 int armorBreakChanceLightArmorNPCID
 int armorBreakChanceHeavyArmorNPCID
@@ -55,6 +59,7 @@ event OnPageReset(string page)
 		AddHeaderOption("$RapeChance")
 		rapeChanceID = AddSliderOption("$Naked", rapeChance)
 		rapeChanceNotNakedID = AddSliderOption("$NotNaked", rapeChanceNotNaked)
+		enableEndlessRapeID = AddToggleOption("$EndlessRape", enableEndlessRape)
 		
 		AddHeaderOption("$ArmorBreak")
 		enableArmorBreakID = AddToggleOption("$Enable", enableArmorBreak)
@@ -71,6 +76,7 @@ event OnPageReset(string page)
 		AddHeaderOption("$RapeChance")
 		rapeChanceNPCID = AddSliderOption("$Naked", rapeChanceNPC)
 		rapeChanceNotNakedNPCID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPC)
+		enableEndlessRapeNPCID = AddToggleOption("$EndlessRape", enableEndlessRapeNPC)
 		
 		AddHeaderOption("$ArmorBreak")
 		enableArmorBreakNPCID = AddToggleOption("$Enable", enableArmorBreakNPC)
@@ -104,6 +110,14 @@ int Function GetRapeChanceNotNaked(bool IsPlayer = true)
 	endif
 EndFunction
 
+bool Function GetEnableEndlessRape(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.enableEndlessRape
+	else
+		return self.enableEndlessRapeNPC
+	endif
+EndFunction
+
 bool Function GetEnableArmorBreak(bool IsPlayer = true)
 	if (IsPlayer)
 		return self.enableArmorBreak
@@ -131,6 +145,8 @@ EndFunction
 event OnOptionHighlight(int option)
 	if (option == healthLimitID || option == healthLimitNPCID)
 		SetInfoText("$HealthLimitInfo")
+	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
+		SetInfoText("$EndlessRapeInfo")
 	endif
 endevent
 
@@ -138,10 +154,16 @@ event OnOptionSelect(int option)
 	if (option == enableArmorBreakID)
 		enableArmorBreak = !enableArmorBreak
 		SetToggleOptionValue(enableArmorBreakID, enableArmorBreak)
+	elseif (option == enableEndlessRapeID)
+		enableEndlessRape = !enableEndlessRape
+		SetToggleOptionValue(enableEndlessRapeID, enableEndlessRape)
 		
 	elseif (option == enableArmorBreakNPCID)
 		enableArmorBreakNPC = !enableArmorBreakNPC
 		SetToggleOptionValue(enableArmorBreakNPCID, enableArmorBreakNPC)
+	elseif (option == enableEndlessRapeNPCID)
+		enableEndlessRapeNPC = !enableEndlessRapeNPC
+		SetToggleOptionValue(enableEndlessRapeNPCID, enableEndlessRapeNPC)
 		
 	elseif (option == debugLogFlagID)
 		debugLogFlag = !debugLogFlag

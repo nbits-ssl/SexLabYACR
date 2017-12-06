@@ -363,7 +363,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	sslThreadController controller = updateController
 	int stagecnt = controller.Animation.StageCount
 	
-	if (controller.Stage == stagecnt)
+	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self._isPlayer()))
 		Utility.Wait(3.0)
 		int rndint = Utility.RandomInt(1, 100)
 		if (rndint < 20) ; 20%
