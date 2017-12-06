@@ -1,6 +1,7 @@
 Scriptname YACRConfig extends SKI_ConfigBase  
 
 bool Property debugLogFlag = true Auto
+
 bool Property enableNoNakedRape = false Auto
 bool Property enableArmorBreak = true Auto
 int Property armorBreakChanceCloth = 50 Auto
@@ -8,8 +9,19 @@ int Property armorBreakChanceLightArmor = 20 Auto
 int Property armorBreakChanceHeavyArmor = 10 Auto
 int Property rapeChance = 50 Auto
 int Property rapeChanceNotNaked = 10 Auto
+int Property healthLimit = 50 Auto
+
+bool Property enableNoNakedRapeNPC = false Auto
+bool Property enableArmorBreakNPC = true Auto
+int Property armorBreakChanceClothNPC = 50 Auto
+int Property armorBreakChanceLightArmorNPC = 20 Auto
+int Property armorBreakChanceHeavyArmorNPC = 10 Auto
+int Property rapeChanceNPC = 50 Auto
+int Property rapeChanceNotNakedNPC = 10 Auto
+int Property healthLimitNPC = 50 Auto
 
 int debugLogFlagID
+
 int enableNoNakedRapeID
 int enableArmorBreakID
 int armorBreakChanceClothID
@@ -17,24 +29,67 @@ int armorBreakChanceLightArmorID
 int armorBreakChanceHeavyArmorID
 int rapeChanceID
 int rapeChanceNotNakedID
+int healthLimitID
+
+int enableNoNakedRapeNPCID
+int enableArmorBreakNPCID
+int armorBreakChanceClothNPCID
+int armorBreakChanceLightArmorNPCID
+int armorBreakChanceHeavyArmorNPCID
+int rapeChanceNPCID
+int rapeChanceNotNakedNPCID
+int healthLimitNPCID
+
+;event OnConfigInit()
+;	Pages = new string[2]
+;	Pages[0] = ""
+;	Pages[1] = ""
+;endEvent
 
 event OnPageReset(string page)
-	SetCursorFillMode(TOP_TO_BOTTOM)
-	SetCursorPosition(0)
+	;if (page == "" || page == "General")
+		SetCursorFillMode(TOP_TO_BOTTOM)
+		SetCursorPosition(0)
 
-	AddHeaderOption("General: ")
-	
-	rapeChanceID = AddSliderOption("Rape chance (%)", rapeChance)
-	
-	enableNoNakedRapeID = AddToggleOption("Enable rape to not naked", enableNoNakedRape)
-	rapeChanceNotNakedID = AddSliderOption(" Not naked rape chance (%)", rapeChanceNotNaked)
-	
-	enableArmorBreakID = AddToggleOption("Enable armor break", enableArmorBreak)
-	armorBreakChanceClothID = AddSliderOption(" Cloth chance (%)", armorBreakChanceCloth)
-	armorBreakChanceLightArmorID = AddSliderOption(" LightArmor chance (%)", armorBreakChanceLightArmor)
-	armorBreakChanceHeavyArmorID = AddSliderOption(" HeavyArmor chance (%)", armorBreakChanceHeavyArmor)
-	
-	debugLogFlagID = AddToggleOption("Output papyrus log", debugLogFlag)
+		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
+
+		AddHeaderOption("$Player")
+		healthLimitID = AddSliderOption("$HealthLimit", healthLimit)
+		
+		AddHeaderOption("$RapeChance")
+		enableNoNakedRapeID = AddToggleOption("$EnableRapeToNotNaked", enableNoNakedRape)
+		rapeChanceID = AddSliderOption("$Naked", rapeChance)
+		rapeChanceNotNakedID = AddSliderOption("$NotNaked", rapeChanceNotNaked)
+		
+		AddHeaderOption("$ArmorBreak")
+		enableArmorBreakID = AddToggleOption("$Enable", enableArmorBreak)
+		armorBreakChanceClothID = AddSliderOption("$Cloth", armorBreakChanceCloth)
+		armorBreakChanceLightArmorID = AddSliderOption("$LightArmor", armorBreakChanceLightArmor)
+		armorBreakChanceHeavyArmorID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmor)
+		
+		SetCursorPosition(1)
+		AddEmptyOption()
+		
+		AddHeaderOption("$Follower")
+		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
+		
+		AddHeaderOption("$RapeChance")
+		enableNoNakedRapeNPCID = AddToggleOption("$EnableRapeToNotNaked", enableNoNakedRapeNPC)
+		rapeChanceNPCID = AddSliderOption("$Naked", rapeChanceNPC)
+		rapeChanceNotNakedNPCID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPC)
+		
+		AddHeaderOption("$ArmorBreak")
+		enableArmorBreakNPCID = AddToggleOption("$Enable", enableArmorBreakNPC)
+		armorBreakChanceClothNPCID = AddSliderOption("$Cloth", armorBreakChanceClothNPC)
+		armorBreakChanceLightArmorNPCID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPC)
+		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPC)
+	;endif
+endevent
+
+event OnOptionHighlight(int option)
+	if (option == healthLimitID || option == healthLimitNPCID)
+		SetInfoText("$HealthLimitInfo")
+	endif
 endevent
 
 event OnOptionSelect(int option)
