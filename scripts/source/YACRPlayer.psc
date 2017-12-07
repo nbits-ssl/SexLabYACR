@@ -6,7 +6,7 @@ bool PlayerIsMale = false
 bool IsInCurrentFollowerFaction = false
 bool AlreadyInEnemyFaction = false
 bool EndlessSexLoop = false
-sslThreadController updateController
+sslThreadController UpdateController
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 
@@ -370,8 +370,8 @@ Function _waitSetup(sslThreadController controller)
 EndFunction
 
 Event StageStartEventYACR(int tid, bool HasPlayer)
-	updateController = SexLab.GetController(tid)
-	sslThreadController controller = updateController
+	UpdateController = SexLab.GetController(tid)
+	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
 	
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self._isPlayer()))
@@ -397,8 +397,8 @@ EndEvent
 
 ; from rapespell, genius!
 Event OnUpdate()
-	if (updateController)
-		updateController.OnUpdate()
+	if (UpdateController)
+		UpdateController.OnUpdate()
 		RegisterForSingleUpdate(5.0)
 	endif
 EndEvent
@@ -408,13 +408,14 @@ Event EndSexEventYACR(int tid, bool HasPlayer)
 EndEvent
 
 Function EndSexEvent(Actor aggr)
-	AppUtil.Log("EndSexEvent Loser " + SelfName)
 	Faction fact = AppUtil.GetEnemyType(aggr)
 	
 	if (EndlessSexLoop)
+		AppUtil.Log("EndSexEvent, Goto to loop " + SelfName)
 		EndlessSexLoop = false
 		self.doSexLoop(fact)
 	else ; Aggr's OnHit
+		AppUtil.Log("EndSexEvent, truely end " + SelfName)
 		self._endSexVictim(fact)
 		
 		AppUtil.CleanFlyingDeadBody(aggr)
@@ -452,7 +453,8 @@ EndEvent
 
 Event OnCellDetach()
 	Actor aggr = Aggressor.GetActorRef()
-
+	
+	; EndSexEvent is runned by OnCellDetach(), but this is papyrus. 2nd check.
 	if (aggr)
 		self._endSexVictim(AppUtil.GetEnemyType(aggr))
 	else
