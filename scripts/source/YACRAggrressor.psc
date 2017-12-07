@@ -25,8 +25,8 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		if selfact.HasKeyWordString("SexLabActive")
 			AppUtil.Log("enemy OnHit, Stop " + SelfName)
 			selfact.SetGhost(true)
-			sslThreadController Controller = SexLab.GetActorController(selfact)
-			Controller.EndAnimation()
+			sslThreadController controller = SexLab.GetActorController(selfact)
+			controller.EndAnimation()
 			; selfact.SetGhost(false)
 		endif
 	endif
@@ -62,6 +62,10 @@ EndEvent
 Event OnDeath(Actor akKiller)
 	AppUtil.Log("enemy OnDeath, Clear " + self.GetActorRef().GetActorBase().GetName())
 	self.Clear()
+EndEvent
+
+Event OnCellDetach()
+	self.GetActorRef().SetGhost(false)
 EndEvent
 
 SexLabFramework Property SexLab  Auto 

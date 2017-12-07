@@ -2,9 +2,9 @@ Scriptname YACRPlayer extends ReferenceAlias
 
 Form PreSource = None
 string SelfName
-Faction AggrFaction = None
 bool PlayerIsMale = false
 bool IsInCurrentFollowerFaction = false
+bool AlreadyInEnemyFaction = false
 bool EndlessSexLoop = false
 sslThreadController updateController
 
@@ -42,9 +42,9 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	GotoState("Busy")
 	PreSource = akSource
 	float healthper = selfact.GetAVPercentage("health") * 100
-	AggrFaction = AppUtil.GetEnemyType(akAggressor as Actor)
+	Faction aggrFaction = AppUtil.GetEnemyType(akAggr)
 	
-	if (AggrFaction && !abHitBlocked && healthper > Config.GetHealthLimit(isplayer) \
+	if (aggrFaction && !abHitBlocked && healthper < Config.GetHealthLimit(isplayer) \
 		&& wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
 		
 		AppUtil.Log("onhit success " + SelfName)
@@ -65,7 +65,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		elseif (selfarmor)
 			if (rndintRP < Config.GetRapeChanceNotNaked(isplayer))
 				AppUtil.Log("doSex " + SelfName)
-				self.doSex(selfact, akAggr, AggrFaction)
+				self.doSex(akAggr, aggrFaction)
 			elseif (Config.GetEnableArmorBreak(isplayer))
 				int[] chances = Config.GetBreakChances(isplayer)
 				if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < chances[0]) || \
@@ -78,7 +78,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 			endif
 		elseif (!selfarmor && rndintRP < Config.GetRapeChance(isplayer))
 			AppUtil.Log("doSex " + SelfName)
-			self.doSex(selfact, akAggr, AggrFaction)
+			self.doSex(akAggr, aggrFaction)
 		endif
 	endif
 	
@@ -102,9 +102,11 @@ bool Function _isPlayer()
 	endif
 EndFunction
 
-Function _readySexVictim(Actor act, Faction fact)
+Function _readySexVictim(Faction fact)
+	Actor act = self.GetActorRef()
 	act.AddSpell(SSLYACRKillmoveArmorSpell, false) ; silently
 	act.SetGhost(true)
+	AlreadyInEnemyFaction = false
 	
 	if (self._isPlayer())
 		fact.SetReaction(SSLYACRCalmFaction, 3) ; set friend
@@ -119,20 +121,27 @@ Function _readySexVictim(Actor act, Faction fact)
 			IsInCurrentFollowerFaction = true
 		endif
 		act.SetPlayerTeammate(false)
-		act.AddToFaction(fact)
+		if (act.IsInFaction(fact))
+			AlreadyInEnemyFaction = true
+		else
+			act.AddToFaction(fact)
+		endif
 	endif
 	
 	act.StopCombat()
 	act.StopCombatAlarm()
 EndFunction
 
-Function _endSexVictim(Actor act, Faction fact)
+Function _endSexVictim(Faction fact = None)
+	Actor act = self.GetActorRef()
 	if (self._isPlayer())
 		act.RemoveFromFaction(SSLYACRCalmFaction)
 		fact.SetReaction(SSLYACRCalmFaction, 0) ; set neutral
 		Game.EnablePlayerControls()
 	else
-		act.RemoveFromFaction(fact)
+		if (!AlreadyInEnemyFaction && fact)
+			act.RemoveFromFaction(fact)
+		endif
 		act.SetPlayerTeammate(true)
 		if (IsInCurrentFollowerFaction)
 			act.AddToFaction(CurrentFollowerFaction)
@@ -145,29 +154,31 @@ EndFunction
 
 ; _readySexAggr / _endSexAggr to StopCombatEffect.psc
 
-Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
-	if (ActorLoser.IsGhost() || ActorWinner.IsGhost())
+Function doSex(Actor aggr, Faction aggrFaction)
+	Actor act = self.GetActorRef()
+	
+	if (act.IsGhost() || aggr.IsGhost())
 		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
-	elseif (Aggressor.GetActorRef() || ActorWinner.IsDead())
+	elseif (Aggressor.GetActorRef() || aggr.IsDead())
 		AppUtil.Log("already filled ref or dead actor, pass doSex " + SelfName)
-	elseif (ActorLoser.IsInFaction(SSLAnimatingFaction)) ; second check
+	elseif (act.IsInFaction(SSLAnimatingFaction)) ; second check
 		AppUtil.Log("actloser already animating, pass doSex " + SelfName)
 	else
-		Aggressor.ForceRefTo(ActorWinner)
-		self._readySexVictim(ActorLoser, WinnerFaction)
+		Aggressor.ForceRefTo(aggr)
+		self._readySexVictim(aggrFaction)
 		
 		sslBaseAnimation[] anims
-		if (ActorWinner.HasKeyWord(ActorTypeNPC))
+		if (aggr.HasKeyWord(ActorTypeNPC))
 			anims =  SexLab.GetAnimationsByTags(2, "MF,Aggressive", "Oral", true)
 		else
 			anims =  SexLab.GetAnimationsByTags(2, "")
 		endif
 		actor[] sexActors = new actor[2]
-		sexActors[0] = ActorLoser
-		sexActors[1] = ActorWinner
+		sexActors[0] = act
+		sexActors[1] = aggr
 		
 		AppUtil.Log("run SexLab " + SelfName)
-		int tid = self._quickSex(sexActors, anims, victim = ActorLoser)
+		int tid = self._quickSex(sexActors, anims, victim = act)
 		sslThreadController controller = SexLab.GetController(tid)
 		
 		; wait for sync, max 12 sec.
@@ -178,12 +189,12 @@ Function doSex(Actor ActorLoser, Actor ActorWinner, Faction WinnerFaction)
 		
 		if (controller)
 			Utility.Wait(1.0)
-			; self._endSexAggr(ActorWinner)
-			ActorWinner.SetGhost(false) ; _endSexAggr()
+			; self._endSexAggr(aggr)
+			aggr.SetGhost(false) ; _endSexAggr()
 			AppUtil.Log("aggr setghost disable " + SelfName)
 		else
 			AppUtil.Log("###FIXME### controller not found, recover setup " + SelfName)
-			self.EndSexEvent(ActorLoser, ActorWinner)
+			self.EndSexEvent(aggr)
 		endif
 	endif
 EndFunction
@@ -225,7 +236,7 @@ Function doSexLoop(Faction fact)
 		AppUtil.Log("LOOPING aggr setghost disable " + SelfName)
 	else
 		AppUtil.Log("LOOPING ###FIXME### controller not found, recover setup " + SelfName)
-		self.EndSexEvent(victim, aggr)
+		self.EndSexEvent(aggr)
 	endif
 EndFunction
 
@@ -393,28 +404,24 @@ Event OnUpdate()
 EndEvent
 
 Event EndSexEventYACR(int tid, bool HasPlayer)
-	sslThreadController Thread = SexLab.GetController(tid)
-	EndSexEvent(Thread.Positions[0], Thread.Positions[1])
+	self.EndSexEvent(SexLab.GetController(tid).Positions[1])
 EndEvent
 
-Function EndSexEvent(Actor Loser, Actor Winner)
-	AppUtil.Log("EndSexEvent Loser " + Loser.GetActorBase().GetName())
-	Faction fact = AppUtil.GetEnemyType(Winner)
+Function EndSexEvent(Actor aggr)
+	AppUtil.Log("EndSexEvent Loser " + SelfName)
+	Faction fact = AppUtil.GetEnemyType(aggr)
 	
 	if (EndlessSexLoop)
 		EndlessSexLoop = false
 		self.doSexLoop(fact)
 	else ; Aggr's OnHit
-		self._endSexVictim(Loser, fact)
+		self._endSexVictim(fact)
 		
-		if (Winner.IsDead())
-			ObjectReference wobj = Winner as ObjectReference
-			wobj.SetPosition(wobj.GetPositionX(), wobj.GetPositionY() + 10.0, wobj.GetPositionZ())
-			debug.sendAnimationEvent(wobj, "ragdoll")
-			AppUtil.Log("EndSexEvent winner is dead " + Loser.GetActorBase().GetName())
-		else
-			AppUtil.Log("EndSexEvent winner is live " + Loser.GetActorBase().GetName())
-		endif
+		AppUtil.CleanFlyingDeadBody(aggr)
+		self._cleanDeadBody(Helper1)
+		self._cleanDeadBody(Helper2)
+		self._cleanDeadBody(Helper3)
+
 		Aggressor.Clear()
 		Helper1.Clear()
 		Helper2.Clear()
@@ -427,12 +434,29 @@ Function EndSexEvent(Actor Loser, Actor Winner)
 	endif
 EndFunction
 
+Function _cleanDeadBody(ReferenceAlias enemy)
+	Actor act = enemy.GetActorRef()
+	if (act)
+		AppUtil.CleanFlyingDeadBody(act)
+	endif
+EndFunction
+
 Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
 	if (aeCombatState == 0)
 		Actor selfact = self.GetActorRef()
 		selfact.EnableAI(false)
 		selfact.EnableAI()
-		AppUtil.Log("combatstatechanged, reset ai " + SelfName)
+		AppUtil.Log("OnCombatStateChanged, reset ai " + SelfName)
+	endif
+EndEvent
+
+Event OnCellDetach()
+	Actor aggr = Aggressor.GetActorRef()
+
+	if (aggr)
+		self._endSexVictim(AppUtil.GetEnemyType(aggr))
+	else
+		self._endSexVictim(None)
 	endif
 EndEvent
 

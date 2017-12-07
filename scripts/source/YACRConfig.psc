@@ -172,7 +172,12 @@ event OnOptionSelect(int option)
 endevent
 
 event OnOptionSliderOpen(int option)
-	if (option == rapeChanceID)
+	if (option == healthLimitID)
+		SetSliderDialogStartValue(healthLimit)
+		SetSliderDialogDefaultValue(healthLimit)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
+	elseif (option == rapeChanceID)
 		SetSliderDialogStartValue(rapeChance)
 		SetSliderDialogDefaultValue(rapeChance)
 		SetSliderDialogRange(0.0, 100.0)
@@ -198,6 +203,11 @@ event OnOptionSliderOpen(int option)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
 
+	elseif (option == healthLimitNPCID)
+		SetSliderDialogStartValue(healthLimitNPC)
+		SetSliderDialogDefaultValue(healthLimitNPC)
+		SetSliderDialogRange(0.0, 100.0)
+		SetSliderDialogInterval(1.0)
 	elseif (option == rapeChanceNPCID)
 		SetSliderDialogStartValue(rapeChanceNPC)
 		SetSliderDialogDefaultValue(rapeChanceNPC)
@@ -227,7 +237,10 @@ event OnOptionSliderOpen(int option)
 endevent
 
 event OnOptionSliderAccept(int option, float value)
-	if (option == rapeChanceID)
+	if (option == healthLimitID)
+		healthLimit = value as Int
+		SetSliderOptionValue(healthLimitID, healthLimit)
+	elseif (option == rapeChanceID)
 		rapeChance = value as Int
 		SetSliderOptionValue(rapeChanceID, rapeChance)
 	elseif (option == rapeChanceNotNakedID)
@@ -243,6 +256,9 @@ event OnOptionSliderAccept(int option, float value)
 		armorBreakChanceHeavyArmor = value as Int
 		SetSliderOptionValue(armorBreakChanceHeavyArmorID, armorBreakChanceHeavyArmor)
 		
+	elseif (option == healthLimitNPCID)
+		healthLimitNPC = value as Int
+		SetSliderOptionValue(healthLimitNPCID, healthLimitNPC)
 	elseif (option == rapeChanceNPCID)
 		rapeChanceNPC = value as Int
 		SetSliderOptionValue(rapeChanceNPCID, rapeChanceNPC)

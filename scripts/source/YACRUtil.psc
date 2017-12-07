@@ -9,6 +9,14 @@ Function Log(String msg)
 	endif
 EndFunction
 
+Function CleanFlyingDeadBody(Actor act)
+	if (act.IsDead())
+		ObjectReference wobj = act as ObjectReference
+		wobj.SetPosition(wobj.GetPositionX(), wobj.GetPositionY() + 10.0, wobj.GetPositionZ())
+		debug.sendAnimationEvent(wobj, "ragdoll")
+	endif
+EndFunction
+
 Faction Function GetEnemyType(Actor act)
 	if (act.GetActorBase().GetSex() == 1) ; female
 		return None
