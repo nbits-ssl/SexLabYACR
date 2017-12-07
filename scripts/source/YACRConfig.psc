@@ -40,14 +40,22 @@ int rapeChanceNPCID
 int rapeChanceNotNakedNPCID
 int healthLimitNPCID
 
-;event OnConfigInit()
-;	Pages = new string[2]
-;	Pages[0] = ""
-;	Pages[1] = ""
-;endEvent
+int Function GetVersion()
+	return 4
+EndFunction 
 
-event OnPageReset(string page)
-	;if (page == "" || page == "General")
+Event OnVersionUpdate(int a_version)
+	OnConfigInit()
+EndEvent
+
+Event OnConfigInit()
+	Pages = new string[2]
+	Pages[0] = "$General"
+	Pages[1] = "$Enemy"
+EndEvent
+
+Event OnPageReset(string page)
+	if (page == "" || page == "$General")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
 
@@ -83,8 +91,10 @@ event OnPageReset(string page)
 		armorBreakChanceClothNPCID = AddSliderOption("$Cloth", armorBreakChanceClothNPC)
 		armorBreakChanceLightArmorNPCID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPC)
 		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPC)
-	;endif
-endevent
+	elseif	(page == "$Enemy")
+
+	endif
+EndEvent
 
 int Function GetHealthLimit(bool IsPlayer = true)
 	if (IsPlayer)
@@ -142,15 +152,15 @@ int[] Function GetBreakChances(bool IsPlayer = true)
 	return chances
 EndFunction
 
-event OnOptionHighlight(int option)
+Event OnOptionHighlight(int option)
 	if (option == healthLimitID || option == healthLimitNPCID)
 		SetInfoText("$HealthLimitInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
 		SetInfoText("$EndlessRapeInfo")
 	endif
-endevent
+EndEvent
 
-event OnOptionSelect(int option)
+Event OnOptionSelect(int option)
 	if (option == enableArmorBreakID)
 		enableArmorBreak = !enableArmorBreak
 		SetToggleOptionValue(enableArmorBreakID, enableArmorBreak)
@@ -169,9 +179,9 @@ event OnOptionSelect(int option)
 		debugLogFlag = !debugLogFlag
 		SetToggleOptionValue(debugLogFlagID, debugLogFlag)
 	endif
-endevent
+EndEvent
 
-event OnOptionSliderOpen(int option)
+Event OnOptionSliderOpen(int option)
 	if (option == healthLimitID)
 		SetSliderDialogStartValue(healthLimit)
 		SetSliderDialogDefaultValue(healthLimit)
@@ -234,9 +244,9 @@ event OnOptionSliderOpen(int option)
 		SetSliderDialogRange(0.0, 100.0)
 		SetSliderDialogInterval(1.0)
 	endif
-endevent
+EndEvent
 
-event OnOptionSliderAccept(int option, float value)
+Event OnOptionSliderAccept(int option, float value)
 	if (option == healthLimitID)
 		healthLimit = value as Int
 		SetSliderOptionValue(healthLimitID, healthLimit)
@@ -275,4 +285,4 @@ event OnOptionSliderAccept(int option, float value)
 		armorBreakChanceHeavyArmorNPC = value as Int
 		SetSliderOptionValue(armorBreakChanceHeavyArmorNPCID, armorBreakChanceHeavyArmorNPC)
 	endif
-endevent
+EndEvent
