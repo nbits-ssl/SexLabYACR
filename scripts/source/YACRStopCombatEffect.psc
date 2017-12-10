@@ -12,7 +12,7 @@ EndEvent
 Function _readySexAggr(Actor act)
 	act.SetGhost(true)
 	act.StopCombat()
-	; act.StopCombatAlarm()
+	act.StopCombatAlarm()
 EndFunction
 
 Function _endSexAggr(Actor act)

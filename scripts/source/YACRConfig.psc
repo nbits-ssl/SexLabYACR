@@ -40,8 +40,13 @@ int rapeChanceNPCID
 int rapeChanceNotNakedNPCID
 int healthLimitNPCID
 
+int[] availableEnemyFactionsIDS
+int[] multiplayEnemyFactionsIDS
+
+YACRUtil Property AppUtil Auto
+
 int Function GetVersion()
-	return 4
+	return 6
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
@@ -49,9 +54,13 @@ Event OnVersionUpdate(int a_version)
 EndEvent
 
 Event OnConfigInit()
-	Pages = new string[2]
+	Pages = new string[3]
 	Pages[0] = "$General"
 	Pages[1] = "$Enemy"
+	Pages[2] = "$Multiplay"
+	
+	availableEnemyFactionsIDS = new int[50]
+	multiplayEnemyFactionsIDS = new int[50]
 EndEvent
 
 Event OnPageReset(string page)
@@ -92,9 +101,48 @@ Event OnPageReset(string page)
 		armorBreakChanceLightArmorNPCID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPC)
 		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPC)
 	elseif	(page == "$Enemy")
+		SetCursorFillMode(LEFT_TO_RIGHT)
+		SetCursorPosition(0)
+		Faction[] aefacts = AppUtil.AvailableEnemyFactions
+		bool[] aefactsConfig = AppUtil.AvailableEnemyFactionsConfig
+		
+		int len = aefacts.Length
+		int idx = 0
+		string factname
+		while idx != len
+			factname = self._getFactionName(aefacts[idx])
+			availableEnemyFactionsIDS[idx] = AddToggleOption(factname, aefactsConfig[idx])
+			idx += 1
+		endwhile
+		; AppUtil.Log(availableEnemyFactionsIDS)
+	elseif	(page == "$Multiplay")
+		SetCursorFillMode(LEFT_TO_RIGHT)
+		SetCursorPosition(0)
+		Faction[] mpfacts = AppUtil.MultiplayEnemyFactions
+		int[] mpfactsConfig = AppUtil.MultiplayEnemyFactionsConfig
 
+		int len = mpfacts.Length
+		int idx = 0
+		string factname
+		while idx != len
+			factname = self._getFactionName(mpfacts[idx])
+			multiplayEnemyFactionsIDS[idx] = AddSliderOption(factname, mpfactsConfig[idx])
+			idx += 1
+		endwhile
+		; AppUtil.Log(multiplayEnemyFactionsIDS)
 	endif
 EndEvent
+
+; why empty, Bethesda !!
+string Function _getFactionName(Faction fact)
+	if (fact == BanditFaction)
+		return "$BanditFaction"
+	elseif (fact == VampireFaction)
+		return "$VampireFaction"
+	else
+		return fact.GetName()
+	endif
+EndFunction
 
 int Function GetHealthLimit(bool IsPlayer = true)
 	if (IsPlayer)
@@ -153,14 +201,20 @@ int[] Function GetBreakChances(bool IsPlayer = true)
 EndFunction
 
 Event OnOptionHighlight(int option)
+	; AppUtil.Log(option)
 	if (option == healthLimitID || option == healthLimitNPCID)
 		SetInfoText("$HealthLimitInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
 		SetInfoText("$EndlessRapeInfo")
+	elseif (availableEnemyFactionsIDS.Find(option) > -1)
+		SetInfoText("$AvailableEnemyFactions")
+	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
+		SetInfoText("$MultiplayEnemyFactions")
 	endif
 EndEvent
 
 Event OnOptionSelect(int option)
+	; AppUtil.Log(option)
 	if (option == enableArmorBreakID)
 		enableArmorBreak = !enableArmorBreak
 		SetToggleOptionValue(enableArmorBreakID, enableArmorBreak)
@@ -178,111 +232,109 @@ Event OnOptionSelect(int option)
 	elseif (option == debugLogFlagID)
 		debugLogFlag = !debugLogFlag
 		SetToggleOptionValue(debugLogFlagID, debugLogFlag)
+		
+	elseif (availableEnemyFactionsIDS.Find(option) > -1)
+		int idx = availableEnemyFactionsIDS.Find(option)
+		bool opt = AppUtil.AvailableEnemyFactionsConfig[idx]
+		AppUtil.AvailableEnemyFactionsConfig[idx] = !opt
+		SetToggleOptionValue(availableEnemyFactionsIDS.Find(option), !opt)
 	endif
 EndEvent
 
 Event OnOptionSliderOpen(int option)
 	if (option == healthLimitID)
-		SetSliderDialogStartValue(healthLimit)
-		SetSliderDialogDefaultValue(healthLimit)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(healthLimit)
 	elseif (option == rapeChanceID)
-		SetSliderDialogStartValue(rapeChance)
-		SetSliderDialogDefaultValue(rapeChance)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(rapeChance)
 	elseif (option == rapeChanceNotNakedID)
-		SetSliderDialogStartValue(rapeChanceNotNaked)
-		SetSliderDialogDefaultValue(rapeChanceNotNaked)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(rapeChanceNotNaked)
 	elseif (option == armorBreakChanceClothID)
-		SetSliderDialogStartValue(armorBreakChanceCloth)
-		SetSliderDialogDefaultValue(armorBreakChanceCloth)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(armorBreakChanceCloth)
 	elseif (option == armorBreakChanceLightArmorID)
-		SetSliderDialogStartValue(armorBreakChanceLightArmor)
-		SetSliderDialogDefaultValue(armorBreakChanceLightArmor)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(armorBreakChanceLightArmor)
 	elseif (option == armorBreakChanceHeavyArmorID)
-		SetSliderDialogStartValue(armorBreakChanceHeavyArmor)
-		SetSliderDialogDefaultValue(armorBreakChanceHeavyArmor)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmor)
 
 	elseif (option == healthLimitNPCID)
-		SetSliderDialogStartValue(healthLimitNPC)
-		SetSliderDialogDefaultValue(healthLimitNPC)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(healthLimitNPC)
 	elseif (option == rapeChanceNPCID)
-		SetSliderDialogStartValue(rapeChanceNPC)
-		SetSliderDialogDefaultValue(rapeChanceNPC)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(rapeChanceNPC)
 	elseif (option == rapeChanceNotNakedNPCID)
-		SetSliderDialogStartValue(rapeChanceNotNakedNPC)
-		SetSliderDialogDefaultValue(rapeChanceNotNakedNPC)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(rapeChanceNotNakedNPC)
 	elseif (option == armorBreakChanceClothNPCID)
-		SetSliderDialogStartValue(armorBreakChanceClothNPC)
-		SetSliderDialogDefaultValue(armorBreakChanceClothNPC)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(armorBreakChanceClothNPC)
 	elseif (option == armorBreakChanceLightArmorNPCID)
-		SetSliderDialogStartValue(armorBreakChanceLightArmorNPC)
-		SetSliderDialogDefaultValue(armorBreakChanceLightArmorNPC)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(armorBreakChanceLightArmorNPC)
 	elseif (option == armorBreakChanceHeavyArmorNPCID)
-		SetSliderDialogStartValue(armorBreakChanceHeavyArmorNPC)
-		SetSliderDialogDefaultValue(armorBreakChanceHeavyArmorNPC)
-		SetSliderDialogRange(0.0, 100.0)
-		SetSliderDialogInterval(1.0)
+		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorNPC)
+	
+	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
+		int idx = multiplayEnemyFactionsIDS.Find(option)
+		self._setSliderDialogWithHelpers(AppUtil.MultiplayEnemyFactionsConfig[idx])
 	endif
 EndEvent
+
+Function _setSliderDialogWithPercentage(int x)
+	SetSliderDialogStartValue(x)
+	SetSliderDialogDefaultValue(x)
+	
+	SetSliderDialogRange(0.0, 100.0)
+	SetSliderDialogInterval(1.0)
+EndFunction
+
+Function _setSliderDialogWithHelpers(int x)
+	SetSliderDialogStartValue(x)
+	SetSliderDialogDefaultValue(x)
+	
+	SetSliderDialogRange(0.0, 3.0)
+	SetSliderDialogInterval(1.0)
+EndFunction
 
 Event OnOptionSliderAccept(int option, float value)
 	if (option == healthLimitID)
-		healthLimit = value as Int
+		healthLimit = value as int
 		SetSliderOptionValue(healthLimitID, healthLimit)
 	elseif (option == rapeChanceID)
-		rapeChance = value as Int
+		rapeChance = value as int
 		SetSliderOptionValue(rapeChanceID, rapeChance)
 	elseif (option == rapeChanceNotNakedID)
-		rapeChanceNotNaked = value as Int
+		rapeChanceNotNaked = value as int
 		SetSliderOptionValue(rapeChanceNotNakedID, rapeChanceNotNaked)
 	elseif (option == armorBreakChanceClothID)
-		armorBreakChanceCloth = value as Int
+		armorBreakChanceCloth = value as int
 		SetSliderOptionValue(armorBreakChanceClothID, armorBreakChanceCloth)
 	elseif (option == armorBreakChanceLightArmorID)
-		armorBreakChanceLightArmor = value as Int
+		armorBreakChanceLightArmor = value as int
 		SetSliderOptionValue(armorBreakChanceLightArmorID, armorBreakChanceLightArmor)
 	elseif (option == armorBreakChanceHeavyArmorID)
-		armorBreakChanceHeavyArmor = value as Int
+		armorBreakChanceHeavyArmor = value as int
 		SetSliderOptionValue(armorBreakChanceHeavyArmorID, armorBreakChanceHeavyArmor)
 		
 	elseif (option == healthLimitNPCID)
-		healthLimitNPC = value as Int
+		healthLimitNPC = value as int
 		SetSliderOptionValue(healthLimitNPCID, healthLimitNPC)
 	elseif (option == rapeChanceNPCID)
-		rapeChanceNPC = value as Int
+		rapeChanceNPC = value as int
 		SetSliderOptionValue(rapeChanceNPCID, rapeChanceNPC)
 	elseif (option == rapeChanceNotNakedNPCID)
-		rapeChanceNotNakedNPC = value as Int
+		rapeChanceNotNakedNPC = value as int
 		SetSliderOptionValue(rapeChanceNotNakedNPCID, rapeChanceNotNakedNPC)
 	elseif (option == armorBreakChanceClothNPCID)
-		armorBreakChanceClothNPC = value as Int
+		armorBreakChanceClothNPC = value as int
 		SetSliderOptionValue(armorBreakChanceClothNPCID, armorBreakChanceClothNPC)
 	elseif (option == armorBreakChanceLightArmorNPCID)
-		armorBreakChanceLightArmorNPC = value as Int
+		armorBreakChanceLightArmorNPC = value as int
 		SetSliderOptionValue(armorBreakChanceLightArmorNPCID, armorBreakChanceLightArmorNPC)
 	elseif (option == armorBreakChanceHeavyArmorNPCID)
-		armorBreakChanceHeavyArmorNPC = value as Int
+		armorBreakChanceHeavyArmorNPC = value as int
 		SetSliderOptionValue(armorBreakChanceHeavyArmorNPCID, armorBreakChanceHeavyArmorNPC)
+		
+	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
+		int idx = multiplayEnemyFactionsIDS.Find(option)
+		AppUtil.MultiplayEnemyFactionsConfig[idx] = value as int
+		SetSliderOptionValue(multiplayEnemyFactionsIDS[idx], value as int)
 	endif
 EndEvent
+
+Faction Property BanditFaction  Auto  
+Faction Property VampireFaction  Auto  
