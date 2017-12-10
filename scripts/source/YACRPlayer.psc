@@ -112,16 +112,16 @@ Function _readySexVictim(Faction fact)
 	
 	if (act.IsInFaction(fact))
 		AlreadyInEnemyFaction = true
-	else
+	elseif !(self._isPlayer())
 		act.AddToFaction(fact)
 	endif
 	
 	if (self._isPlayer())
-		;fact.SetReaction(SSLYACRCalmFaction, 2) ; set ally
-		;SSLYACRCalmFaction.SetReaction(fact, 2)
-		;act.AddToFaction(SSLYACRCalmFaction)
+		; fact.SetReaction(SSLYACRCalmFaction, 2) ; set ally
+		; SSLYACRCalmFaction.SetReaction(fact, 2)
+		act.AddToFaction(SSLYACRCalmFaction)
 		act.AddSpell(SSLYACRPlayerSlowMagic)
-		AppUtil.PurgePlayerFromTeam()
+		;AppUtil.PurgePlayerFromTeam()
 	else
 		if (act.IsInFaction(CurrentFollowerFaction))
 			act.RemoveFromFaction(CurrentFollowerFaction)
@@ -137,17 +137,17 @@ EndFunction
 Function _endSexVictim(Faction fact = None)
 	Actor act = self.GetActorRef()
 	
-	if (!AlreadyInEnemyFaction && fact)
+	if (!AlreadyInEnemyFaction && fact && !self._isPlayer())
 		act.RemoveFromFaction(fact)
 	endif
 	
 	if (self._isPlayer())
-		;act.RemoveFromFaction(SSLYACRCalmFaction)
-		;fact.SetReaction(SSLYACRCalmFaction, 0) ; set neutral
-		;SSLYACRCalmFaction.SetReaction(fact, 0)
+		act.RemoveFromFaction(SSLYACRCalmFaction)
+		; fact.SetReaction(SSLYACRCalmFaction, 0) ; set neutral
+		; SSLYACRCalmFaction.SetReaction(fact, 0)
 		act.RemoveSpell(SSLYACRPlayerSlowMagic)
 		Game.EnablePlayerControls()
-		AppUtil.RecoverPlayerToTeam()
+		;AppUtil.RecoverPlayerToTeam()
 	else
 		act.SetPlayerTeammate(true)
 		if (IsInCurrentFollowerFaction)
@@ -163,7 +163,7 @@ EndFunction
 Function _disableControls()
 	if (self._isPlayer())
 		Game.ForceThirdPerson()
-		Game.DisablePlayerControls()
+		;Game.DisablePlayerControls()
 		; Game.DisablePlayerControls(true, true, true, false, true, false, true, false)
 		; move, fight, camswitch, look, sneak, menu, activate, jornal
 	endif
@@ -433,6 +433,11 @@ Function _getAudience()
 		AudienceQuest.Stop()
 	endIf
 	AudienceQuest.Start()
+	if (self._isPlayer())
+		Actor aggr = Aggressor.GetActorRef()
+		Actor victim = self.GetActorRef()
+		self._stopCombatOneMore(aggr, victim)
+	endif
 EndFunction
 
 Function _clearAudience()
