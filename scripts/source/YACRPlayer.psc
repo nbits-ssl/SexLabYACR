@@ -108,13 +108,20 @@ Function _readySexVictim(Faction fact)
 	act.AddSpell(SSLYACRKillmoveArmorSpell, false) ; silently
 	act.SetGhost(true)
 	AlreadyInEnemyFaction = false
+	self._disableControls()
+	
+	if (act.IsInFaction(fact))
+		AlreadyInEnemyFaction = true
+	else
+		act.AddToFaction(fact)
+	endif
 	
 	if (self._isPlayer())
 		;fact.SetReaction(SSLYACRCalmFaction, 2) ; set ally
 		;SSLYACRCalmFaction.SetReaction(fact, 2)
 		;act.AddToFaction(SSLYACRCalmFaction)
-		act.RemoveSpell(SSLYACRPlayerSlowMagic)
-		self._disableControls()
+		act.AddSpell(SSLYACRPlayerSlowMagic)
+		AppUtil.PurgePlayerFromTeam()
 	else
 		if (act.IsInFaction(CurrentFollowerFaction))
 			act.RemoveFromFaction(CurrentFollowerFaction)
@@ -123,33 +130,29 @@ Function _readySexVictim(Faction fact)
 		act.SetPlayerTeammate(false)
 	endif
 	
-	if (act.IsInFaction(fact))
-		AlreadyInEnemyFaction = true
-	else
-		act.AddToFaction(fact)
-	endif
-	
 	act.StopCombat()
 	act.StopCombatAlarm()
 EndFunction
 
 Function _endSexVictim(Faction fact = None)
 	Actor act = self.GetActorRef()
+	
+	if (!AlreadyInEnemyFaction && fact)
+		act.RemoveFromFaction(fact)
+	endif
+	
 	if (self._isPlayer())
 		;act.RemoveFromFaction(SSLYACRCalmFaction)
 		;fact.SetReaction(SSLYACRCalmFaction, 0) ; set neutral
 		;SSLYACRCalmFaction.SetReaction(fact, 0)
 		act.RemoveSpell(SSLYACRPlayerSlowMagic)
 		Game.EnablePlayerControls()
+		AppUtil.RecoverPlayerToTeam()
 	else
 		act.SetPlayerTeammate(true)
 		if (IsInCurrentFollowerFaction)
 			act.AddToFaction(CurrentFollowerFaction)
 		endif
-	endif
-	
-	if (!AlreadyInEnemyFaction && fact)
-		act.RemoveFromFaction(fact)
 	endif
 	
 	self._clearAudience()
@@ -158,10 +161,12 @@ Function _endSexVictim(Faction fact = None)
 EndFunction
 
 Function _disableControls()
-	Game.ForceThirdPerson()
-	Game.DisablePlayerControls()
-	; Game.DisablePlayerControls(true, true, true, false, true, false, true, false)
-	; move, fight, camswitch, look, sneak, menu, activate, jornal
+	if (self._isPlayer())
+		Game.ForceThirdPerson()
+		Game.DisablePlayerControls()
+		; Game.DisablePlayerControls(true, true, true, false, true, false, true, false)
+		; move, fight, camswitch, look, sneak, menu, activate, jornal
+	endif
 EndFunction
 
 Function _stopCombatOneMore(Actor aggr, Actor victim)
