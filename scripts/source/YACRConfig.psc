@@ -1,6 +1,7 @@
 Scriptname YACRConfig extends SKI_ConfigBase  
 
 bool Property debugLogFlag = true Auto
+bool Property knockDownAll = true Auto
 
 bool Property enableArmorBreak = true Auto
 bool Property enableEndlessRape = true Auto
@@ -20,6 +21,7 @@ int Property rapeChanceNPC = 50 Auto
 int Property rapeChanceNotNakedNPC = 10 Auto
 int Property healthLimitNPC = 50 Auto
 
+int knockDownAllID
 int debugLogFlagID
 
 int enableArmorBreakID
@@ -85,7 +87,8 @@ Event OnPageReset(string page)
 		armorBreakChanceHeavyArmorID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmor)
 		
 		SetCursorPosition(1)
-		AddEmptyOption()
+
+		knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll)
 		
 		AddHeaderOption("$Follower")
 		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
@@ -201,8 +204,9 @@ int[] Function GetBreakChances(bool IsPlayer = true)
 EndFunction
 
 Event OnOptionHighlight(int option)
-	; AppUtil.Log(option)
-	if (option == healthLimitID || option == healthLimitNPCID)
+	if (option == knockDownAllID)
+		SetInfoText("$KnockDownAllInfo")
+	elseif (option == healthLimitID || option == healthLimitNPCID)
 		SetInfoText("$HealthLimitInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
 		SetInfoText("$EndlessRapeInfo")
@@ -214,7 +218,6 @@ Event OnOptionHighlight(int option)
 EndEvent
 
 Event OnOptionSelect(int option)
-	; AppUtil.Log(option)
 	if (option == enableArmorBreakID)
 		enableArmorBreak = !enableArmorBreak
 		SetToggleOptionValue(enableArmorBreakID, enableArmorBreak)
@@ -229,6 +232,9 @@ Event OnOptionSelect(int option)
 		enableEndlessRapeNPC = !enableEndlessRapeNPC
 		SetToggleOptionValue(enableEndlessRapeNPCID, enableEndlessRapeNPC)
 		
+	elseif (option == knockDownAllID)
+		knockDownAll = !knockDownAll
+		SetToggleOptionValue(knockDownAllID, knockDownAll)
 	elseif (option == debugLogFlagID)
 		debugLogFlag = !debugLogFlag
 		SetToggleOptionValue(debugLogFlagID, debugLogFlag)

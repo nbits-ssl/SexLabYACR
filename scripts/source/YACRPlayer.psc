@@ -8,6 +8,7 @@ bool AlreadyInEnemyFaction = false
 bool EndlessSexLoop = false
 sslThreadController UpdateController
 float ForceUpdatePeriod = 45.0
+float BleedOutUpdatePeriod = 10.0
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 
@@ -20,15 +21,13 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	if (PlayerIsMale || akAggressor == None || akProjectile || PreSource ==  akSource || !wpn)
 		AppUtil.Log("not if " + SelfName)
 		return
-	elseif (isplayer)
-		if (selfact.GetActorBase().GetSex() != 1) 
-			AppUtil.Log("not if, player isn't woman " + SelfName)
-			PlayerIsMale = true
-			return
-		elseif (selfact.GetAV("Health") <= 0)
-			AppUtil.Log("not if, player is dying " + SelfName)
-			return
-		endif
+	elseif (isplayer && selfact.GetActorBase().GetSex() != 1) 
+		AppUtil.Log("not if, player isn't woman " + SelfName)
+		PlayerIsMale = true
+		return
+	elseif (selfact.GetAV("Health") <= 0)
+		AppUtil.Log("not if, player is dying or follower on bleedoutstart" + SelfName)
+		return
 	elseif (selfact.IsGhost() || selfact.IsDead())
 		AppUtil.Log("not if, isghost or dead " + SelfName)
 		return
@@ -112,7 +111,7 @@ Function _readySexVictim(Faction fact)
 	
 	if (act.IsInFaction(fact))
 		AlreadyInEnemyFaction = true
-	elseif !(self._isPlayer())
+	elseif (Config.knockDownAll || !self._isPlayer())
 		act.AddToFaction(fact)
 	endif
 	
@@ -120,8 +119,8 @@ Function _readySexVictim(Faction fact)
 		; fact.SetReaction(SSLYACRCalmFaction, 2) ; set ally
 		; SSLYACRCalmFaction.SetReaction(fact, 2)
 		act.AddToFaction(SSLYACRCalmFaction)
-		act.AddSpell(SSLYACRPlayerSlowMagic)
-		;AppUtil.PurgePlayerFromTeam()
+		act.AddSpell(SSLYACRPlayerSlowMagic, false)
+		AppUtil.KnockDownAll()
 	else
 		if (act.IsInFaction(CurrentFollowerFaction))
 			act.RemoveFromFaction(CurrentFollowerFaction)
@@ -137,7 +136,7 @@ EndFunction
 Function _endSexVictim(Faction fact = None)
 	Actor act = self.GetActorRef()
 	
-	if (!AlreadyInEnemyFaction && fact && !self._isPlayer())
+	if (!AlreadyInEnemyFaction && fact)
 		act.RemoveFromFaction(fact)
 	endif
 	
@@ -146,8 +145,10 @@ Function _endSexVictim(Faction fact = None)
 		; fact.SetReaction(SSLYACRCalmFaction, 0) ; set neutral
 		; SSLYACRCalmFaction.SetReaction(fact, 0)
 		act.RemoveSpell(SSLYACRPlayerSlowMagic)
+		act.SetAV("Invisibility", 0.0)
+		act.SetAlpha(1.0)
+		AppUtil.WakeUpAll()
 		Game.EnablePlayerControls()
-		;AppUtil.RecoverPlayerToTeam()
 	else
 		act.SetPlayerTeammate(true)
 		if (IsInCurrentFollowerFaction)
@@ -163,7 +164,7 @@ EndFunction
 Function _disableControls()
 	if (self._isPlayer())
 		Game.ForceThirdPerson()
-		;Game.DisablePlayerControls()
+		; Game.DisablePlayerControls()
 		; Game.DisablePlayerControls(true, true, true, false, true, false, true, false)
 		; move, fight, camswitch, look, sneak, menu, activate, jornal
 	endif
@@ -183,10 +184,13 @@ Function doSex(Actor aggr, Faction aggrFaction)
 	
 	if (victim.IsGhost() || aggr.IsGhost())
 		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
+		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 	elseif (Aggressor.GetActorRef() || aggr.IsDead())
 		AppUtil.Log("already filled ref or dead actor, pass doSex " + SelfName)
+		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
 		AppUtil.Log("actloser already animating, pass doSex " + SelfName)
+		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 	else
 		Aggressor.ForceRefTo(aggr)
 		self._readySexVictim(aggrFaction)
@@ -212,6 +216,9 @@ Function doSex(Actor aggr, Faction aggrFaction)
 		self._waitSetup(controller)
 		
 		if (controller)
+			if (self._isPlayer())
+				victim.SetAV("Invisibility", 1.0)
+			endif
 			self._stopCombatOneMore(aggr, victim)
 			Utility.Wait(1.0)
 			; self._endSexAggr(aggr)
@@ -225,7 +232,7 @@ Function doSex(Actor aggr, Faction aggrFaction)
 EndFunction
 
 Function doSexLoop(Faction fact)
-	self._disableControls() ; 2nd
+	self._disableControls()
 	
 	Actor[] helpers = AppUtil.GetHelpers(fact)
 	int helpersCount = self._forceRefHelpers(helpers) ; and reject none values
@@ -237,9 +244,12 @@ Function doSexLoop(Faction fact)
 	sslBaseAnimation[] anims = self._buildAnimation(aggr, helpersCount)
 	actor[] sexActors = self._buildActors(aggr, victim, helpersCount)
 	
+	if (self._isPlayer())
+		victim.SetAV("Invisibility", 0.0)
+		victim.SetAlpha(1.0)
+	endif
 	AppUtil.Log("LOOPING run SexLab " + SelfName)
 	int tid = self._quickSex(sexActors, anims, victim = victim)
-	self._disableControls() ; 3rd
 	sslThreadController controller = SexLab.GetController(tid)
 	
 	; wait for sync, max 12 sec.
@@ -249,6 +259,9 @@ Function doSexLoop(Faction fact)
 	self._waitSetup(controller)
 	
 	if (controller)
+		if (self._isPlayer())
+			victim.SetAV("Invisibility", 1.0)
+		endif
 		self._stopCombatOneMore(aggr, victim)
 		Utility.Wait(1.0)
 		; self._endSexAggr(aggr)
@@ -425,6 +438,10 @@ Event OnUpdate()
 		UpdateController.OnUpdate()
 		RegisterForSingleUpdate(ForceUpdatePeriod)
 	endif
+	
+	if (self.GetActorRef().IsBleedingOut())
+		self._searchBleedOutPartner()
+	endif
 EndEvent
 
 Function _getAudience()
@@ -468,7 +485,7 @@ Function EndSexEvent(Actor aggr)
 		EndlessSexLoop = false
 		self._clearHelpers()
 		self.doSexLoop(fact)
-	else ; Aggr's OnHit
+	else ; Aggr's OnHit or Not EndlessRape
 		AppUtil.Log("EndSexEvent, truely end " + SelfName)
 		self._endSexVictim(fact)
 		
@@ -479,6 +496,10 @@ Function EndSexEvent(Actor aggr)
 
 		Aggressor.Clear()
 		self._clearHelpers()
+		
+		if (!self._isPlayer() && PlayerActor.HasKeyWordString("SexLabActive"))
+			AppUtil.KnockDownAll()
+		endif
 		
 		GotoState("Busy")
 		Utility.Wait(2.0)
@@ -503,6 +524,61 @@ Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
 	endif
 EndEvent
 
+Event OnEnterBleedOut()
+	self._searchBleedOutPartner()
+EndEvent
+
+Function _searchBleedOutPartner()
+	if (self._isPlayer())
+		return
+	endif
+	Actor victim = self.GetActorRef()
+	ObjectReference center = victim as ObjectReference
+	Utility.Wait(Utility.RandomInt(1, 4))
+	
+	Actor aggr = self._getBleedOutPartner(0)
+	if (aggr)
+		AppUtil.Log(aggr.GetActorBase().GetName())
+		
+		; 2nd check
+		if (!aggr.HasKeyWordString("SexLabActive") && !aggr.IsInFaction(SSLYACRActiveFaction))
+			
+			AppUtil.Log("OnEnterBleedOut, actor found " + SelfName)
+			aggr.AddToFaction(SSLYACRActiveFaction)
+			aggr.PathToReference(victim, 0.5)
+			Utility.Wait(Utility.RandomInt(2, 5))
+			self.doSex(aggr, AppUtil.GetEnemyType(aggr))
+		else
+			AppUtil.Log("OnEnterBleedOut, valid faction actor not found " + SelfName)
+			RegisterForSingleUpdate(BleedOutUpdatePeriod)
+		endif
+	else
+		AppUtil.Log("OnEnterBleedOut, valid actor not found " + SelfName)
+		RegisterForSingleUpdate(BleedOutUpdatePeriod)
+	endif
+EndFunction
+
+Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
+	Actor aggr
+	Actor victim = Self.GetActorRef()
+	Actor[] npcs = MiscUtil.ScanCellNPCs(victim as ObjectReference, 1000.0)
+
+	int len = npcs.Length
+	int idx = 0
+	while idx < len
+		aggr = npcs[idx]
+		if (AppUtil.GetEnemyType(aggr) && \
+			!aggr.IsInCombat() && !aggr.HasKeyWordString("SexLabActive") && \
+			AppUtil.CheckSex(aggr, Gender) && !aggr.IsInFaction(SSLYACRActiveFaction))
+			
+			return aggr
+		endif
+		idx += 1
+	endwhile
+	
+	return None
+EndFunction
+
 Event OnCellDetach()
 	Actor aggr = Aggressor.GetActorRef()
 	
@@ -526,31 +602,19 @@ ReferenceAlias Property Helper1  Auto
 ReferenceAlias Property Helper2  Auto  
 ReferenceAlias Property Helper3  Auto  
 
-;Faction Property BanditFaction  Auto
-;Faction Property PredatorFaction  Auto
-;Faction Property VampireFaction  Auto
-;Faction Property DraugrFaction  Auto
-;Faction Property TrollFaction  Auto
-;Faction Property ChaurusFaction  Auto
-;Faction Property SkeeverFaction  Auto
-;Faction Property FalmerFaction  Auto
-;Faction Property GiantFaction  Auto
-;Faction Property WerewolfFaction  Auto
-;Faction Property DLC2RieklingFaction  Auto
-;Faction Property ThalmorFaction  Auto  
-
 Keyword Property ArmorClothing  Auto  
 Keyword Property ArmorHeavy  Auto  
 Keyword Property ArmorLight  Auto  
+Keyword Property ActorTypeNPC  Auto  
 
-;SPELL Property SSLYACRStopCombatMagic  Auto  ; no longer needed
-SPELL Property SSLYACRKillmoveArmorSpell  Auto
 String Property HookName  Auto
 
-Keyword Property ActorTypeNPC  Auto  
+SPELL Property SSLYACRKillmoveArmorSpell  Auto
+SPELL Property SSLYACRPlayerSlowMagic  Auto  
+
 Faction Property CurrentFollowerFaction  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
+Faction Property SSLYACRActiveFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
 
-SPELL Property SSLYACRPlayerSlowMagic  Auto  

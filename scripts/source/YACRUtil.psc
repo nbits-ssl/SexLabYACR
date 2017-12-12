@@ -9,6 +9,19 @@ Function Log(String msg)
 	endif
 EndFunction
 
+bool Function CheckSex(Actor act, int gender = -1)
+	if (gender == -1)
+		return true
+	endif
+	
+	int agender = SexLab.GetGender(act)
+	if (agender == gender || agender == gender + 2)
+		return true
+	else
+		return false
+	endif
+EndFunction
+
 Function CleanFlyingDeadBody(Actor act)
 	if (act.IsDead())
 		ObjectReference wobj = act as ObjectReference
@@ -36,6 +49,55 @@ Faction Function GetEnemyType(Actor act)
 	endwhile
 	
 	return None
+EndFunction
+
+Actor Function GetPlayerAggressor()
+	Actor act
+	if (PlayerAggressor)
+		act = PlayerAggressor.GetActorRef()
+	endif
+	return act
+EndFunction
+
+Function KnockDownAll()
+	self.Log("KnockDownAll")
+	Actor act
+	ReferenceAlias ref
+	float health
+	int len = Teammates.Length
+	
+	while len
+		len -= 1
+		ref = Teammates[len]
+		act = ref.GetActorRef()
+		if (act && !act.HasKeyWordString("SexLabActive"))
+			act.SetGhost()
+			act.StopCombat()
+			act.StopCombatAlarm()
+			act.SetNoBleedoutRecovery(true)
+			health = act.GetAV("health")
+			act.DamageAV("health", health + 30.0)
+			; debug.SendAnimationEvent(act as ObjectReference, "BleedOutStart")
+			act.SetGhost(false)
+		endif
+	endWhile
+EndFunction
+
+Function WakeUpAll()
+	self.Log("WakeUpAll")
+	Actor act
+	ReferenceAlias ref
+	float health
+	int len = Teammates.Length
+	
+	while len
+		len -= 1
+		ref = Teammates[len]
+		act = ref.GetActorRef()
+		if (act)
+			act.SetNoBleedoutRecovery(false)
+		endif
+	endWhile
 EndFunction
 
 Function PurgePlayerFromTeam()
@@ -182,6 +244,7 @@ int Function ArrayCount(Actor[] myArray)
 EndFunction
 
 YACRConfig Property Config Auto
+SexLabFramework Property SexLab  Auto
 
 Faction[] Property AvailableEnemyFactions  Auto  
 Faction[] Property MultiplayEnemyFactions  Auto  
@@ -191,3 +254,4 @@ Bool[] Property AvailableEnemyFactionsConfig  Auto
 Int[] Property MultiplayEnemyFactionsConfig  Auto  
 
 ReferenceAlias[] Property Teammates  Auto  
+ReferenceAlias Property PlayerAggressor  Auto  
