@@ -61,6 +61,7 @@ EndFunction
 
 Function KnockDownAll()
 	self.Log("KnockDownAll")
+	Actor PlayerActor = Game.GetPlayer()
 	Actor act
 	ReferenceAlias ref
 	float health
@@ -70,15 +71,22 @@ Function KnockDownAll()
 		len -= 1
 		ref = Teammates[len]
 		act = ref.GetActorRef()
-		if (act && !act.HasKeyWordString("SexLabActive"))
+		if (act && !act.HasKeyWordString("SexLabActive") && \
+			PlayerActor.GetParentCell() == act.GetParentCell())
+			
 			act.SetGhost()
 			act.StopCombat()
 			act.StopCombatAlarm()
-			act.SetNoBleedoutRecovery(true)
-			health = act.GetAV("health")
-			act.DamageAV("health", health + 30.0)
-			; debug.SendAnimationEvent(act as ObjectReference, "BleedOutStart")
-			act.SetGhost(false)
+			if (act.HasKeyWord(ActorTypeNPC))
+				act.SetNoBleedoutRecovery(true)
+				health = act.GetAV("health")
+				act.DamageAV("health", health + 30.0)
+				; debug.SendAnimationEvent(act as ObjectReference, "BleedOutStart")
+				act.SetGhost(false)
+			else
+				act.SetGhost(false)
+				act.AddSpell(SSLYACRParalyseMagic)
+			endif
 		endif
 	endWhile
 EndFunction
@@ -94,8 +102,10 @@ Function WakeUpAll()
 		len -= 1
 		ref = Teammates[len]
 		act = ref.GetActorRef()
-		if (act)
+		if (act && act.HasKeyWord(ActorTypeNPC))
 			act.SetNoBleedoutRecovery(false)
+		else
+			act.RemoveSpell(SSLYACRParalyseMagic)
 		endif
 	endWhile
 EndFunction
@@ -154,12 +164,21 @@ bool Function ValidateMultiplaySupport(Faction fact)
 EndFunction
 
 ; bandit, thalmor, vampire, draugr, falmer, wolf(only one helper), skeever
-Actor[] Function GetHelpers(Faction fact)
+Actor[] Function GetHelpers(Actor aggr, Faction fact)
 	Actor[] helpers
-	int x = MultiplayEnemyFactions.Find(fact)
 	
-	if (x > -1)
-		helpers = self._getHelpers(MultiplayEnemySearcher[x], MultiplayEnemyFactionsConfig[x])
+	if (aggr.HasKeyWord(ActorTypeNPC))
+		if !(SSLYACRHelperHumanMain.IsRunning())
+			SSLYACRHelperHumanMainAggr.ForceRefTo(aggr)
+			helpers = self._getHelpers(SSLYACRHelperHumanSearcher, MultiplayEnemyFactionsConfig[0])
+			SSLYACRHelperHumanMain.Stop()
+		endif
+	else ; Creature
+		int x = MultiplayEnemyFactions.Find(fact)
+		
+		if (x > -1)
+			helpers = self._getHelpers(MultiplayEnemySearcher[x], MultiplayEnemyFactionsConfig[x])
+		endif
 	endif
 	
 	return helpers
@@ -255,3 +274,13 @@ Int[] Property MultiplayEnemyFactionsConfig  Auto
 
 ReferenceAlias[] Property Teammates  Auto  
 ReferenceAlias Property PlayerAggressor  Auto  
+
+SPELL Property SSLYACRParalyseMagic  Auto  
+
+Keyword Property ActorTypeNPC  Auto  
+
+Quest Property SSLYACRHelperHumanSearcher  Auto  
+
+Quest Property SSLYACRHelperHumanMain  Auto  
+
+ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto  

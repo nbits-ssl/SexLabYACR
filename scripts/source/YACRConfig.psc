@@ -48,7 +48,7 @@ int[] multiplayEnemyFactionsIDS
 YACRUtil Property AppUtil Auto
 
 int Function GetVersion()
-	return 6
+	return 8
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
@@ -57,7 +57,7 @@ EndEvent
 
 Event OnConfigInit()
 	Pages = new string[3]
-	Pages[0] = "$General"
+	Pages[0] = "$PCFollower"
 	Pages[1] = "$Enemy"
 	Pages[2] = "$Multiplay"
 	
@@ -66,7 +66,7 @@ Event OnConfigInit()
 EndEvent
 
 Event OnPageReset(string page)
-	if (page == "" || page == "$General")
+	if (page == "" || page == "$PCFollower")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
 
@@ -128,8 +128,12 @@ Event OnPageReset(string page)
 		int idx = 0
 		string factname
 		while idx != len
-			factname = self._getFactionName(mpfacts[idx])
-			multiplayEnemyFactionsIDS[idx] = AddSliderOption(factname, mpfactsConfig[idx])
+			if (idx == 0) ; ActorTypeNPC
+				multiplayEnemyFactionsIDS[idx] = AddSliderOption("$ActorTypeNPCFaction", mpfactsConfig[idx])
+			else
+				factname = self._getFactionName(mpfacts[idx])
+				multiplayEnemyFactionsIDS[idx] = AddSliderOption(factname, mpfactsConfig[idx])
+			endif
 			idx += 1
 		endwhile
 		; AppUtil.Log(multiplayEnemyFactionsIDS)

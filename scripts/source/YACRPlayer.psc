@@ -4,6 +4,7 @@ Form PreSource = None
 string SelfName
 bool PlayerIsMale = false
 bool IsInCurrentFollowerFaction = false
+bool IsInCurrentHireling = false
 bool AlreadyInEnemyFaction = false
 bool EndlessSexLoop = false
 sslThreadController UpdateController
@@ -111,7 +112,7 @@ Function _readySexVictim(Faction fact)
 	
 	if (act.IsInFaction(fact))
 		AlreadyInEnemyFaction = true
-	elseif (Config.knockDownAll || !self._isPlayer())
+	elseif (!self._isPlayer())
 		act.AddToFaction(fact)
 	endif
 	
@@ -120,12 +121,20 @@ Function _readySexVictim(Faction fact)
 		; SSLYACRCalmFaction.SetReaction(fact, 2)
 		act.AddToFaction(SSLYACRCalmFaction)
 		act.AddSpell(SSLYACRPlayerSlowMagic, false)
-		AppUtil.KnockDownAll()
+		if (Config.knockDownAll)
+			act.AddToFaction(fact)
+			AppUtil.KnockDownAll()
+		endif
 	else
 		if (act.IsInFaction(CurrentFollowerFaction))
 			act.RemoveFromFaction(CurrentFollowerFaction)
 			IsInCurrentFollowerFaction = true
 		endif
+		if (act.IsInFaction(CurrentHireling))
+			act.RemoveFromFaction(CurrentHireling)
+			IsInCurrentHireling = true
+		endif
+		
 		act.SetPlayerTeammate(false)
 	endif
 	
@@ -147,12 +156,17 @@ Function _endSexVictim(Faction fact = None)
 		act.RemoveSpell(SSLYACRPlayerSlowMagic)
 		act.SetAV("Invisibility", 0.0)
 		act.SetAlpha(1.0)
-		AppUtil.WakeUpAll()
+		if (Config.knockDownAll)
+			AppUtil.WakeUpAll()
+		endif
 		Game.EnablePlayerControls()
 	else
 		act.SetPlayerTeammate(true)
 		if (IsInCurrentFollowerFaction)
 			act.AddToFaction(CurrentFollowerFaction)
+		endif
+		if (IsInCurrentHireling)
+			act.AddToFaction(CurrentHireling)
 		endif
 	endif
 	
@@ -233,12 +247,12 @@ EndFunction
 
 Function doSexLoop(Faction fact)
 	self._disableControls()
-	
-	Actor[] helpers = AppUtil.GetHelpers(fact)
-	int helpersCount = self._forceRefHelpers(helpers) ; and reject none values
-	
 	Actor aggr = Aggressor.GetActorRef()
 	Actor victim = self.GetActorRef()
+	
+	Actor[] helpers = AppUtil.GetHelpers(aggr, fact)
+	int helpersCount = self._forceRefHelpers(helpers) ; and reject none values
+	
 	AppUtil.Log("LOOPING run SexLab aggr " + aggr + ", count " + helpersCount)
 	
 	sslBaseAnimation[] anims = self._buildAnimation(aggr, helpersCount)
@@ -280,7 +294,6 @@ Function doSexLoop(Faction fact)
 	endif
 EndFunction
 
-; by the nine! ugly elefant code! where are array#delete, array[var]... 
 int Function _forceRefHelpers(Actor[] sppt)
 	int len = sppt.Length
 	if (len == 3)
@@ -411,8 +424,8 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self._isPlayer()))
 		Utility.Wait(3.0)
 		int rndint = Utility.RandomInt()
-		Faction fact = AppUtil.GetEnemyType(controller.Positions[1])
-		bool multiplaysupport = AppUtil.ValidateMultiplaySupport(fact)
+		Actor aggr = controller.Positions[1]
+		Faction fact = AppUtil.GetEnemyType(aggr)
 		
 		if (rndint < 5) ; 20%
 			AppUtil.Log("endless sex loop...one more " + SelfName)
@@ -421,13 +434,16 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			AppUtil.Log("endless sex loop...one more from 2nd " + SelfName)
 			controller.GoToStage(stagecnt - 2)
 			RegisterForSingleUpdate(ForceUpdatePeriod)
-		elseif (rndint < 90 && fact && multiplaysupport) ; 30%
-			AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
-			EndlessSexLoop = true
-		else ; 25%
-			AppUtil.Log("endless sex loop...change anim " + SelfName)
-			controller.ChangeAnimation()
-			RegisterForSingleUpdate(ForceUpdatePeriod)
+		else
+			Actor[] helpers = AppUtil.GetHelpers(aggr, fact)
+			if (rndint < 90 && fact && helpers) ; 30%
+				AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
+				EndlessSexLoop = true
+			else ; 25%
+				AppUtil.Log("endless sex loop...change anim " + SelfName)
+				controller.ChangeAnimation()
+				RegisterForSingleUpdate(ForceUpdatePeriod)
+			endif
 		endif
 	endif
 EndEvent
@@ -459,7 +475,9 @@ EndFunction
 
 Function _clearAudience()
 	AppUtil.Log("clear audience " + SelfName)
-	AudienceQuest.Start()
+	if (AudienceQuest.IsRunning())
+		AudienceQuest.Stop()
+	endIf
 EndFunction
 
 Function _clearHelpers()
@@ -497,7 +515,7 @@ Function EndSexEvent(Actor aggr)
 		Aggressor.Clear()
 		self._clearHelpers()
 		
-		if (!self._isPlayer() && PlayerActor.HasKeyWordString("SexLabActive"))
+		if (!self._isPlayer() && Config.knockDownAll && PlayerActor.HasKeyWordString("SexLabActive"))
 			AppUtil.KnockDownAll()
 		endif
 		
@@ -613,8 +631,8 @@ SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 
 Faction Property CurrentFollowerFaction  Auto  
+Faction Property CurrentHireling  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
 Faction Property SSLYACRActiveFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
-
