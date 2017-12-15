@@ -140,6 +140,10 @@ Function _readySexVictim(Faction fact)
 	
 	act.StopCombat()
 	act.StopCombatAlarm()
+
+	if (self._isPlayer() && Config.KnockDownAll)
+		AppUtil.BanishAllDaedra()
+	endif
 EndFunction
 
 Function _endSexVictim(Faction fact = None)
@@ -263,7 +267,7 @@ Function doSexLoop(Faction fact)
 		victim.SetAlpha(1.0)
 	endif
 	AppUtil.Log("LOOPING run SexLab " + SelfName)
-	int tid = self._quickSex(sexActors, anims, victim = victim)
+	int tid = self._quickSex(sexActors, anims, victim = victim, CenterOn = aggr)
 	sslThreadController controller = SexLab.GetController(tid)
 	
 	; wait for sync, max 12 sec.
@@ -377,7 +381,7 @@ Actor[] Function _buildActors(Actor male, Actor female, int count)
 EndFunction
 
 ; code from SexLab's StartSex with disable beduse, disable leadin, and YACR Hook
-int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = none)
+int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = None, Actor CenterOn = None)
 	sslThreadModel Thread = SexLab.NewThread()
 	if !Thread
 		return -1
@@ -387,6 +391,7 @@ int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim
 	Thread.SetAnimations(Anims)
 	Thread.DisableBedUse(true)
 	Thread.DisableLeadIn()
+	Thread.CenterOnObject(CenterOn)
 	
 	Thread.SetHook("YACR" + HookName)
 	RegisterForModEvent("HookStageStart_YACR" + HookName, "StageStartEventYACR")

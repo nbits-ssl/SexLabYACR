@@ -72,7 +72,7 @@ Event OnPageReset(string page)
 
 		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
 
-		AddHeaderOption("$Player")
+		AddHeaderOption("$PlayerCharactor")
 		healthLimitID = AddSliderOption("$HealthLimit", healthLimit)
 		
 		AddHeaderOption("$RapeChance")

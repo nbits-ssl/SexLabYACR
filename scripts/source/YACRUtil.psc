@@ -59,6 +59,14 @@ Actor Function GetPlayerAggressor()
 	return act
 EndFunction
 
+Function BanishAllDaedra()
+	if (SSLYACRDaedraBreaker.IsRunning())
+		SSLYACRDaedraBreaker.Stop()
+	endif
+	SSLYACRDaedraBreaker.Start()
+	SSLYACRDaedraBreaker.Stop()
+EndFunction
+
 Function KnockDownAll()
 	self.Log("KnockDownAll")
 	Actor PlayerActor = Game.GetPlayer()
@@ -86,6 +94,7 @@ Function KnockDownAll()
 			else
 				act.SetGhost(false)
 				act.AddSpell(SSLYACRParalyseMagic)
+				(PlayerActor as ObjectReference).PushActorAway(act, 2.0)
 			endif
 		endif
 	endWhile
@@ -284,3 +293,5 @@ Quest Property SSLYACRHelperHumanSearcher  Auto
 Quest Property SSLYACRHelperHumanMain  Auto  
 
 ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto  
+
+Quest Property SSLYACRDaedraBreaker  Auto  
