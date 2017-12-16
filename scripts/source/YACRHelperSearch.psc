@@ -6,10 +6,6 @@ Actor[] Function Gather()
 	Actor ahelper2 = Helper2.GetActorRef()
 	Actor ahelper3 = Helper3.GetActorRef()
 	
-	debug.trace("!!yacr " + ahelper1)
-	debug.trace("!!yacr " + ahelper2)
-	debug.trace("!!yacr " + ahelper3)
-	
 	int i = 0
 	
 	if (ahelper3)
