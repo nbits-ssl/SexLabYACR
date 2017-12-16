@@ -48,7 +48,7 @@ int[] multiplayEnemyFactionsIDS
 YACRUtil Property AppUtil Auto
 
 int Function GetVersion()
-	return 8
+	return 9
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
@@ -146,6 +146,14 @@ string Function _getFactionName(Faction fact)
 		return "$BanditFaction"
 	elseif (fact == VampireFaction)
 		return "$VampireFaction"
+	elseif (fact == DLC1VampireFaction)
+		return "$DLC1VampireFaction"
+	elseif (fact == SilverHandFaction)
+		return "$SilverHandFaction"
+	elseif (fact == MS08AlikrFaction)
+		return "$MS08AlikrFaction"
+	elseif (fact == MS09NorthwatchFaction)
+		return "$MS09NorthwatchFaction"
 	else
 		return fact.GetName()
 	endif
@@ -348,3 +356,7 @@ EndEvent
 
 Faction Property BanditFaction  Auto  
 Faction Property VampireFaction  Auto  
+Faction Property DLC1VampireFaction  Auto  
+Faction Property SilverHandFaction  Auto  
+Faction Property MS08AlikrFaction  Auto  
+Faction Property MS09NorthwatchFaction  Auto  
