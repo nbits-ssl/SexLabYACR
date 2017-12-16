@@ -172,7 +172,6 @@ bool Function ValidateMultiplaySupport(Faction fact)
 	return false
 EndFunction
 
-; bandit, thalmor, vampire, draugr, falmer, wolf(only one helper), skeever
 Actor[] Function GetHelpers(Actor aggr, Faction fact)
 	Actor[] helpers
 	
@@ -211,12 +210,20 @@ Actor[] Function _getHelpers(Quest qst, int max)
 	if (max == 3)
 		return tmpArray
 	elseif (max == 2)
-		helpers = new Actor[2]
-		helpers[0] = tmpArray[0]
-		helpers[1] = tmpArray[1]
+		if (tmpArray.Length > 2)
+			helpers = new Actor[2]
+			helpers[0] = tmpArray[0]
+			helpers[1] = tmpArray[1]
+		else
+			return tmpArray
+		endif
 	elseif (max == 1)
-		helpers = new Actor[1]
-		helpers[0] = tmpArray[0]
+		if (tmpArray.Length > 1)
+			helpers = new Actor[1]
+			helpers[0] = tmpArray[0]
+		else
+			return tmpArray
+		endif
 	endif
 	
 	return helpers

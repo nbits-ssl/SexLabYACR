@@ -8,7 +8,7 @@ bool IsInCurrentHireling = false
 bool AlreadyInEnemyFaction = false
 bool EndlessSexLoop = false
 sslThreadController UpdateController
-float ForceUpdatePeriod = 45.0
+float ForceUpdatePeriod = 30.0
 float BleedOutUpdatePeriod = 10.0
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
@@ -299,7 +299,8 @@ Function doSexLoop(Faction fact)
 EndFunction
 
 int Function _forceRefHelpers(Actor[] sppt)
-	int len = sppt.Length
+	int len = AppUtil.ArrayCount(sppt)
+	
 	if (len == 3)
 		Helper1.ForceRefTo(sppt[0])
 		Helper2.ForceRefTo(sppt[1])
@@ -441,7 +442,8 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			RegisterForSingleUpdate(ForceUpdatePeriod)
 		else
 			Actor[] helpers = AppUtil.GetHelpers(aggr, fact)
-			if (rndint < 90 && fact && helpers) ; 30%
+			AppUtil.Log("endless sex loop... helpers are " + helpers)
+			if (rndint < 90 && fact && AppUtil.ArrayCount(helpers)) ; 30%
 				AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
 				EndlessSexLoop = true
 			else ; 25%
@@ -456,6 +458,7 @@ EndEvent
 ; from rapespell, genius!
 Event OnUpdate()
 	if (UpdateController)
+		AppUtil.Log("OnUpdate, UpdateController is alive " + SelfName)
 		UpdateController.OnUpdate()
 		RegisterForSingleUpdate(ForceUpdatePeriod)
 	endif
