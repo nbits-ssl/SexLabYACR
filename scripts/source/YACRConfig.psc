@@ -1,6 +1,6 @@
 Scriptname YACRConfig extends SKI_ConfigBase  
 
-bool Property debugLogFlag = true Auto
+bool Property debugLogFlag = false Auto
 bool Property knockDownAll = true Auto
 
 bool Property enableArmorBreak = true Auto
