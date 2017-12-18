@@ -1,7 +1,7 @@
 Scriptname YACRReload extends ReferenceAlias  
 
 Event OnCellLoad()
-	AppUtil.Log("OnCellLoad reload")
+	AppUtil.Log("OnCellLoad Quest will reload")
 	RegisterForSingleUpdate(5)
 EndEvent
 
@@ -11,8 +11,8 @@ EndEvent
 ;EndEvent
 
 Event OnUpdate()
-	AppUtil.Log("Reload quest")
 	self._reload()
+	AppUtil.Log("Reload quest done")
 EndEvent
 
 Function _reload()

@@ -68,7 +68,7 @@ Function BanishAllDaedra()
 EndFunction
 
 Function KnockDownAll()
-	self.Log("KnockDownAll")
+	self.Log("KnockDownAll()")
 	Actor PlayerActor = Game.GetPlayer()
 	Actor act
 	ReferenceAlias ref
@@ -101,7 +101,7 @@ Function KnockDownAll()
 EndFunction
 
 Function WakeUpAll()
-	self.Log("WakeUpAll")
+	self.Log("WakeUpAll()")
 	Actor act
 	ReferenceAlias ref
 	float health
@@ -111,10 +111,12 @@ Function WakeUpAll()
 		len -= 1
 		ref = Teammates[len]
 		act = ref.GetActorRef()
-		if (act && act.HasKeyWord(ActorTypeNPC))
-			act.SetNoBleedoutRecovery(false)
-		else
-			act.RemoveSpell(SSLYACRParalyseMagic)
+		if (act)
+			if (act.HasKeyWord(ActorTypeNPC))
+				act.SetNoBleedoutRecovery(false)
+			else
+				act.RemoveSpell(SSLYACRParalyseMagic)
+			endif
 		endif
 	endWhile
 EndFunction

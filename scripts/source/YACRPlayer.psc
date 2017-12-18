@@ -199,6 +199,7 @@ EndFunction
 
 Function doSex(Actor aggr, Faction aggrFaction)
 	Actor victim = self.GetActorRef()
+	SelfName = victim.GetActorBase().GetName()
 	
 	if (victim.IsGhost() || aggr.IsGhost())
 		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
@@ -426,11 +427,16 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
+	Actor aggr = controller.Positions[1]
+	
+	; for Onhit missing de-ghost
+	if (controller.Stage > 1 && aggr.IsGhost())
+		aggr.SetGhost(false)
+	endif
 	
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self._isPlayer()))
-		Utility.Wait(3.0)
+		AppUtil.Log("endless sex loop... " + SelfName)
 		int rndint = Utility.RandomInt()
-		Actor aggr = controller.Positions[1]
 		Faction fact = AppUtil.GetEnemyType(aggr)
 		
 		if (rndint < 5) ; 20%
@@ -510,6 +516,11 @@ Function EndSexEvent(Actor aggr)
 		AppUtil.Log("EndSexEvent, Goto to loop " + SelfName)
 		EndlessSexLoop = false
 		self._clearHelpers()
+		
+		if (!self._isPlayer() && Config.knockDownAll && PlayerActor.HasKeyWordString("SexLabActive"))
+			AppUtil.KnockDownAll()
+		endif
+		
 		self.doSexLoop(fact)
 	else ; Aggr's OnHit or Not EndlessRape
 		AppUtil.Log("EndSexEvent, truely end " + SelfName)
@@ -564,11 +575,8 @@ Function _searchBleedOutPartner()
 	
 	Actor aggr = self._getBleedOutPartner(0)
 	if (aggr)
-		AppUtil.Log(aggr.GetActorBase().GetName())
-		
 		; 2nd check
 		if (!aggr.HasKeyWordString("SexLabActive") && !aggr.IsInFaction(SSLYACRActiveFaction))
-			
 			AppUtil.Log("OnEnterBleedOut, actor found " + SelfName)
 			aggr.AddToFaction(SSLYACRActiveFaction)
 			aggr.PathToReference(victim, 0.5)
