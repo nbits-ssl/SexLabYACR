@@ -27,7 +27,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		PlayerIsMale = true
 		return
 	elseif (selfact.GetAV("Health") <= 0)
-		AppUtil.Log("not if, player is dying or follower on bleedoutstart" + SelfName)
+		AppUtil.Log("not if, player is dying or follower on bleedoutstart " + SelfName)
 		return
 	elseif (selfact.IsGhost() || selfact.IsDead())
 		AppUtil.Log("not if, isghost or dead " + SelfName)
@@ -208,7 +208,7 @@ Function doSex(Actor aggr, Faction aggrFaction)
 		AppUtil.Log("already filled ref or dead actor, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
-		AppUtil.Log("actloser already animating, pass doSex " + SelfName)
+		AppUtil.Log("victim already animating, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 	else
 		Aggressor.ForceRefTo(aggr)
@@ -237,8 +237,9 @@ Function doSex(Actor aggr, Faction aggrFaction)
 		if (controller)
 			if (self._isPlayer())
 				victim.SetAV("Invisibility", 1.0)
+				self._stopCombatOneMore(aggr, victim)
 			endif
-			self._stopCombatOneMore(aggr, victim)
+			; self._stopCombatOneMore(aggr, victim)
 			Utility.Wait(1.0)
 			; self._endSexAggr(aggr)
 			aggr.SetGhost(false) ; _endSexAggr()
@@ -432,6 +433,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	; for Onhit missing de-ghost
 	if (controller.Stage > 1 && aggr.IsGhost())
 		aggr.SetGhost(false)
+		AppUtil.Log("###FIXME### Onhit missing de-ghost " + SelfName)
 	endif
 	
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self._isPlayer()))
@@ -463,7 +465,7 @@ EndEvent
 
 ; from rapespell, genius!
 Event OnUpdate()
-	if (UpdateController)
+	if (UpdateController && UpdateController.GetState() == "animating")
 		AppUtil.Log("OnUpdate, UpdateController is alive " + SelfName)
 		UpdateController.OnUpdate()
 		RegisterForSingleUpdate(ForceUpdatePeriod)
@@ -553,7 +555,9 @@ Function _cleanDeadBody(ReferenceAlias enemy)
 EndFunction
 
 Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
-	if (aeCombatState == 0)
+	Actor victim = self.GetActorRef()
+	
+	if (aeCombatState == 0 && !victim.HasKeyWordString("SexLabActive"))
 		Actor selfact = self.GetActorRef()
 		selfact.EnableAI(false)
 		selfact.EnableAI()
