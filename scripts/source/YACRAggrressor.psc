@@ -44,11 +44,13 @@ State Busy
 EndState
 
 ;Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
-;	if (aeCombatState != 0)
+;	Actor aggr = self.GetActorRef()
+;	
+;	if (aeCombatState != 0 && !aggr.HasKeyWordString("SexLabActive"))
 ;		AppUtil.Log("enemy combatstatechanged, reset ghost " + self.GetActorRef().GetActorBase().GetName())
 ;		Actor selfact = self.GetActorRef()
 ;		selfact.SetGhost(false)
-;		self.Clear()
+;		; self.Clear()
 ;	endif
 ;EndEvent
 
