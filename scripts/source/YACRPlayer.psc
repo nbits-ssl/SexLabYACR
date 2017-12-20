@@ -301,6 +301,7 @@ Function doSexLoop(Faction fact)
 EndFunction
 
 int Function _forceRefHelpers(Actor[] sppt)
+	self._clearHelpers()
 	int len = AppUtil.ArrayCount(sppt)
 	
 	if (len == 3)
@@ -473,6 +474,24 @@ Event OnUpdate()
 	
 	if (self.GetActorRef().IsBleedingOut())
 		self._searchBleedOutPartner()
+	endif
+EndEvent
+
+Event OnPackageChange(Package oldpkg) ; for missing _endSexVictim() when EndSexEvent
+	Actor victim
+	Actor aggr = Aggressor.GetActorRef()
+	if (aggr)
+		Utility.Wait(2.0)
+	endif
+	if (!Aggressor.GetActorRef() && !self._isPlayer())
+		victim = self.GetActorRef()
+		if (!victim.IsPlayerTeammate())
+			AppUtil.Log("######### OnPackageChange, detect non-teammate follower, recovery " + SelfName)
+			self._endSexVictim()
+			victim.StopCombat()
+			victim.EnableAI(false)
+			victim.EnableAI()
+		endif
 	endif
 EndEvent
 
