@@ -9,6 +9,15 @@ Function Log(String msg)
 	endif
 EndFunction
 
+Function Notif(String msg)
+	; bool debugflag = true
+	; bool debugflag = false
+
+	if (Config.debugNotifFlag)
+		debug.notification("[yacr] " + msg)
+	endif
+EndFunction
+
 bool Function CheckSex(Actor act, int gender = -1)
 	if (gender == -1)
 		return true

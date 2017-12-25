@@ -1,7 +1,10 @@
 Scriptname YACRConfig extends SKI_ConfigBase  
 
+bool Property debugNotifFlag = true Auto
 bool Property debugLogFlag = false Auto
 bool Property knockDownAll = true Auto
+
+bool Property enablePlayerRape = false Auto
 
 bool Property enableArmorBreak = true Auto
 bool Property enableEndlessRape = true Auto
@@ -23,6 +26,9 @@ int Property healthLimitNPC = 50 Auto
 
 int knockDownAllID
 int debugLogFlagID
+int debugNotifFlagID
+
+int enablePlayerRapeID
 
 int enableArmorBreakID
 int enableEndlessRapeID
@@ -48,7 +54,7 @@ int[] multiplayEnemyFactionsIDS
 YACRUtil Property AppUtil Auto
 
 int Function GetVersion()
-	return 9
+	return 11
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
@@ -56,10 +62,11 @@ Event OnVersionUpdate(int a_version)
 EndEvent
 
 Event OnConfigInit()
-	Pages = new string[3]
+	Pages = new string[4]
 	Pages[0] = "$PCFollower"
 	Pages[1] = "$Enemy"
 	Pages[2] = "$Multiplay"
+	Pages[3] = "$YACRDebug"
 	
 	availableEnemyFactionsIDS = new int[50]
 	multiplayEnemyFactionsIDS = new int[50]
@@ -69,9 +76,9 @@ Event OnPageReset(string page)
 	if (page == "" || page == "$PCFollower")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
-
-		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
-
+		
+		enablePlayerRapeID = AddToggleOption("$EnablePlayerRape", enablePlayerRape)
+		
 		AddHeaderOption("$PlayerCharactor")
 		healthLimitID = AddSliderOption("$HealthLimit", healthLimit)
 		
@@ -87,8 +94,8 @@ Event OnPageReset(string page)
 		armorBreakChanceHeavyArmorID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmor)
 		
 		SetCursorPosition(1)
-
-		knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll)
+		
+		AddEmptyOption()
 		
 		AddHeaderOption("$Follower")
 		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
@@ -106,6 +113,7 @@ Event OnPageReset(string page)
 	elseif	(page == "$Enemy")
 		SetCursorFillMode(LEFT_TO_RIGHT)
 		SetCursorPosition(0)
+		
 		Faction[] aefacts = AppUtil.AvailableEnemyFactions
 		bool[] aefactsConfig = AppUtil.AvailableEnemyFactionsConfig
 		
@@ -121,6 +129,7 @@ Event OnPageReset(string page)
 	elseif	(page == "$Multiplay")
 		SetCursorFillMode(LEFT_TO_RIGHT)
 		SetCursorPosition(0)
+		
 		Faction[] mpfacts = AppUtil.MultiplayEnemyFactions
 		int[] mpfactsConfig = AppUtil.MultiplayEnemyFactionsConfig
 
@@ -137,6 +146,19 @@ Event OnPageReset(string page)
 			idx += 1
 		endwhile
 		; AppUtil.Log(multiplayEnemyFactionsIDS)
+	elseif (page == "$YACRDebug")
+		SetCursorFillMode(TOP_TO_BOTTOM)
+		SetCursorPosition(0)
+		
+		AddHeaderOption("$YACRSystem")
+		knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll)
+		
+		AddEmptyOption()
+		
+		AddHeaderOption("$YACRDebug")
+		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
+		debugNotifFlagID = AddToggleOption("$OutputPapyrusNotif", debugNotifFlag)
+
 	endif
 EndEvent
 
@@ -218,6 +240,8 @@ EndFunction
 Event OnOptionHighlight(int option)
 	if (option == knockDownAllID)
 		SetInfoText("$KnockDownAllInfo")
+	elseif (option == enablePlayerRapeID)
+		SetInfoText("$EnablePlayerRapeInfo")
 	elseif (option == healthLimitID || option == healthLimitNPCID)
 		SetInfoText("$HealthLimitInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
@@ -226,6 +250,8 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$AvailableEnemyFactions")
 	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
 		SetInfoText("$MultiplayEnemyFactions")
+	elseif (option == debugNotifFlagID)
+		SetInfoText("$OutputPapyrusNotifInfo")
 	endif
 EndEvent
 
@@ -244,12 +270,18 @@ Event OnOptionSelect(int option)
 		enableEndlessRapeNPC = !enableEndlessRapeNPC
 		SetToggleOptionValue(enableEndlessRapeNPCID, enableEndlessRapeNPC)
 		
+	elseif (option == enablePlayerRapeID)
+		enablePlayerRape = !enablePlayerRape
+		SetToggleOptionValue(enablePlayerRapeID, enablePlayerRape)
 	elseif (option == knockDownAllID)
 		knockDownAll = !knockDownAll
 		SetToggleOptionValue(knockDownAllID, knockDownAll)
 	elseif (option == debugLogFlagID)
 		debugLogFlag = !debugLogFlag
 		SetToggleOptionValue(debugLogFlagID, debugLogFlag)
+	elseif (option == debugNotifFlagID)
+		debugNotifFlag = !debugNotifFlag
+		SetToggleOptionValue(debugNotifFlagID, debugNotifFlag)
 		
 	elseif (availableEnemyFactionsIDS.Find(option) > -1)
 		int idx = availableEnemyFactionsIDS.Find(option)
