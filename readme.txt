@@ -162,6 +162,12 @@ SSL用の戦闘レイプMod。Defeatが自環境ではうまく動かないた�
 ## 更新履歴
 
 
+### 2018/01/23 - アルファ４
+
+* 更新は上書き後、コンソールから stopquest sslyacr → startquest sslyacr
+
+* 普通に別れたフォロワーにもフォロワー復帰処理が走ってしまっていた問題を修正
+
 ### 2017/12/25 - アルファ３
 
 * 更新は上書き後、コンソールから stopquest sslyacr → startquest sslyacr

@@ -116,6 +116,7 @@ Function _readySexVictim(Faction fact)
 			AppUtil.KnockDownAll()
 		endif
 	else
+		act.AddToFaction(SSLYACRPurgedFollowerFaction)
 		if (act.IsInFaction(CurrentFollowerFaction))
 			act.RemoveFromFaction(CurrentFollowerFaction)
 			IsInCurrentFollowerFaction = true
@@ -160,6 +161,7 @@ Function _endSexVictim(Faction fact = None)
 		if (IsInCurrentHireling)
 			act.AddToFaction(CurrentHireling)
 		endif
+		act.RemoveFromFaction(SSLYACRPurgedFollowerFaction)
 	endif
 	
 	self._clearAudience()
@@ -501,7 +503,7 @@ Event OnPackageChange(Package oldpkg) ; for missing _endSexVictim() when EndSexE
 	endif
 	if (!Aggressor.GetActorRef() && !self.IsPlayer)
 		victim = self.GetActorRef()
-		if (!victim.IsPlayerTeammate())
+		if (!victim.IsPlayerTeammate() && victim.IsInFaction(SSLYACRPurgedFollowerFaction))
 			AppUtil.Log("######### OnPackageChange, detect non-teammate follower, recovery " + SelfName)
 			self._endSexVictim()
 			victim.StopCombat()
@@ -690,6 +692,6 @@ Faction Property CurrentFollowerFaction  Auto
 Faction Property CurrentHireling  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
 Faction Property SSLYACRActiveFaction  Auto  
+Faction Property SSLYACRPurgedFollowerFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
-
