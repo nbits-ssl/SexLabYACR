@@ -70,6 +70,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 						(selfarmor.HasKeyWord(ArmorLight) && rndintAB < chances[1]) || \
 						(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < chances[2]))
 						
+						;selfact.UnEquipItem(selfarmor)
 						selfact.RemoveItem(selfarmor)
 						AppUtil.Log(" Armor break " + SelfName)
 					endif
@@ -200,16 +201,20 @@ Function doSex(Actor aggr, Faction aggrFaction)
 	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
 		AppUtil.Log("victim already animating, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
+	elseif (!aggr.HasKeyWord(ActorTypeNPC) && SexLab.ValidateActor(aggr) < -16)
+		AppUtil.Log("aggr creature not supported or no valid animation, pass doSex " + SelfName)
+		return
 	else
 		if (Aggressor.ForceRefIfEmpty(aggr))
 			self._readySexVictim(aggrFaction)
-			
+
 			sslBaseAnimation[] anims
 			if (aggr.HasKeyWord(ActorTypeNPC))
 				anims =  SexLab.GetAnimationsByTags(2, "MF,Aggressive", "Oral", true)
 			else
 				anims =  SexLab.GetAnimationsByTags(2, "")
 			endif
+			
 			actor[] sexActors = new actor[2]
 			sexActors[0] = victim
 			sexActors[1] = aggr
@@ -447,6 +452,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
+	int cumid = controller.Animation.GetCum(0)
 	Actor aggr = controller.Positions[1]
 	
 	; for Onhit missing de-ghost
@@ -459,6 +465,16 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		AppUtil.Log("endless sex loop... " + SelfName)
 		int rndint = Utility.RandomInt()
 		Faction fact = AppUtil.GetEnemyType(aggr)
+		
+		Actor selfact = self.GetActorRef()
+		AppUtil.Log("##################### " + cumid)
+		SexLab.ActorLib.ApplyCum(selfact, cumid)
+		AppUtil.Log("##################### " + SexLab.CountCum(selfact))
+		
+		float laststagewait = SexLab.Config.StageTimerAggr[4]
+		if (laststagewait > 1)
+			Utility.Wait(laststagewait - 1.5) 
+		endif
 		
 		if (rndint < 5) ; 20%
 			AppUtil.Log("endless sex loop...one more " + SelfName)
