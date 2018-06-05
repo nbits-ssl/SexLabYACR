@@ -39,6 +39,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	endif
 
 	GotoState("Busy")
+	
 	PreSource = akSource
 	float healthper = selfact.GetAVPercentage("health") * 100
 	
@@ -195,56 +196,59 @@ Function doSex(Actor aggr, Faction aggrFaction)
 	if (victim.IsGhost() || aggr.IsGhost())
 		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
+		return
 	elseif (Aggressor.GetActorRef() || aggr.IsDead())
 		AppUtil.Log("already filled ref or dead actor, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
+		return
 	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
 		AppUtil.Log("victim already animating, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
+		return
 	elseif (!aggr.HasKeyWord(ActorTypeNPC) && SexLab.ValidateActor(aggr) < -16)
 		AppUtil.Log("aggr creature not supported or no valid animation, pass doSex " + SelfName)
 		return
-	else
-		if (Aggressor.ForceRefIfEmpty(aggr))
-			self._readySexVictim(aggrFaction)
-
-			sslBaseAnimation[] anims
-			if (aggr.HasKeyWord(ActorTypeNPC))
-				anims =  SexLab.GetAnimationsByTags(2, "MF,Aggressive", "Oral", true)
-			else
-				anims =  SexLab.GetAnimationsByTags(2, "")
-			endif
-			
-			actor[] sexActors = new actor[2]
-			sexActors[0] = victim
-			sexActors[1] = aggr
-			
-			AppUtil.Log("run SexLab " + SelfName)
-			int tid = self._quickSex(sexActors, anims, victim = victim)
-			sslThreadController controller = SexLab.GetController(tid)
-			
-			if (controller)
-				; wait for sync, max 12 sec.
-				self._waitSetup(controller)
-				self._waitSetup(controller)
-				self._waitSetup(controller)
-				self._waitSetup(controller)
-				
-				if (self.IsPlayer)
-					self._stopCombatOneMore(aggr, victim)
-				endif
-				; self._stopCombatOneMore(aggr, victim)
-				Utility.Wait(1.0)
-				; self._endSexAggr(aggr)
-				aggr.SetGhost(false) ; _endSexAggr()
-				AppUtil.Log("aggr setghost disable " + SelfName)
-			else
-				AppUtil.Log("###FIXME### controller not found, recover setup " + SelfName)
-				self.EndSexEvent(aggr)
-			endif
+	endif
+	
+	if (Aggressor.ForceRefIfEmpty(aggr))
+		self._readySexVictim(aggrFaction)
+		
+		sslBaseAnimation[] anims
+		if (aggr.HasKeyWord(ActorTypeNPC))
+			anims =  SexLab.GetAnimationsByTags(2, "MF,Aggressive", "Oral", true)
 		else
-			AppUtil.Log("already filled aggr reference, pass doSex " + SelfName)
+			anims =  SexLab.GetAnimationsByTags(2, "")
 		endif
+		
+		actor[] sexActors = new actor[2]
+		sexActors[0] = victim
+		sexActors[1] = aggr
+		
+		AppUtil.Log("run SexLab " + SelfName)
+		int tid = self._quickSex(sexActors, anims, victim = victim)
+		sslThreadController controller = SexLab.GetController(tid)
+		
+		if (controller)
+			; wait for sync, max 12 sec.
+			self._waitSetup(controller)
+			self._waitSetup(controller)
+			self._waitSetup(controller)
+			self._waitSetup(controller)
+			
+			if (self.IsPlayer)
+				self._stopCombatOneMore(aggr, victim)
+			endif
+			; self._stopCombatOneMore(aggr, victim)
+			Utility.Wait(1.0)
+			; self._endSexAggr(aggr)
+			aggr.SetGhost(false) ; _endSexAggr()
+			AppUtil.Log("aggr setghost disable " + SelfName)
+		else
+			AppUtil.Log("###FIXME### controller not found, recover setup " + SelfName)
+			self.EndSexEvent(aggr)
+		endif
+	else
+		AppUtil.Log("already filled aggr reference, pass doSex " + SelfName)
 	endif
 EndFunction
 
@@ -414,7 +418,7 @@ int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim
 		return -1
 	elseIf !Thread.AddActors(Positions, Victim)
 		return -1
-	endIf
+	endif
 	Thread.SetAnimations(Anims)
 	Thread.DisableBedUse(true)
 	Thread.DisableLeadIn()
@@ -426,7 +430,7 @@ int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim
 	
 	if Thread.StartThread()
 		return Thread.tid
-	endIf
+	endif
 	return -1
 endFunction
 
@@ -533,7 +537,7 @@ Function _getAudience()
 	AppUtil.Log("get audience " + SelfName)
 	if (AudienceQuest.IsRunning())
 		AudienceQuest.Stop()
-	endIf
+	endif
 	AudienceQuest.Start()
 	if (self.IsPlayer)
 		Actor aggr = Aggressor.GetActorRef()
@@ -546,7 +550,7 @@ Function _clearAudience()
 	AppUtil.Log("clear audience " + SelfName)
 	if (AudienceQuest.IsRunning())
 		AudienceQuest.Stop()
-	endIf
+	endif
 EndFunction
 
 Function _clearHelpers()
