@@ -91,19 +91,30 @@ Function KnockDownAll()
 		if (act && !act.HasKeyWordString("SexLabActive") && \
 			PlayerActor.GetParentCell() == act.GetParentCell())
 			
-			act.SetGhost()
-			act.StopCombat()
-			act.StopCombatAlarm()
 			if (act.HasKeyWord(ActorTypeNPC))
-				act.SetNoBleedoutRecovery(true)
-				health = act.GetAV("health")
-				act.DamageAV("health", health + 30.0)
-				; debug.SendAnimationEvent(act as ObjectReference, "BleedOutStart")
-				act.SetGhost(false)
+				if (act.GetAV("health") > 0)
+					act.SetGhost()
+					act.StopCombat()
+					act.StopCombatAlarm()
+					
+					act.SetNoBleedoutRecovery(true)
+					health = act.GetAV("health")
+					act.DamageAV("health", health + 30.0)
+					act.SetGhost(false)
+				endif
+				if (!act.IsBleedingOut() || act.GetAnimationVariableInt("iState") != 5) ; bleedout
+					debug.SendAnimationEvent(act as ObjectReference, "BleedOutStart")
+				endif
 			else
-				act.SetGhost(false)
-				act.AddSpell(SSLYACRParalyseMagic)
-				(PlayerActor as ObjectReference).PushActorAway(act, 2.0)
+				if (!act.HasSpell(SSLYACRParalyseMagic))
+					act.SetGhost()
+					act.StopCombat()
+					act.StopCombatAlarm()
+					
+					act.SetGhost(false)
+					act.AddSpell(SSLYACRParalyseMagic)
+					(PlayerActor as ObjectReference).PushActorAway(act, 2.0)
+				endif
 			endif
 		endif
 	endWhile

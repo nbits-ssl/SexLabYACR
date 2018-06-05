@@ -211,6 +211,10 @@ Function doSex(Actor aggr, Faction aggrFaction)
 	endif
 	
 	if (Aggressor.ForceRefIfEmpty(aggr))
+		if (self.IsPlayer)
+			debug.SendAnimationEvent(victim, "BleedOutStart")
+		endif
+		
 		self._readySexVictim(aggrFaction)
 		
 		sslBaseAnimation[] anims
@@ -463,6 +467,9 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	if (controller.Stage > 1 && aggr.IsGhost())
 		aggr.SetGhost(false)
 		AppUtil.Log("###FIXME### Onhit missing de-ghost " + SelfName)
+	endif
+	if (self.IsPlayer && Config.knockDownAll)
+		AppUtil.KnockDownAll()
 	endif
 	
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
