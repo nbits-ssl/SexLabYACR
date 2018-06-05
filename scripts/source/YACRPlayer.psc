@@ -467,9 +467,9 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		Faction fact = AppUtil.GetEnemyType(aggr)
 		
 		Actor selfact = self.GetActorRef()
-		AppUtil.Log("##################### " + cumid)
+		selfact.SetGhost(false)
 		SexLab.ActorLib.ApplyCum(selfact, cumid)
-		AppUtil.Log("##################### " + SexLab.CountCum(selfact))
+		selfact.SetGhost(true)
 		
 		float laststagewait = SexLab.Config.StageTimerAggr[4]
 		if (laststagewait > 1)
