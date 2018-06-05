@@ -54,7 +54,7 @@ int[] multiplayEnemyFactionsIDS
 YACRUtil Property AppUtil Auto
 
 int Function GetVersion()
-	return 12
+	return 13
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
