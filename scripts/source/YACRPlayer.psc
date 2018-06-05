@@ -43,7 +43,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	PreSource = akSource
 	float healthper = selfact.GetAVPercentage("health") * 100
 	
-	if (!abHitBlocked && healthper < Config.GetHealthLimit(self.IsPlayer) && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
+	if (!abHitBlocked && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
 		Faction aggrFaction = AppUtil.GetEnemyType(akAggr)
 		if (aggrFaction)
 			AppUtil.Log("onhit success " + SelfName)
@@ -62,7 +62,9 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 					akAggr.StopCombat()
 				endif
 			elseif (selfarmor)
-				if (rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer))
+				if (healthper < Config.GetHealthLimit(self.IsPlayer) && \
+					rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer))
+					
 					AppUtil.Log("doSex " + SelfName)
 					self.doSex(akAggr, aggrFaction)
 				elseif (Config.GetEnableArmorBreak(self.IsPlayer))
@@ -79,7 +81,9 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 						AppUtil.Log(" Armor break " + SelfName)
 					endif
 				endif
-			elseif (!selfarmor && rndintRP < Config.GetRapeChance(self.IsPlayer))
+			elseif (!selfarmor && healthper < Config.GetHealthLimit(self.IsPlayer) && \
+				rndintRP < Config.GetRapeChance(self.IsPlayer))
+				
 				AppUtil.Log("doSex " + SelfName)
 				self.doSex(akAggr, aggrFaction)
 			endif
