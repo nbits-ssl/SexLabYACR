@@ -159,6 +159,23 @@ Event OnPageReset(string page)
 		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
 		debugNotifFlagID = AddToggleOption("$OutputPapyrusNotif", debugNotifFlag)
 
+		SetCursorPosition(1)
+		AddHeaderOption("$YACRTeammates")
+
+		Actor act
+		ReferenceAlias ref
+		float health
+		int n = 0
+		int len = AppUtil.Teammates.Length
+		
+		while n != len
+			ref = AppUtil.Teammates[n]
+			act = ref.GetActorRef()
+			if (act)
+				AddTextOption(act.GetActorBase().GetName(), "")
+			endif
+			n += 1
+		endWhile
 	endif
 EndEvent
 

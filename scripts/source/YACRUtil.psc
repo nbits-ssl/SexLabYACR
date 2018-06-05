@@ -306,21 +306,16 @@ SexLabFramework Property SexLab  Auto
 Faction[] Property AvailableEnemyFactions  Auto  
 Faction[] Property MultiplayEnemyFactions  Auto  
 Quest[] Property MultiplayEnemySearcher  Auto  
+Quest Property SSLYACRHelperHumanSearcher  Auto  
+Quest Property SSLYACRHelperHumanMain  Auto  
+Quest Property SSLYACRDaedraBreaker  Auto  
 
 Bool[] Property AvailableEnemyFactionsConfig  Auto  
 Int[] Property MultiplayEnemyFactionsConfig  Auto  
 
 ReferenceAlias[] Property Teammates  Auto  
 ReferenceAlias Property PlayerAggressor  Auto  
-
-SPELL Property SSLYACRParalyseMagic  Auto  
-
-Keyword Property ActorTypeNPC  Auto  
-
-Quest Property SSLYACRHelperHumanSearcher  Auto  
-
-Quest Property SSLYACRHelperHumanMain  Auto  
-
 ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto  
 
-Quest Property SSLYACRDaedraBreaker  Auto  
+SPELL Property SSLYACRParalyseMagic  Auto  
+Keyword Property ActorTypeNPC  Auto  
