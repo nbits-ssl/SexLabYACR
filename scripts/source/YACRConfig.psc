@@ -6,6 +6,8 @@ bool Property knockDownAll = true Auto
 
 bool Property enablePlayerRape = false Auto
 
+bool Property enableArmorUnequipMode = false Auto
+
 bool Property enableArmorBreak = true Auto
 bool Property enableEndlessRape = true Auto
 int Property armorBreakChanceCloth = 50 Auto
@@ -29,6 +31,8 @@ int debugLogFlagID
 int debugNotifFlagID
 
 int enablePlayerRapeID
+
+int enableArmorUnequipModeID
 
 int enableArmorBreakID
 int enableEndlessRapeID
@@ -54,7 +58,7 @@ int[] multiplayEnemyFactionsIDS
 YACRUtil Property AppUtil Auto
 
 int Function GetVersion()
-	return 13
+	return 15
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
@@ -95,7 +99,7 @@ Event OnPageReset(string page)
 		
 		SetCursorPosition(1)
 		
-		AddEmptyOption()
+		enableArmorUnequipModeID = AddToggleOption("$EnableArmorUnequipMode", enableArmorUnequipMode)
 		
 		AddHeaderOption("$Follower")
 		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
@@ -259,6 +263,8 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$KnockDownAllInfo")
 	elseif (option == enablePlayerRapeID)
 		SetInfoText("$EnablePlayerRapeInfo")
+	elseif (option == enableArmorUnequipModeID)
+		SetInfoText("$EnableArmorUnequipModeInfo")
 	elseif (option == healthLimitID || option == healthLimitNPCID)
 		SetInfoText("$HealthLimitInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
@@ -299,6 +305,9 @@ Event OnOptionSelect(int option)
 	elseif (option == debugNotifFlagID)
 		debugNotifFlag = !debugNotifFlag
 		SetToggleOptionValue(debugNotifFlagID, debugNotifFlag)
+	elseif (option == enableArmorUnequipModeID)
+		enableArmorUnequipMode = !enableArmorUnequipMode
+		SetToggleOptionValue(enableArmorUnequipModeID, enableArmorUnequipMode)
 		
 	elseif (availableEnemyFactionsIDS.Find(option) > -1)
 		int idx = availableEnemyFactionsIDS.Find(option)

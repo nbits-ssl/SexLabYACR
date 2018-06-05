@@ -71,8 +71,11 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 						(selfarmor.HasKeyWord(ArmorLight) && rndintAB < chances[1]) || \
 						(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < chances[2]))
 						
-						;selfact.UnEquipItem(selfarmor)
-						selfact.RemoveItem(selfarmor)
+						if (Config.enableArmorUnequipMode)
+							selfact.UnEquipItem(selfarmor)
+						else
+							selfact.RemoveItem(selfarmor)
+						endif
 						AppUtil.Log(" Armor break " + SelfName)
 					endif
 				endif
