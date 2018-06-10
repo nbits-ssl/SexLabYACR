@@ -168,7 +168,6 @@ Event OnPageReset(string page)
 
 		Actor act
 		ReferenceAlias ref
-		float health
 		int n = 0
 		int len = AppUtil.Teammates.Length
 		
