@@ -26,9 +26,15 @@ int Property rapeChanceNPC = 50 Auto
 int Property rapeChanceNotNakedNPC = 10 Auto
 int Property healthLimitNPC = 50 Auto
 
+int Property keyCodeHelp = 275 Auto
+int Property keyCodeSubmit = 274 Auto
+
 int knockDownAllID
 int debugLogFlagID
 int debugNotifFlagID
+
+int keyCodeHelpID
+int keyCodeSubmitID
 
 int enablePlayerRapeID
 
@@ -58,7 +64,7 @@ int[] multiplayEnemyFactionsIDS
 YACRUtil Property AppUtil Auto
 
 int Function GetVersion()
-	return 15
+	return 16
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
@@ -155,6 +161,10 @@ Event OnPageReset(string page)
 		SetCursorPosition(0)
 		
 		AddHeaderOption("$YACRSystem")
+		
+		keyCodeHelpID = AddKeyMapOption("$KeyCodeHelp", keyCodeHelp)
+		keyCodeSubmitID = AddKeyMapOption("$KeyCodeSubmit", keyCodeSubmit)
+
 		knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll)
 		
 		AddEmptyOption()
@@ -409,6 +419,15 @@ Event OnOptionSliderAccept(int option, float value)
 		AppUtil.MultiplayEnemyFactionsConfig[idx] = value as int
 		SetSliderOptionValue(multiplayEnemyFactionsIDS[idx], value as int)
 	endif
+EndEvent
+
+Event OnOptionKeyMapChange(int option, int keyCode, string conflictControl, string conflictName)
+	if (option == keyCodeHelpID)
+		keyCodeHelp = keyCode
+	elseif (option == keyCodeSubmitID)
+		keyCodeSubmit = keyCode
+	endif
+	SetKeymapOptionValue(option, keyCode)
 EndEvent
 
 Faction Property BanditFaction  Auto  

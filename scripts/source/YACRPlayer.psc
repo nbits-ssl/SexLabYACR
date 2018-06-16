@@ -3,13 +3,14 @@ Scriptname YACRPlayer extends ReferenceAlias
 Form PreSource = None
 string SelfName
 bool PlayerIsMale = false ; not use from alpha.3
-bool IsInCurrentFollowerFaction = false
-bool IsInCurrentHireling = false
+bool IsInCurrentFollowerFaction = false ;  not use from 2.0alpha1 ==> baseFaction
+bool IsInCurrentHireling = false ;  not use from 2.0alpha1 ==> baseFaction
 bool AlreadyInEnemyFaction = false
 bool EndlessSexLoop = false
 sslThreadController UpdateController
 float ForceUpdatePeriod = 30.0
 float BleedOutUpdatePeriod = 10.0
+Faction baseFaction
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 
@@ -116,34 +117,22 @@ Function _readySexVictim(Faction fact)
 	endif
 	
 	if (self.IsPlayer)
-		; fact.SetReaction(SSLYACRCalmFaction, 2) ; set ally
-		; SSLYACRCalmFaction.SetReaction(fact, 2)
 		act.AddToFaction(SSLYACRCalmFaction)
 		act.AddSpell(SSLYACRPlayerSlowMagic, false)
 		if (Config.knockDownAll)
 			act.AddToFaction(fact)
 			AppUtil.KnockDownAll()
+			AppUtil.BanishAllDaedra()
 		endif
+		RegisterForKey(Config.keyCodeHelp)
+		RegisterForKey(Config.keyCodeSubmit)
 	else
 		act.AddToFaction(SSLYACRPurgedFollowerFaction)
-		if (act.IsInFaction(CurrentFollowerFaction))
-			act.RemoveFromFaction(CurrentFollowerFaction)
-			IsInCurrentFollowerFaction = true
-		endif
-		if (act.IsInFaction(CurrentHireling))
-			act.RemoveFromFaction(CurrentHireling)
-			IsInCurrentHireling = true
-		endif
-		
-		act.SetPlayerTeammate(false)
+		baseFaction = AppUtil.purgeFollower(act)
 	endif
 	
 	act.StopCombat()
 	act.StopCombatAlarm()
-
-	if (self.IsPlayer && Config.KnockDownAll)
-		AppUtil.BanishAllDaedra()
-	endif
 EndFunction
 
 Function _endSexVictim(Faction fact = None)
@@ -155,21 +144,15 @@ Function _endSexVictim(Faction fact = None)
 	
 	if (self.IsPlayer)
 		act.RemoveFromFaction(SSLYACRCalmFaction)
-		; fact.SetReaction(SSLYACRCalmFaction, 0) ; set neutral
-		; SSLYACRCalmFaction.SetReaction(fact, 0)
 		act.RemoveSpell(SSLYACRPlayerSlowMagic)
 		if (Config.knockDownAll)
 			AppUtil.WakeUpAll()
 		endif
 		Game.EnablePlayerControls()
+		UnregisterForKey(Config.keyCodeHelp)
+		UnregisterForKey(Config.keyCodeSubmit)
 	else
-		act.SetPlayerTeammate(true)
-		if (IsInCurrentFollowerFaction)
-			act.AddToFaction(CurrentFollowerFaction)
-		endif
-		if (IsInCurrentHireling)
-			act.AddToFaction(CurrentHireling)
-		endif
+		AppUtil.rejoinFollower(act, baseFaction)
 		act.RemoveFromFaction(SSLYACRPurgedFollowerFaction)
 	endif
 	
@@ -212,7 +195,7 @@ Function doSex(Actor aggr, Faction aggrFaction)
 		AppUtil.Log("victim already animating, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 		return
-	elseif (!aggr.HasKeyWord(ActorTypeNPC) && SexLab.ValidateActor(aggr) < -16)
+	elseif (!aggr.HasKeyWord(ActorTypeNPC) && SexLab.ValidateActor(aggr) < -16) ; not support(or none anime) creature
 		AppUtil.Log("aggr creature not supported or no valid animation, pass doSex " + SelfName)
 		return
 	endif
@@ -516,6 +499,36 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	endif
 EndEvent
 
+Event OnKeyDown(int keyCode)
+	SelfName = self.GetActorRef().GetActorBase().GetName()
+	
+	if (keyCode == Config.keyCodeHelp)
+		debug.Notification(SelfName + " is resisting...")
+		
+		Actor aggr = Aggressor.GetActorRef()
+		if (aggr)
+			Actor helper = AppUtil.CallHelp(aggr)
+			if (helper)
+				Utility.Wait(0.5)
+				self._escapePlayer()
+			endif
+		endif
+	elseif (keyCode == Config.keyCodeSubmit)
+		debug.Notification(SelfName + " gave up on everything...")
+	endif
+EndEvent
+
+Function _escapePlayer()
+	Actor selfact = self.GetActorRef()
+	if (selfact)
+		if selfact.HasKeyWordString("SexLabActive")
+			AppUtil.Log("Player escaped, Stop rape")
+			sslThreadController controller = SexLab.GetActorController(selfact)
+			controller.EndAnimation()
+		endif
+	endif
+EndFunction
+
 ; from rapespell, genius!
 Event OnUpdate()
 	if (UpdateController && UpdateController.GetState() == "animating")
@@ -722,8 +735,8 @@ String Property HookName  Auto
 SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 
-Faction Property CurrentFollowerFaction  Auto  
-Faction Property CurrentHireling  Auto  
+Faction Property CurrentFollowerFaction  Auto  ; not use from 2.0alpha1 ?
+Faction Property CurrentHireling  Auto  ; not use from 2.0alpha1 ?
 Faction Property SSLYACRCalmFaction  Auto  
 Faction Property SSLYACRActiveFaction  Auto  
 Faction Property SSLYACRPurgedFollowerFaction  Auto  

@@ -162,6 +162,14 @@ SSL用の戦闘レイプMod。Defeatが自環境ではうまく動かないた�
 ## 更新履歴
 
 
+### 2018/06/** - 2.0alpha1
+
+* 更新は上書き後、コンソールから stopquest sslyacr → startquest sslyacr
+  ないしエリア移動
+
+* 男フォロワーorペットフォロワーを連れている時限定で「助けを呼ぶ」ホットキー追加
+
+
 ### 2018/06/06 - 1.0rc1
 
 * 更新は上書き後、コンソールから stopquest sslyacr → startquest sslyacr

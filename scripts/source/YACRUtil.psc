@@ -88,7 +88,7 @@ Function KnockDownAll()
 		len -= 1
 		ref = Teammates[len]
 		act = ref.GetActorRef()
-		if (act && !act.HasKeyWordString("SexLabActive") && \
+		if (act && act.IsEnabled() && !act.HasKeyWordString("SexLabActive") && \
 			PlayerActor.GetParentCell() == act.GetParentCell())
 			
 			if (act.HasKeyWord(ActorTypeNPC))
@@ -117,14 +117,13 @@ Function KnockDownAll()
 				endif
 			endif
 		endif
-	endWhile
+	endwhile
 EndFunction
 
 Function WakeUpAll()
 	self.Log("WakeUpAll()")
 	Actor act
 	ReferenceAlias ref
-	float health
 	int len = Teammates.Length
 	
 	while len
@@ -138,7 +137,65 @@ Function WakeUpAll()
 				act.RemoveSpell(SSLYACRParalyseMagic)
 			endif
 		endif
-	endWhile
+	endwhile
+EndFunction
+
+Actor Function CallHelp(Actor aggr)
+	self.Log("CallHelp()")
+	Actor act
+	Actor PlayerActor = Game.GetPlayer()
+	ReferenceAlias ref
+	int len = Teammates.Length
+	int chance = len
+	int idx = 0
+	bool loop = true
+	
+	while (chance && loop)
+		chance -= 1
+		idx = Utility.RandomInt(0, len - 1)
+		ref = Teammates[idx]
+		act = ref.GetActorRef()
+		
+		if (act && act.IsEnabled() && !act.HasKeyWordString("SexLabActive") && \
+			PlayerActor.GetParentCell() == act.GetParentCell() && act.GetActorBase().GetSex() == 0)
+			
+			if (act.HasKeyWord(ActorTypeNPC))
+				act.SetNoBleedoutRecovery(false)
+			else
+				act.RemoveSpell(SSLYACRParalyseMagic)
+			endif
+			
+			act.ForceAV("health", 50.0)
+			Utility.Wait(1.5)
+			act.DoCombatSpellApply(PlayerHelperAngrySpell, aggr)
+			act.RemoveSpell(PlayerHelperAngrySpell)
+			act.EnableAI(false)
+			act.EnableAI()
+			loop = false
+		endif
+	endwhile
+	
+	return act
+EndFunction
+
+Faction Function purgeFollower(Actor act)
+	Faction fact
+	if (act.IsInFaction(CurrentFollowerFaction))
+		act.RemoveFromFaction(CurrentFollowerFaction)
+		fact = CurrentFollowerFaction
+	elseif (act.IsInFaction(CurrentHireling))
+		act.RemoveFromFaction(CurrentHireling)
+		fact = CurrentHireling
+	endif
+	
+	act.SetPlayerTeammate(false)
+	
+	return fact
+EndFunction
+
+Function rejoinFollower(Actor act, Faction fact)
+	act.SetPlayerTeammate(true)
+	act.AddToFaction(fact)
 EndFunction
 
 Function PurgePlayerFromTeam()
@@ -319,3 +376,8 @@ ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto
 
 SPELL Property SSLYACRParalyseMagic  Auto  
 Keyword Property ActorTypeNPC  Auto  
+
+Faction Property CurrentFollowerFaction  Auto  
+Faction Property CurrentHireling  Auto  
+
+SPELL Property PlayerHelperAngrySpell  Auto  
