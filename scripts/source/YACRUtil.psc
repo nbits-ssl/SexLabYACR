@@ -44,7 +44,7 @@ Function CleanFlyingDeadBody(Actor act)
 EndFunction
 
 Faction Function GetEnemyType(Actor act)
-	if (act.GetActorBase().GetSex() == 1) ; female
+	if (act.GetLeveledActorBase().GetSex() == 1) ; female
 		return None
 	endif
 	
@@ -180,7 +180,7 @@ Actor Function CallHelp(Actor aggr)
 	endwhile
 	
 	if (loop)
-		return none
+		return None
 	else
 		return act
 	endif
@@ -206,81 +206,86 @@ Function rejoinFollower(Actor act, Faction fact)
 	act.AddToFaction(fact)
 EndFunction
 
-bool Function ValidateMultiplaySupport(Faction fact)
-	int x = MultiplayEnemyFactions.Find(fact)
-	
-	if (x > -1)
-		int y = MultiplayEnemyFactionsConfig[x]
-		if (y == 0)
-			return false
-		else
-			return true
-		endif
-	else
-		return false
-	endif
-	
-	return false
-EndFunction
-
-Actor[] Function GetHelpers(Actor aggr, Faction fact)
-	Actor[] helpers
+Actor[] Function GetHelpersCombined(Actor victim, Actor aggr, Faction fact)
+	Actor[] actors
 	
 	if (aggr.HasKeyWord(ActorTypeNPC))
 		if !(SSLYACRHelperHumanMain.IsRunning())
 			SSLYACRHelperHumanMainAggr.ForceRefTo(aggr)
-			helpers = self._getHelpers(SSLYACRHelperHumanSearcher, MultiplayEnemyFactionsConfig[0])
+			actors = self._getHelpersCombined(victim, aggr, SSLYACRHelperHumanSearcher, MultiplayEnemyFactionsConfig[0])
 			SSLYACRHelperHumanMain.Stop()
 		endif
 	else ; Creature
 		int x = MultiplayEnemyFactions.Find(fact)
 		
 		if (x > -1)
-			helpers = self._getHelpers(MultiplayEnemySearcher[x], MultiplayEnemyFactionsConfig[x])
+			actors = self._getHelpersCombined(victim, aggr, MultiplayEnemySearcher[x], MultiplayEnemyFactionsConfig[x])
 		endif
 	endif
 	
-	return helpers
+	return actors
 EndFunction
 
-Actor[] Function _getHelpers(Quest qst, int max)
+Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst, int max)
 	Actor[] tmpArray
-	Actor[] helpers
+	Actor[] actors
+	sslBaseAnimation[] anims
+	int idx = 0
 
-	if (max == 0) ; not reach
-		return helpers
-	endif
-	
 	if (!qst.IsRunning())
 		qst.Start()
 		tmpArray = (qst as YACRHelperSearch).Gather()
 		qst.Stop()
 	endif
 	ArraySort(tmpArray)
+	idx = ArrayCount(tmpArray)
 	
-	if (max == 3)
-		return tmpArray
-	elseif (max == 2)
-		if (tmpArray.Length > 2)
-			helpers = new Actor[2]
-			helpers[0] = tmpArray[0]
-			helpers[1] = tmpArray[1]
-		else
-			return tmpArray
-		endif
-	elseif (max == 1)
-		if (tmpArray.Length > 1)
-			helpers = new Actor[1]
-			helpers[0] = tmpArray[0]
-		else
-			return tmpArray
+	if (idx == 3)
+		actors = new Actor[5]
+		actors[4] = tmpArray[2]
+		actors[3] = tmpArray[1]
+		actors[2] = tmpArray[0]
+		actors[1] = aggr
+		actors[0] = victim
+		anims = SexLab.PickAnimationsByActors(actors)
+		if !(anims)
+			idx = 2
 		endif
 	endif
+		
+	if (idx == 2)
+		actors = new Actor[4]
+		actors[3] = tmpArray[1]
+		actors[2] = tmpArray[0]
+		actors[1] = aggr
+		actors[0] = victim
+		anims = SexLab.PickAnimationsByActors(actors)
+		if !(anims)
+			idx = 1
+		endif
+	endif
+
+	if (idx == 1)
+		actors = new Actor[3]
+		actors[2] = tmpArray[0]
+		actors[1] = aggr
+		actors[0] = victim
+		anims = SexLab.PickAnimationsByActors(actors, Aggressive = true)
+		if !(anims)
+			idx = 0
+		endif
+	endif
+
+	if (idx == 0)
+		actors = new Actor[2]
+		actors[1] = aggr
+		actors[0] = victim
+	endif
 	
-	return helpers
+	return actors
 EndFunction
 
-; from crationkit.com, author is Chesko || Form[] => Actor[]
+; from creationkit.com, author is Chesko || Form[] => Actor[]
 bool function ArraySort(Actor[] myArray, int i = 0)
 	bool bFirstNoneFound = false
 	int iFirstNonePos = i
@@ -314,7 +319,7 @@ bool function ArraySort(Actor[] myArray, int i = 0)
 	return false
 endFunction
 
-; from crationkit.com, author is Chesko
+; from creationkit.com, author is Chesko
 int Function ArrayCount(Actor[] myArray)
 	int i = 0
 	int myCount = 0

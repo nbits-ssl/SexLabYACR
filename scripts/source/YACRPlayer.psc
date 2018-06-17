@@ -2,19 +2,21 @@ Scriptname YACRPlayer extends ReferenceAlias
 
 Form PreSource = None
 string SelfName
-bool PlayerIsMale = false ; not use from alpha.3
-bool IsInCurrentFollowerFaction = false ;  not use from 2.0alpha1 ==> baseFaction
-bool IsInCurrentHireling = false ;  not use from 2.0alpha1 ==> baseFaction
-bool AlreadyInEnemyFaction = false
+bool AlreadyInPrisonerFaction = false
 bool EndlessSexLoop = false
 bool AlreadyKeyDown = false
-sslThreadController UpdateController
 float ForceUpdatePeriod = 30.0
 float BleedOutUpdatePeriod = 10.0
 int StartingHealthForRegist = 0
 int StartingArousalForRegist = 0
 int PlayerRegistPoint = 0
 Faction baseFaction
+sslThreadController UpdateController
+
+bool PlayerIsMale = false ; not use from alpha.3
+bool IsInCurrentFollowerFaction = false ;  not use from 2.0alpha1 ==> baseFaction
+bool IsInCurrentHireling = false ; not use from 2.0alpha1 ==> baseFaction
+bool AlreadyInEnemyFaction = false ; not use from 2.0alpha1 ==> dunPrisonerFaction
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 
@@ -107,11 +109,12 @@ State Busy
 	EndEvent
 EndState
 
-Function _readySexVictim(Faction fact)
+Function _readySexVictim()
 	Actor act = self.GetActorRef()
+	Faction fact = dunPrisonerFaction
 	act.AddSpell(SSLYACRKillmoveArmorSpell, false) ; silently
 	act.SetGhost(true)
-	AlreadyInEnemyFaction = false
+	AlreadyInPrisonerFaction = false
 	self._disableControls()
 	
 	if (act.IsInFaction(fact))
@@ -141,11 +144,11 @@ Function _readySexVictim(Faction fact)
 	act.StopCombatAlarm()
 EndFunction
 
-Function _endSexVictim(Faction fact = None)
+Function _endSexVictim()
 	Actor act = self.GetActorRef()
 	
-	if (!AlreadyInEnemyFaction && fact)
-		act.RemoveFromFaction(fact)
+	if (!AlreadyInPrisonerFaction)
+		act.RemoveFromFaction(dunPrisonerFaction)
 	endif
 	
 	if (self.IsPlayer)
@@ -171,9 +174,6 @@ EndFunction
 Function _disableControls()
 	if (self.IsPlayer)
 		Game.ForceThirdPerson()
-		; Game.DisablePlayerControls()
-		; Game.DisablePlayerControls(true, true, true, false, true, false, true, false)
-		; move, fight, camswitch, look, sneak, menu, activate, jornal
 	endif
 EndFunction
 
@@ -213,7 +213,7 @@ Function doSex(Actor aggr, Faction aggrFaction)
 			self._storePlayerRegist(victim)
 		endif
 		
-		self._readySexVictim(aggrFaction)
+		self._readySexVictim()
 		
 		sslBaseAnimation[] anims
 		if (aggr.HasKeyWord(ActorTypeNPC))
@@ -268,16 +268,16 @@ Function doSexLoop(Faction fact)
 	Actor aggr = Aggressor.GetActorRef()
 	Actor victim = self.GetActorRef()
 	
-	Actor[] helpers = AppUtil.GetHelpers(aggr, fact)
-	int helpersCount = self._forceRefHelpers(helpers) ; and reject none values
+	Actor[] actors = AppUtil.GetHelpersCombined(victim, aggr, fact)
+	self._forceRefHelpers(actors)
+	int helpersCount = actors.Length - 2
 	
-	AppUtil.Log("LOOPING run SexLab aggr " + aggr + ", count " + helpersCount)
+	AppUtil.Log("LOOPING run SexLab aggr " + aggr + ", helpers count " + helpersCount)
 	
 	sslBaseAnimation[] anims = self._buildAnimation(aggr, helpersCount)
-	actor[] sexActors = self._buildActors(aggr, victim, helpersCount)
 	
 	AppUtil.Log("LOOPING run SexLab " + SelfName)
-	int tid = self._quickSex(sexActors, anims, victim = victim, CenterOn = aggr)
+	int tid = self._quickSex(actors, anims, victim = victim, CenterOn = aggr)
 	sslThreadController controller = SexLab.GetController(tid)
 	
 	if (controller)
@@ -289,13 +289,11 @@ Function doSexLoop(Faction fact)
 		
 		self._stopCombatOneMore(aggr, victim)
 		Utility.Wait(1.0)
-		; self._endSexAggr(aggr)
-		aggr.SetGhost(false)
 		
-		int idx = helpers.Length
-		while idx
+		int idx = actors.Length
+		while idx != 1 ; actors[0] is victim
 			idx -= 1
-			helpers[idx].SetGhost(false)
+			actors[idx].SetGhost(false)
 		endwhile
 			
 		AppUtil.Log("LOOPING aggr setghost disable " + SelfName)
@@ -310,15 +308,15 @@ int Function _forceRefHelpers(Actor[] sppt)
 	self._clearHelpers()
 	int len = AppUtil.ArrayCount(sppt)
 	
-	if (len == 3)
-		Helper1.ForceRefTo(sppt[0])
-		Helper2.ForceRefTo(sppt[1])
-		Helper3.ForceRefTo(sppt[2])
-	elseif (len == 2)
-		Helper1.ForceRefTo(sppt[0])
-		Helper2.ForceRefTo(sppt[1])
-	elseif (len == 1)
-		Helper1.ForceRefTo(sppt[0])
+	if (len == 5)
+		Helper1.ForceRefTo(sppt[2])
+		Helper2.ForceRefTo(sppt[3])
+		Helper3.ForceRefTo(sppt[4])
+	elseif (len == 4)
+		Helper1.ForceRefTo(sppt[2])
+		Helper2.ForceRefTo(sppt[3])
+	elseif (len == 3)
+		Helper1.ForceRefTo(sppt[2])
 	endif
 	
 	return len
@@ -388,38 +386,6 @@ string Function _debugBuildAnimationTags(Actor male, int count)
 	endif
 	
 	return "invalid count"
-EndFunction
-
-Actor[] Function _buildActors(Actor male, Actor female, int count)
-	Actor[] sexActors
-	
-	if (count)
-		if (count == 3)
-			sexActors = new Actor[5]
-			sexActors[0] = female
-			sexActors[1] = male
-			sexActors[2] = Helper1.GetActorRef()
-			sexActors[3] = Helper2.GetActorRef()
-			sexActors[4] = Helper3.GetActorRef()
-		elseif (count == 2)
-			sexActors = new Actor[4]
-			sexActors[0] = female
-			sexActors[1] = male
-			sexActors[2] = Helper1.GetActorRef()
-			sexActors[3] = Helper2.GetActorRef()
-		elseif (count == 1)
-			sexActors = new Actor[3]
-			sexActors[0] = female
-			sexActors[1] = male
-			sexActors[2] = Helper1.GetActorRef()
-		endif
-	else
-		sexActors = new Actor[2]
-		sexActors[0] = female
-		sexActors[1] = male
-	endif
-	
-	return sexActors
 EndFunction
 
 ; code from SexLab's StartSex with disable beduse, disable leadin, and YACR Hook
@@ -506,9 +472,9 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			controller.GoToStage(stagecnt - 2)
 			RegisterForSingleUpdate(ForceUpdatePeriod)
 		else
-			Actor[] helpers = AppUtil.GetHelpers(aggr, fact)
-			AppUtil.Log("endless sex loop... helpers are " + helpers)
-			if (rndint < 90 && fact && AppUtil.ArrayCount(helpers)) ; 30%
+			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr, fact)
+			AppUtil.Log("endless sex loop... actors are " + actors)
+			if (rndint < 90 && fact && AppUtil.ArrayCount(actors)) ; 30%
 				AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
 				EndlessSexLoop = true
 			else ; 25%
@@ -684,7 +650,7 @@ Function EndSexEvent(Actor aggr)
 		self.doSexLoop(fact)
 	else ; Aggr's OnHit or Not EndlessRape
 		AppUtil.Log("EndSexEvent, truely end " + SelfName)
-		self._endSexVictim(fact)
+		self._endSexVictim()
 		
 		AppUtil.CleanFlyingDeadBody(aggr)
 		self._cleanDeadBody(Helper1)
@@ -776,14 +742,8 @@ Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
 EndFunction
 
 Event OnCellDetach()
-	Actor aggr = Aggressor.GetActorRef()
-	
 	; EndSexEvent is usually runned by OnCellDetach(), but this is papyrus. 2nd check.
-	if (aggr)
-		self._endSexVictim(AppUtil.GetEnemyType(aggr))
-	else
-		self._endSexVictim(None)
-	endif
+	self._endSexVictim()
 EndEvent
 
 
@@ -816,3 +776,4 @@ Faction Property SSLYACRActiveFaction  Auto
 Faction Property SSLYACRPurgedFollowerFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
+Faction Property dunPrisonerFaction  Auto  
