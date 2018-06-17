@@ -15,3 +15,6 @@ EndEvent
 Event OnEffectFinish(Actor akTarget, Actor akCaster)
 	akTarget.SetAV("Aggression", NativeAggrValue)
 EndEvent
+
+
+; ################### unused effect & script

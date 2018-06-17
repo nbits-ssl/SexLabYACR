@@ -206,42 +206,6 @@ Function rejoinFollower(Actor act, Faction fact)
 	act.AddToFaction(fact)
 EndFunction
 
-Function PurgePlayerFromTeam()
-	self.Log("Purge")
-	Actor act
-	ReferenceAlias ref
-	int len = Teammates.Length
-	
-	while len
-		len -= 1
-		ref = Teammates[len]
-		act = ref.GetActorRef()
-		self.Log(act)
-		if (act)
-			act.SetPlayerTeammate(false)
-		endif
-	endWhile
-EndFunction
-
-Function RecoverPlayerToTeam()
-	self.Log("Recover")
-	Actor act
-	ReferenceAlias ref
-	int len = Teammates.Length
-
-	while len
-		len -= 1
-		ref = Teammates[len]
-		act = ref.GetActorRef()
-		self.Log(act)
-		if (act)
-			if !(act.HasKeyWordString("SexLabActive"))
-				act.SetPlayerTeammate(true)
-			endif
-		endif
-	endWhile
-EndFunction
-
 bool Function ValidateMultiplaySupport(Faction fact)
 	int x = MultiplayEnemyFactions.Find(fact)
 	

@@ -166,7 +166,6 @@ SSL用の戦闘レイプMod。Defeatが自環境ではうまく動かないた�
 ### 2018/06/** - 2.0alpha1
 
 * 更新は上書き後、コンソールから stopquest sslyacr → startquest sslyacr
-  ないしエリア移動
 * Sexlab Aroused Reduxが必須に
 
 * 「抵抗する」キー追加、下2つ含めてアニメ1ステージにつき1回まで
@@ -178,6 +177,7 @@ SSL用の戦闘レイプMod。Defeatが自環境ではうまく動かないた�
 * メインクエストを起動させた後にYACRInitクエストが止まっていなかったのを修正
   (気になる人は stopquest sslyacrinit)
 
+* コード整理
 
 ### 2018/06/06 - 1.0rc1
 

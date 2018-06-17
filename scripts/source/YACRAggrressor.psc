@@ -27,7 +27,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 			selfact.SetGhost(true)
 			sslThreadController controller = SexLab.GetActorController(selfact)
 			controller.EndAnimation()
-			; selfact.SetGhost(false)
+			; selfact.SetGhost(false) ;  in Alias's spell YACRStopCombatEffect
 		endif
 	endif
 	
@@ -42,17 +42,6 @@ State Busy
 		; do nothing
 	EndEvent
 EndState
-
-;Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
-;	Actor aggr = self.GetActorRef()
-;	
-;	if (aeCombatState != 0 && !aggr.HasKeyWordString("SexLabActive"))
-;		AppUtil.Log("enemy combatstatechanged, reset ghost " + self.GetActorRef().GetActorBase().GetName())
-;		Actor selfact = self.GetActorRef()
-;		selfact.SetGhost(false)
-;		; self.Clear()
-;	endif
-;EndEvent
 
 Event OnDying(Actor akKiller)
 	ObjectReference wobj = self.GetActorRef() as ObjectReference
