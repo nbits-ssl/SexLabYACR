@@ -5,7 +5,6 @@ bool Property debugLogFlag = false Auto
 bool Property knockDownAll = true Auto
 
 bool Property enablePlayerRape = false Auto
-
 bool Property enableArmorUnequipMode = false Auto
 
 bool Property enableArmorBreak = true Auto
@@ -28,6 +27,8 @@ int Property healthLimitNPC = 50 Auto
 
 int Property keyCodeHelp = 275 Auto
 int Property keyCodeSubmit = 274 Auto
+bool Property enableSimpleSlaverySupport = false Auto
+int Property simpleSlaveryChance = 100 Auto
 
 int knockDownAllID
 int debugLogFlagID
@@ -35,6 +36,8 @@ int debugNotifFlagID
 
 int keyCodeHelpID
 int keyCodeSubmitID
+int enableSimpleSlaverySupportID
+int simpleSlaveryChanceID
 
 int enablePlayerRapeID
 
@@ -164,7 +167,10 @@ Event OnPageReset(string page)
 		
 		keyCodeHelpID = AddKeyMapOption("$KeyCodeHelp", keyCodeHelp)
 		keyCodeSubmitID = AddKeyMapOption("$KeyCodeSubmit", keyCodeSubmit)
-
+		
+		enableSimpleSlaverySupportID = AddToggleOption("$EnableSimpleSlaverySupport", enableSimpleSlaverySupport)
+		simpleSlaveryChanceID = AddToggleOption("$SimpleSlaveryChance", simpleSlaveryChance)
+		
 		knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll)
 		
 		AddEmptyOption()
@@ -284,39 +290,52 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$MultiplayEnemyFactions")
 	elseif (option == debugNotifFlagID)
 		SetInfoText("$OutputPapyrusNotifInfo")
+	elseif (option == keyCodeHelpID)
+		SetInfoText("$KeyCodeHelpInfo")
+	elseif (option == keyCodeSubmitID)
+		SetInfoText("$KeyCodeSubmitInfo")
+	elseif (option == enableSimpleSlaverySupportID)
+		SetInfoText("$EnableSimpleSlaverySupportInfo")
+	elseif (option == simpleSlaveryChanceID)
+		SetInfoText("$SimpleSlaveryChanceInfo")
 	endif
 EndEvent
 
 Event OnOptionSelect(int option)
 	if (option == enableArmorBreakID)
 		enableArmorBreak = !enableArmorBreak
-		SetToggleOptionValue(enableArmorBreakID, enableArmorBreak)
+		SetToggleOptionValue(option, enableArmorBreak)
 	elseif (option == enableEndlessRapeID)
 		enableEndlessRape = !enableEndlessRape
-		SetToggleOptionValue(enableEndlessRapeID, enableEndlessRape)
+		SetToggleOptionValue(option, enableEndlessRape)
 		
 	elseif (option == enableArmorBreakNPCID)
 		enableArmorBreakNPC = !enableArmorBreakNPC
-		SetToggleOptionValue(enableArmorBreakNPCID, enableArmorBreakNPC)
+		SetToggleOptionValue(option, enableArmorBreakNPC)
 	elseif (option == enableEndlessRapeNPCID)
 		enableEndlessRapeNPC = !enableEndlessRapeNPC
-		SetToggleOptionValue(enableEndlessRapeNPCID, enableEndlessRapeNPC)
+		SetToggleOptionValue(option, enableEndlessRapeNPC)
 		
 	elseif (option == enablePlayerRapeID)
 		enablePlayerRape = !enablePlayerRape
-		SetToggleOptionValue(enablePlayerRapeID, enablePlayerRape)
-	elseif (option == knockDownAllID)
-		knockDownAll = !knockDownAll
-		SetToggleOptionValue(knockDownAllID, knockDownAll)
-	elseif (option == debugLogFlagID)
-		debugLogFlag = !debugLogFlag
-		SetToggleOptionValue(debugLogFlagID, debugLogFlag)
-	elseif (option == debugNotifFlagID)
-		debugNotifFlag = !debugNotifFlag
-		SetToggleOptionValue(debugNotifFlagID, debugNotifFlag)
+		SetToggleOptionValue(option, enablePlayerRape)
 	elseif (option == enableArmorUnequipModeID)
 		enableArmorUnequipMode = !enableArmorUnequipMode
-		SetToggleOptionValue(enableArmorUnequipModeID, enableArmorUnequipMode)
+		SetToggleOptionValue(option, enableArmorUnequipMode)
+
+	elseif (option == enableSimpleSlaverySupportID)
+		enableSimpleSlaverySupport = !enableSimpleSlaverySupport
+		SetToggleOptionValue(option, enableSimpleSlaverySupport)
+		
+	elseif (option == knockDownAllID)
+		knockDownAll = !knockDownAll
+		SetToggleOptionValue(option, knockDownAll)
+	elseif (option == debugLogFlagID)
+		debugLogFlag = !debugLogFlag
+		SetToggleOptionValue(option, debugLogFlag)
+	elseif (option == debugNotifFlagID)
+		debugNotifFlag = !debugNotifFlag
+		SetToggleOptionValue(option, debugNotifFlag)
 		
 	elseif (availableEnemyFactionsIDS.Find(option) > -1)
 		int idx = availableEnemyFactionsIDS.Find(option)
@@ -352,6 +371,9 @@ Event OnOptionSliderOpen(int option)
 		self._setSliderDialogWithPercentage(armorBreakChanceLightArmorNPC)
 	elseif (option == armorBreakChanceHeavyArmorNPCID)
 		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorNPC)
+
+	elseif (option == simpleSlaveryChanceID)
+		self._setSliderDialogWithPercentage(simpleSlaveryChance)
 	
 	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
 		int idx = multiplayEnemyFactionsIDS.Find(option)
@@ -378,41 +400,45 @@ EndFunction
 Event OnOptionSliderAccept(int option, float value)
 	if (option == healthLimitID)
 		healthLimit = value as int
-		SetSliderOptionValue(healthLimitID, healthLimit)
+		SetSliderOptionValue(option, healthLimit)
 	elseif (option == rapeChanceID)
 		rapeChance = value as int
-		SetSliderOptionValue(rapeChanceID, rapeChance)
+		SetSliderOptionValue(option, rapeChance)
 	elseif (option == rapeChanceNotNakedID)
 		rapeChanceNotNaked = value as int
-		SetSliderOptionValue(rapeChanceNotNakedID, rapeChanceNotNaked)
+		SetSliderOptionValue(option, rapeChanceNotNaked)
 	elseif (option == armorBreakChanceClothID)
 		armorBreakChanceCloth = value as int
-		SetSliderOptionValue(armorBreakChanceClothID, armorBreakChanceCloth)
+		SetSliderOptionValue(option, armorBreakChanceCloth)
 	elseif (option == armorBreakChanceLightArmorID)
 		armorBreakChanceLightArmor = value as int
-		SetSliderOptionValue(armorBreakChanceLightArmorID, armorBreakChanceLightArmor)
+		SetSliderOptionValue(option, armorBreakChanceLightArmor)
 	elseif (option == armorBreakChanceHeavyArmorID)
 		armorBreakChanceHeavyArmor = value as int
-		SetSliderOptionValue(armorBreakChanceHeavyArmorID, armorBreakChanceHeavyArmor)
+		SetSliderOptionValue(option, armorBreakChanceHeavyArmor)
 		
 	elseif (option == healthLimitNPCID)
 		healthLimitNPC = value as int
-		SetSliderOptionValue(healthLimitNPCID, healthLimitNPC)
+		SetSliderOptionValue(option, healthLimitNPC)
 	elseif (option == rapeChanceNPCID)
 		rapeChanceNPC = value as int
-		SetSliderOptionValue(rapeChanceNPCID, rapeChanceNPC)
+		SetSliderOptionValue(option, rapeChanceNPC)
 	elseif (option == rapeChanceNotNakedNPCID)
 		rapeChanceNotNakedNPC = value as int
-		SetSliderOptionValue(rapeChanceNotNakedNPCID, rapeChanceNotNakedNPC)
+		SetSliderOptionValue(option, rapeChanceNotNakedNPC)
 	elseif (option == armorBreakChanceClothNPCID)
 		armorBreakChanceClothNPC = value as int
-		SetSliderOptionValue(armorBreakChanceClothNPCID, armorBreakChanceClothNPC)
+		SetSliderOptionValue(option, armorBreakChanceClothNPC)
 	elseif (option == armorBreakChanceLightArmorNPCID)
 		armorBreakChanceLightArmorNPC = value as int
-		SetSliderOptionValue(armorBreakChanceLightArmorNPCID, armorBreakChanceLightArmorNPC)
+		SetSliderOptionValue(option, armorBreakChanceLightArmorNPC)
 	elseif (option == armorBreakChanceHeavyArmorNPCID)
 		armorBreakChanceHeavyArmorNPC = value as int
-		SetSliderOptionValue(armorBreakChanceHeavyArmorNPCID, armorBreakChanceHeavyArmorNPC)
+		SetSliderOptionValue(option, armorBreakChanceHeavyArmorNPC)
+
+	elseif (option == simpleSlaveryChanceID)
+		simpleSlaveryChance = value as int
+		SetSliderOptionValue(option, simpleSlaveryChance)
 		
 	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
 		int idx = multiplayEnemyFactionsIDS.Find(option)

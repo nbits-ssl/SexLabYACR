@@ -524,7 +524,7 @@ Event OnKeyDown(int keyCode)
 	elseif (keyCode == Config.keyCodeSubmit)
 		AlreadyKeyDown = true
 		debug.Notification(SelfName + " gave up on everything...")
-		Utility.Wait(2.0)
+		Utility.Wait(3.0)
 		self._submitPlayer()
 	endif
 EndEvent
@@ -539,8 +539,15 @@ EndFunction
 Function _submitPlayer()
 	Actor selfact = self.GetActorRef()
 	if (self._stopPlayerRape(selfact))
-		Utility.Wait(1.0)
-		selfact.Kill()
+		if (Config.enableSimpleSlaverySupport && \
+			Utility.RandomInt() <= Config.simpleSlaveryChance)
+			
+			selfact.UnequipAll()
+			sendModEvent("SSLV Entry")
+		else
+			Utility.Wait(1.25)
+			selfact.Kill()
+		endif
 	endif
 EndFunction
 
