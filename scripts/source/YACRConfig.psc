@@ -25,8 +25,9 @@ int Property rapeChanceNPC = 50 Auto
 int Property rapeChanceNotNakedNPC = 10 Auto
 int Property healthLimitNPC = 50 Auto
 
-int Property keyCodeHelp = 275 Auto
-int Property keyCodeSubmit = 274 Auto
+int Property keyCodeRegist = 277 Auto
+int Property keyCodeHelp = 274 Auto
+int Property keyCodeSubmit = 281 Auto
 bool Property enableSimpleSlaverySupport = false Auto
 int Property simpleSlaveryChance = 100 Auto
 
@@ -34,6 +35,7 @@ int knockDownAllID
 int debugLogFlagID
 int debugNotifFlagID
 
+int keyCodeRegistID
 int keyCodeHelpID
 int keyCodeSubmitID
 int enableSimpleSlaverySupportID
@@ -165,11 +167,12 @@ Event OnPageReset(string page)
 		
 		AddHeaderOption("$YACRSystem")
 		
+		keyCodeRegistID = AddKeyMapOption("$KeyCodeRegist", keyCodeRegist)
 		keyCodeHelpID = AddKeyMapOption("$KeyCodeHelp", keyCodeHelp)
 		keyCodeSubmitID = AddKeyMapOption("$KeyCodeSubmit", keyCodeSubmit)
 		
 		enableSimpleSlaverySupportID = AddToggleOption("$EnableSimpleSlaverySupport", enableSimpleSlaverySupport)
-		simpleSlaveryChanceID = AddToggleOption("$SimpleSlaveryChance", simpleSlaveryChance)
+		simpleSlaveryChanceID = AddSliderOption("$SimpleSlaveryChance", simpleSlaveryChance)
 		
 		knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll)
 		
@@ -290,6 +293,8 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$MultiplayEnemyFactions")
 	elseif (option == debugNotifFlagID)
 		SetInfoText("$OutputPapyrusNotifInfo")
+	elseif (option == keyCodeRegistID)
+		SetInfoText("$KeyCodeRegistInfo")
 	elseif (option == keyCodeHelpID)
 		SetInfoText("$KeyCodeHelpInfo")
 	elseif (option == keyCodeSubmitID)
@@ -448,7 +453,9 @@ Event OnOptionSliderAccept(int option, float value)
 EndEvent
 
 Event OnOptionKeyMapChange(int option, int keyCode, string conflictControl, string conflictName)
-	if (option == keyCodeHelpID)
+	if (option == keyCodeRegistID)
+		keyCodeRegist = keyCode
+	elseif (option == keyCodeHelpID)
 		keyCodeHelp = keyCode
 	elseif (option == keyCodeSubmitID)
 		keyCodeSubmit = keyCode

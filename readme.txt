@@ -99,6 +99,7 @@ SSL用の戦闘レイプMod。Defeatが自環境ではうまく動かないた�
 
 * Skyrim OE + Dawnguard + Dragonborn
 * Skyrim SexLab 1.62
+* Sexlab Aroused Redux
 * (クリーチャー姦をONにするなら、しかるべき環境とアニメーション)
 
 
@@ -166,10 +167,13 @@ SSL用の戦闘レイプMod。Defeatが自環境ではうまく動かないた�
 
 * 更新は上書き後、コンソールから stopquest sslyacr → startquest sslyacr
   ないしエリア移動
+* Sexlab Aroused Reduxが必須に
 
+* 「抵抗する」キー追加、下2つ含めてアニメ1ステージにつき1回まで
+* 抜け出せる確率は性欲＋体力/2を100Dと比較なので、押せばまず抜け出せる
 * 男orペットフォロワーを連れている時限定で機能する「助けを呼ぶ」ホットキー追加
 * ロードする代わりの「全てをあきらめる」ホットキーを追加(特に演出はない)
-  対応が簡単だったので↑キーにSimple Slavery使うように設定可に(5.31でテスト)
+  対応が簡単だったので↑キーにSimple Slavery使うように設定可(5.31でテスト)
 
 
 ### 2018/06/06 - 1.0rc1

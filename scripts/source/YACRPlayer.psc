@@ -11,6 +11,9 @@ bool AlreadyKeyDown = false
 sslThreadController UpdateController
 float ForceUpdatePeriod = 30.0
 float BleedOutUpdatePeriod = 10.0
+int StartingHealthForRegist = 0
+int StartingArousalForRegist = 0
+int PlayerRegistPoint = 0
 Faction baseFaction
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
@@ -125,6 +128,7 @@ Function _readySexVictim(Faction fact)
 			AppUtil.KnockDownAll()
 			AppUtil.BanishAllDaedra()
 		endif
+		RegisterForKey(Config.keyCodeRegist)
 		RegisterForKey(Config.keyCodeHelp)
 		RegisterForKey(Config.keyCodeSubmit)
 		AlreadyKeyDown = false
@@ -151,6 +155,7 @@ Function _endSexVictim(Faction fact = None)
 			AppUtil.WakeUpAll()
 		endif
 		Game.EnablePlayerControls()
+		UnregisterForKey(Config.keyCodeRegist)
 		UnregisterForKey(Config.keyCodeHelp)
 		UnregisterForKey(Config.keyCodeSubmit)
 	else
@@ -205,6 +210,7 @@ Function doSex(Actor aggr, Faction aggrFaction)
 	if (Aggressor.ForceRefIfEmpty(aggr))
 		if (self.IsPlayer)
 			debug.SendAnimationEvent(victim, "BleedOutStart")
+			self._storePlayerRegist(victim)
 		endif
 		
 		self._readySexVictim(aggrFaction)
@@ -246,6 +252,15 @@ Function doSex(Actor aggr, Faction aggrFaction)
 	else
 		AppUtil.Log("already filled aggr reference, pass doSex " + SelfName)
 	endif
+EndFunction
+
+Function _storePlayerRegist(Actor selfact)
+	StartingHealthForRegist = (selfact.GetAVPercentage("health") * 100) as int
+	StartingArousalForRegist = 100 - AppUtil.GetArousal(selfact)
+	PlayerRegistPoint = (StartingArousalForRegist + StartingHealthForRegist) / 2
+	AppUtil.Log("PlayerRegistPoint stored : " + PlayerRegistPoint)
+	AppUtil.Log("                  Health : " + StartingHealthForRegist)
+	AppUtil.Log("                  Arousal: " + StartingArousalForRegist)
 EndFunction
 
 Function doSexLoop(Faction fact)
@@ -428,7 +443,7 @@ int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim
 		return Thread.tid
 	endif
 	return -1
-endFunction
+EndFunction
 
 Function _waitSetup(sslThreadController controller)
 	if (controller)
@@ -453,6 +468,8 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
 	int cumid = controller.Animation.GetCum(0)
+
+	Actor selfact = self.GetActorRef()
 	Actor aggr = controller.Positions[1]
 	
 	; for Onhit missing de-ghost
@@ -472,7 +489,6 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		int rndint = Utility.RandomInt()
 		Faction fact = AppUtil.GetEnemyType(aggr)
 		
-		Actor selfact = self.GetActorRef()
 		selfact.SetGhost(false)
 		SexLab.ActorLib.ApplyCum(selfact, cumid)
 		selfact.SetGhost(true)
@@ -506,19 +522,39 @@ EndEvent
 
 Event OnKeyDown(int keyCode)
 	Actor selfact = self.GetActorRef()
-	if (!selfact.IsInFaction(SSLAnimatingFaction) || AlreadyKeyDown)
+	if !(self.IsPlayer)
+		return
+	elseif !(selfact.HasKeyWordString("SexLabActive"))
+		AppUtil.Log("not in anim")
+		return
+	elseif (AlreadyKeyDown)
+		AppUtil.Log("Already key down, wait for next stage")
 		return
 	endif
 	
-	if (keyCode == Config.keyCodeHelp)
+	if (keyCode == Config.keyCodeRegist)
 		AlreadyKeyDown = true
-		debug.Notification(SelfName + " is resisting...")
+		debug.Notification(SelfName + " is registing...")
+		Actor aggr = Aggressor.GetActorRef()
+		Utility.Wait(2.0)
+		if (aggr && Utility.RandomInt() < PlayerRegistPoint)
+			self._escapePlayer(aggr)
+		else
+			debug.Notification(SelfName + " could not escape...")
+		endif
+	elseif (keyCode == Config.keyCodeHelp)
+		AlreadyKeyDown = true
+		debug.Notification(SelfName + " is calling help...")
 		Actor aggr = Aggressor.GetActorRef()
 		if (aggr)
 			Actor helper = AppUtil.CallHelp(aggr)
 			if (helper)
+				AppUtil.Log("CallHelp, helper is " + helper.GetActorBase().GetName())
 				Utility.Wait(0.5)
 				self._escapePlayer(aggr)
+			else
+				Utility.Wait(2.0)
+				debug.Notification("Nobody helps you...")
 			endif
 		endif
 	elseif (keyCode == Config.keyCodeSubmit)
@@ -530,9 +566,10 @@ Event OnKeyDown(int keyCode)
 EndEvent
 
 Function _escapePlayer(Actor aggr)
-	Actor selfact = self.GetActorRef()
+	Actor selfact = PlayerActor
 	if (self._stopPlayerRape(selfact))
-		(selfact as ObjectReference).PushActorAway(aggr, 5.0)
+		selfact.PushActorAway(aggr, 5.0)
+		;debug.sendAnimationEvent(selfact, "IdleStaggerBack")
 	endif
 EndFunction
 

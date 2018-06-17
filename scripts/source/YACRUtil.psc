@@ -18,6 +18,10 @@ Function Notif(String msg)
 	endif
 EndFunction
 
+int Function GetArousal(Actor act)
+	return act.GetFactionRank(sla_Arousal)
+EndFunction
+
 bool Function CheckSex(Actor act, int gender = -1)
 	if (gender == -1)
 		return true
@@ -103,7 +107,7 @@ Function KnockDownAll()
 					act.SetGhost(false)
 				endif
 				if (!act.IsBleedingOut() || act.GetAnimationVariableInt("iState") != 5) ; bleedout
-					debug.SendAnimationEvent(act as ObjectReference, "BleedOutStart")
+					debug.SendAnimationEvent(act, "BleedOutStart")
 				endif
 			else
 				if (!act.HasSpell(SSLYACRParalyseMagic))
@@ -113,7 +117,7 @@ Function KnockDownAll()
 					
 					act.SetGhost(false)
 					act.AddSpell(SSLYACRParalyseMagic)
-					(PlayerActor as ObjectReference).PushActorAway(act, 2.0)
+					PlayerActor.PushActorAway(act, 2.0)
 				endif
 			endif
 		endif
@@ -175,7 +179,11 @@ Actor Function CallHelp(Actor aggr)
 		endif
 	endwhile
 	
-	return act
+	if (loop)
+		return none
+	else
+		return act
+	endif
 EndFunction
 
 Faction Function purgeFollower(Actor act)
@@ -381,3 +389,4 @@ Faction Property CurrentFollowerFaction  Auto
 Faction Property CurrentHireling  Auto  
 
 SPELL Property PlayerHelperAngrySpell  Auto  
+Faction Property sla_Arousal  Auto  
