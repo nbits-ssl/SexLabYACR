@@ -6,4 +6,5 @@ Event OnInit()
 	if !(SSLYACR.IsRunning())
 		SSLYACR.Start()
 	endif
+	self.Stop()
 EndEvent
