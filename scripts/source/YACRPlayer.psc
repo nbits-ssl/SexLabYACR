@@ -7,6 +7,7 @@ bool IsInCurrentFollowerFaction = false ;  not use from 2.0alpha1 ==> baseFactio
 bool IsInCurrentHireling = false ;  not use from 2.0alpha1 ==> baseFaction
 bool AlreadyInEnemyFaction = false
 bool EndlessSexLoop = false
+bool AlreadyKeyDown = false
 sslThreadController UpdateController
 float ForceUpdatePeriod = 30.0
 float BleedOutUpdatePeriod = 10.0
@@ -126,6 +127,7 @@ Function _readySexVictim(Faction fact)
 		endif
 		RegisterForKey(Config.keyCodeHelp)
 		RegisterForKey(Config.keyCodeSubmit)
+		AlreadyKeyDown = false
 	else
 		act.AddToFaction(SSLYACRPurgedFollowerFaction)
 		baseFaction = AppUtil.purgeFollower(act)
@@ -458,8 +460,11 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		aggr.SetGhost(false)
 		AppUtil.Log("###FIXME### Onhit missing de-ghost " + SelfName)
 	endif
-	if (self.IsPlayer && Config.knockDownAll)
-		AppUtil.KnockDownAll()
+	if (self.IsPlayer)
+		AlreadyKeyDown = false
+		if (Config.knockDownAll)
+			AppUtil.KnockDownAll()
+		endif
 	endif
 	
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
@@ -500,33 +505,58 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 EndEvent
 
 Event OnKeyDown(int keyCode)
-	SelfName = self.GetActorRef().GetActorBase().GetName()
+	Actor selfact = self.GetActorRef()
+	if (!selfact.IsInFaction(SSLAnimatingFaction) || AlreadyKeyDown)
+		return
+	endif
 	
 	if (keyCode == Config.keyCodeHelp)
+		AlreadyKeyDown = true
 		debug.Notification(SelfName + " is resisting...")
-		
 		Actor aggr = Aggressor.GetActorRef()
 		if (aggr)
 			Actor helper = AppUtil.CallHelp(aggr)
 			if (helper)
 				Utility.Wait(0.5)
-				self._escapePlayer()
+				self._escapePlayer(aggr)
 			endif
 		endif
 	elseif (keyCode == Config.keyCodeSubmit)
+		AlreadyKeyDown = true
 		debug.Notification(SelfName + " gave up on everything...")
+		Utility.Wait(2.0)
+		self._submitPlayer()
 	endif
 EndEvent
 
-Function _escapePlayer()
+Function _escapePlayer(Actor aggr)
 	Actor selfact = self.GetActorRef()
+	if (self._stopPlayerRape(selfact))
+		(selfact as ObjectReference).PushActorAway(aggr, 5.0)
+	endif
+EndFunction
+
+Function _submitPlayer()
+	Actor selfact = self.GetActorRef()
+	if (self._stopPlayerRape(selfact))
+		Utility.Wait(1.0)
+		selfact.Kill()
+	endif
+EndFunction
+
+bool Function _stopPlayerRape(Actor selfact)
+	bool ret
+
 	if (selfact)
 		if selfact.HasKeyWordString("SexLabActive")
 			AppUtil.Log("Player escaped, Stop rape")
 			sslThreadController controller = SexLab.GetActorController(selfact)
 			controller.EndAnimation()
+			ret = true
 		endif
 	endif
+	
+	return ret
 EndFunction
 
 ; from rapespell, genius!
