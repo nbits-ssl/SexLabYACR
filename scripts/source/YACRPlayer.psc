@@ -215,13 +215,7 @@ Function doSex(Actor aggr, Faction aggrFaction)
 		
 		self._readySexVictim()
 		
-		sslBaseAnimation[] anims
-		if (aggr.HasKeyWord(ActorTypeNPC))
-			anims =  SexLab.GetAnimationsByTags(2, "MF,Aggressive", "Oral", true)
-		else
-			anims =  SexLab.GetAnimationsByTags(2, "")
-		endif
-		
+		sslBaseAnimation[] anims = self._buildAnimation(aggr)
 		actor[] sexActors = new actor[2]
 		sexActors[0] = victim
 		sexActors[1] = aggr
@@ -322,66 +316,62 @@ int Function _forceRefHelpers(Actor[] sppt)
 	return len
 EndFunction
 
-sslBaseAnimation[] Function _buildAnimation(Actor male, int count)
+sslBaseAnimation[] Function _buildAnimation(Actor male, int count = 0)
 	sslBaseAnimation[] anims
 	
-	if (count)
-		if (count == 3)
-			if (male.HasKeyWord(ActorTypeNPC))
-				anims = SexLab.GetAnimationsByTags(5, "MMMMF")
-			else
-				anims = SexLab.GetAnimationsByTags(5, "FCCCC")
-			endif
-		elseif (count == 2)
-			if (male.HasKeyWord(ActorTypeNPC))
-				anims = SexLab.GetAnimationsByTags(4, "MMMF")
-			else
-				anims = SexLab.GetAnimationsByTags(4, "FCCC")
-			endif
-		elseif (count == 1)
-			if (male.HasKeyWord(ActorTypeNPC))
-				anims = SexLab.GetAnimationsByTags(3, "MMF,Aggressive")
-			else
-				anims = SexLab.GetAnimationsByTags(3, "FCC")
-			endif
-		endif
-	else
+	if (count == 3)
 		if (male.HasKeyWord(ActorTypeNPC))
-			anims = SexLab.GetAnimationsByTags(2, "MF,Aggressive", "Oral")
+			anims = SexLab.GetAnimationsByTags(5, "MMMMF")
 		else
-			anims = SexLab.GetAnimationsByTags(2, "FC")
+			anims = SexLab.GetAnimationsByTags(5, "FCCCC")
+		endif
+	elseif (count == 2)
+		if (male.HasKeyWord(ActorTypeNPC))
+			anims = SexLab.GetAnimationsByTags(4, "MMMF")
+		else
+			anims = SexLab.GetAnimationsByTags(4, "FCCC")
+		endif
+	elseif (count == 1)
+		if (male.HasKeyWord(ActorTypeNPC))
+			anims = SexLab.GetAnimationsByTags(3, "MMF,Aggressive")
+		else
+			anims = SexLab.GetAnimationsByTags(3, "FCC")
+		endif
+	elseif (count == 0)
+		if (male.HasKeyWord(ActorTypeNPC))
+			anims = SexLab.GetAnimationsByTags(2, "MF,Aggressive", "Oral", true)
+		else
+			anims = SexLab.GetAnimationsByTags(2, "FC", "Oral", true)
 		endif
 	endif
 	
 	return anims
 EndFunction
 
-string Function _debugBuildAnimationTags(Actor male, int count)
-	if (count)
-		if (count == 3)
-			if (male.HasKeyWord(ActorTypeNPC))
-				return "MMMMF"
-			else
-				return "FCCCC"
-			endif
-		elseif (count == 2)
-			if (male.HasKeyWord(ActorTypeNPC))
-				return "MMMF"
-			else
-				return "FCCC"
-			endif
-		elseif (count == 1)
-			if (male.HasKeyWord(ActorTypeNPC))
-				return "MMF,Aggressive"
-			else
-				return "FCC"
-			endif
+string Function _debugBuildAnimationTags(Actor male, int count = 0)
+	if (count == 3)
+		if (male.HasKeyWord(ActorTypeNPC))
+			return "MMMMF"
+		else
+			return "FCCCC"
 		endif
-	else
+	elseif (count == 2)
+		if (male.HasKeyWord(ActorTypeNPC))
+			return "MMMF"
+		else
+			return "FCCC"
+		endif
+	elseif (count == 1)
+		if (male.HasKeyWord(ActorTypeNPC))
+			return "MMF,Aggressive"
+		else
+			return "FCC"
+		endif
+	elseif (count == 0)
 		if (male.HasKeyWord(ActorTypeNPC))
 			return "MF,Aggressive - Oral"
 		else
-			return "FC"
+			return "FC - Oral"
 		endif
 	endif
 	
@@ -429,6 +419,7 @@ Function _waitSetup(sslThreadController controller)
 EndFunction
 
 Event StageStartEventYACR(int tid, bool HasPlayer)
+	AppUtil.Log("StageStartEvent: " + SelfName)
 	self._getAudience()
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
@@ -458,10 +449,11 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		selfact.SetGhost(false)
 		SexLab.ActorLib.ApplyCum(selfact, cumid)
 		selfact.SetGhost(true)
-		
+
+		controller.UnregisterForUpdate()
 		float laststagewait = SexLab.Config.StageTimerAggr[4]
 		if (laststagewait > 1)
-			Utility.Wait(laststagewait - 1.5) 
+			Utility.Wait(laststagewait - 2.0) 
 		endif
 		
 		if (rndint < 5) ; 20%
@@ -474,7 +466,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		else
 			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr, fact)
 			AppUtil.Log("endless sex loop... actors are " + actors)
-			if (rndint < 90 && fact && AppUtil.ArrayCount(actors)) ; 30%
+			if (rndint < 90 && fact && (AppUtil.ArrayCount(actors) - 2) > 0) ; 30%
 				AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
 				EndlessSexLoop = true
 			else ; 25%
@@ -483,12 +475,15 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 				RegisterForSingleUpdate(ForceUpdatePeriod)
 			endif
 		endif
+		controller.RegisterForSingleUpdate(0.2)
+		; thank you obachan
+		; GetHelpersCombined() is heavy, when test with 40 npcs sometimes 1.5sec is too short time.
 	endif
 EndEvent
 
 Event OnKeyDown(int keyCode)
 	Actor selfact = self.GetActorRef()
-	if !(self.IsPlayer)
+	if (!self.IsPlayer || Utility.IsInMenuMode())
 		return
 	elseif !(selfact.HasKeyWordString("SexLabActive"))
 		AppUtil.Log("not in anim")
@@ -499,6 +494,7 @@ Event OnKeyDown(int keyCode)
 	endif
 	
 	if (keyCode == Config.keyCodeRegist)
+		AppUtil.Log("OnkeyDown: Regist")
 		AlreadyKeyDown = true
 		debug.Notification(SelfName + " is registing...")
 		Actor aggr = Aggressor.GetActorRef()
@@ -509,6 +505,7 @@ Event OnKeyDown(int keyCode)
 			debug.Notification(SelfName + " could not escape...")
 		endif
 	elseif (keyCode == Config.keyCodeHelp)
+		AppUtil.Log("OnkeyDown: CallHelp")
 		AlreadyKeyDown = true
 		debug.Notification(SelfName + " is calling help...")
 		Actor aggr = Aggressor.GetActorRef()
@@ -524,6 +521,7 @@ Event OnKeyDown(int keyCode)
 			endif
 		endif
 	elseif (keyCode == Config.keyCodeSubmit)
+		AppUtil.Log("OnkeyDown: Submit")
 		AlreadyKeyDown = true
 		debug.Notification(SelfName + " gave up on everything...")
 		Utility.Wait(3.0)

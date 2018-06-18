@@ -64,14 +64,6 @@ Faction Function GetEnemyType(Actor act)
 	return None
 EndFunction
 
-Actor Function GetPlayerAggressor()
-	Actor act
-	if (PlayerAggressor)
-		act = PlayerAggressor.GetActorRef()
-	endif
-	return act
-EndFunction
-
 Function BanishAllDaedra()
 	if (SSLYACRDaedraBreaker.IsRunning())
 		SSLYACRDaedraBreaker.Stop()
@@ -208,25 +200,24 @@ EndFunction
 
 Actor[] Function GetHelpersCombined(Actor victim, Actor aggr, Faction fact)
 	Actor[] actors
+	Quest searcherQuest
+	ReferenceAlias mainAggr
 	
 	if (aggr.HasKeyWord(ActorTypeNPC))
-		if !(SSLYACRHelperHumanMain.IsRunning())
-			SSLYACRHelperHumanMainAggr.ForceRefTo(aggr)
-			actors = self._getHelpersCombined(victim, aggr, SSLYACRHelperHumanSearcher, MultiplayEnemyFactionsConfig[0])
-			SSLYACRHelperHumanMain.Stop()
-		endif
-	else ; Creature
-		int x = MultiplayEnemyFactions.Find(fact)
-		
-		if (x > -1)
-			actors = self._getHelpersCombined(victim, aggr, MultiplayEnemySearcher[x], MultiplayEnemyFactionsConfig[x])
-		endif
+		searcherQuest = SSLYACRHelperHumanSearcher
+		mainAggr = SSLYACRHelperHumanMainAggr
+	else
+		searcherQuest = SSLYACRHelperCreatureSearcher
+		mainAggr = SSLYACRHelperCreatureMainAggr
 	endif
+	
+	mainAggr.ForceRefTo(aggr)
+	actors = self._getHelpersCombined(victim, aggr, searcherQuest)
 	
 	return actors
 EndFunction
 
-Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst, int max)
+Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst)
 	Actor[] tmpArray
 	Actor[] actors
 	sslBaseAnimation[] anims
@@ -247,7 +238,8 @@ Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst, int ma
 		actors[2] = tmpArray[0]
 		actors[1] = aggr
 		actors[0] = victim
-		anims = SexLab.PickAnimationsByActors(actors)
+		anims = self._pickAnimationsByActors(actors)
+		self.Log("###3### " + anims)
 		if !(anims)
 			idx = 2
 		endif
@@ -259,7 +251,8 @@ Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst, int ma
 		actors[2] = tmpArray[0]
 		actors[1] = aggr
 		actors[0] = victim
-		anims = SexLab.PickAnimationsByActors(actors)
+		anims = self._pickAnimationsByActors(actors)
+		self.Log("###2### " + anims)
 		if !(anims)
 			idx = 1
 		endif
@@ -270,7 +263,8 @@ Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst, int ma
 		actors[2] = tmpArray[0]
 		actors[1] = aggr
 		actors[0] = victim
-		anims = SexLab.PickAnimationsByActors(actors, Aggressive = true)
+		anims = self._pickAnimationsByActors(actors, Aggressive = true)
+		self.Log("###1### " + anims)
 		if !(anims)
 			idx = 0
 		endif
@@ -283,6 +277,20 @@ Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst, int ma
 	endif
 	
 	return actors
+EndFunction
+
+sslBaseAnimation[] Function _pickAnimationsByActors(Actor[] actors, bool aggressive = false)
+	sslBaseAnimation[] anims
+	Actor act = actors[1]
+	
+	if (act.HasKeyWord(ActorTypeNPC))
+		anims = SexLab.PickAnimationsByActors(actors, Aggressive = aggressive)
+	else
+		Race actRace = act.GetRace()
+		anims = SexLab.GetCreatureAnimationsByRace(actors.Length, actRace)
+	endif
+	
+	return anims
 EndFunction
 
 ; from creationkit.com, author is Chesko || Form[] => Actor[]
@@ -359,3 +367,9 @@ Faction Property CurrentHireling  Auto
 
 SPELL Property PlayerHelperAngrySpell  Auto  
 Faction Property sla_Arousal  Auto  
+
+Quest Property SSLYACRHelperCreatureMain  Auto  
+
+Quest Property SSLYACRHelperCreatureSearcher  Auto  
+
+ReferenceAlias Property SSLYACRHelperCreatureMainAggr  Auto  
