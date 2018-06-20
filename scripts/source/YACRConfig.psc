@@ -2,12 +2,13 @@ Scriptname YACRConfig extends SKI_ConfigBase
 
 bool Property debugNotifFlag = true Auto
 bool Property debugLogFlag = false Auto
+bool Property registNotifFlag = true Auto
 bool Property knockDownAll = true Auto
 
 bool Property enablePlayerRape = false Auto
-bool Property enableArmorUnequipMode = false Auto
 
 bool Property enableArmorBreak = true Auto
+bool Property enableArmorUnequipMode = false Auto
 bool Property enableEndlessRape = true Auto
 int Property armorBreakChanceCloth = 50 Auto
 int Property armorBreakChanceLightArmor = 20 Auto
@@ -15,8 +16,11 @@ int Property armorBreakChanceHeavyArmor = 10 Auto
 int Property rapeChance = 50 Auto
 int Property rapeChanceNotNaked = 10 Auto
 int Property healthLimit = 50 Auto
+int Property healthLimitBottom = 0 Auto
+int Property matchedSex = 0 Auto
 
 bool Property enableArmorBreakNPC = true Auto
+bool Property enableArmorUnequipModeNPC = false Auto
 bool Property enableEndlessRapeNPC = true Auto
 int Property armorBreakChanceClothNPC = 50 Auto
 int Property armorBreakChanceLightArmorNPC = 20 Auto
@@ -24,6 +28,8 @@ int Property armorBreakChanceHeavyArmorNPC = 10 Auto
 int Property rapeChanceNPC = 50 Auto
 int Property rapeChanceNotNakedNPC = 10 Auto
 int Property healthLimitNPC = 50 Auto
+int Property healthLimitBottomNPC = 0 Auto
+int Property matchedSexNPC = 0 Auto
 
 int Property keyCodeRegist = 277 Auto
 int Property keyCodeHelp = 274 Auto
@@ -34,6 +40,7 @@ int Property simpleSlaveryChance = 100 Auto
 int knockDownAllID
 int debugLogFlagID
 int debugNotifFlagID
+int registNotifFlagID
 
 int keyCodeRegistID
 int keyCodeHelpID
@@ -43,9 +50,8 @@ int simpleSlaveryChanceID
 
 int enablePlayerRapeID
 
-int enableArmorUnequipModeID
-
 int enableArmorBreakID
+int enableArmorUnequipModeID
 int enableEndlessRapeID
 int armorBreakChanceClothID
 int armorBreakChanceLightArmorID
@@ -53,8 +59,11 @@ int armorBreakChanceHeavyArmorID
 int rapeChanceID
 int rapeChanceNotNakedID
 int healthLimitID
+int healthLimitBottomID
+int matchedSexID
 
 int enableArmorBreakNPCID
+int enableArmorUnequipModeNPCID
 int enableEndlessRapeNPCID
 int armorBreakChanceClothNPCID
 int armorBreakChanceLightArmorNPCID
@@ -62,70 +71,91 @@ int armorBreakChanceHeavyArmorNPCID
 int rapeChanceNPCID
 int rapeChanceNotNakedNPCID
 int healthLimitNPCID
+int healthLimitBottomNPCID
+int matchedSexNPCID
 
 int[] availableEnemyFactionsIDS
 int[] multiplayEnemyFactionsIDS
+string[] matchedSexList
 
 YACRUtil Property AppUtil Auto
 
 int Function GetVersion()
-	return 16
+	return AppUtil.GetVersion()
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
 	OnConfigInit()
+	(SSLYACRQuestManager as YACRInit).Reboot()
+	debug.notification("SexLab YACR updated to " + a_version)
 EndEvent
 
 Event OnConfigInit()
 	Pages = new string[4]
-	Pages[0] = "$PCFollower"
-	Pages[1] = "$Enemy"
-	Pages[2] = "$Multiplay"
-	Pages[3] = "$YACRDebug"
+	Pages[0] = "$YACRRapeChance"
+	Pages[1] = "$YACRArmorBreak"
+	Pages[2] = "$YACREnemy"
+	Pages[3] = "$YACRSystem"
 	
 	availableEnemyFactionsIDS = new int[50]
 	multiplayEnemyFactionsIDS = new int[50]
+	
+	matchedSexList = new string[3]
+	matchedSexList[0] = "$YACRSexStraight"
+	matchedSexList[1] = "$YACRSexBoth"
+	matchedSexList[2] = "$YACRSexHomo"
 EndEvent
 
 Event OnPageReset(string page)
-	if (page == "" || page == "$PCFollower")
+	if (page == "" || page == "$YACRRapeChance")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
 		
 		enablePlayerRapeID = AddToggleOption("$EnablePlayerRape", enablePlayerRape)
 		
 		AddHeaderOption("$PlayerCharactor")
+		matchedSexID = AddMenuOption("$MatchedSex", matchedSexList[matchedSex])
 		healthLimitID = AddSliderOption("$HealthLimit", healthLimit)
+		healthLimitBottomID = AddSliderOption("$HealthLimitBottom", healthLimitBottom)
 		
 		AddHeaderOption("$RapeChance")
 		rapeChanceID = AddSliderOption("$Naked", rapeChance)
 		rapeChanceNotNakedID = AddSliderOption("$NotNaked", rapeChanceNotNaked)
 		enableEndlessRapeID = AddToggleOption("$EndlessRape", enableEndlessRape)
 		
-		AddHeaderOption("$ArmorBreak")
-		enableArmorBreakID = AddToggleOption("$Enable", enableArmorBreak)
-		armorBreakChanceClothID = AddSliderOption("$Cloth", armorBreakChanceCloth)
-		armorBreakChanceLightArmorID = AddSliderOption("$LightArmor", armorBreakChanceLightArmor)
-		armorBreakChanceHeavyArmorID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmor)
-		
 		SetCursorPosition(1)
-		
-		enableArmorUnequipModeID = AddToggleOption("$EnableArmorUnequipMode", enableArmorUnequipMode)
+		AddEmptyOption()
 		
 		AddHeaderOption("$Follower")
+		matchedSexNPCID = AddMenuOption("$MatchedSex", matchedSexList[matchedSexNPC])
 		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
+		healthLimitBottomNPCID = AddSliderOption("$HealthLimitBottom", healthLimitBottomNPC)
 		
 		AddHeaderOption("$RapeChance")
 		rapeChanceNPCID = AddSliderOption("$Naked", rapeChanceNPC)
 		rapeChanceNotNakedNPCID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPC)
 		enableEndlessRapeNPCID = AddToggleOption("$EndlessRape", enableEndlessRapeNPC)
 		
-		AddHeaderOption("$ArmorBreak")
+	elseif (page == "$YACRArmorBreak")
+		SetCursorFillMode(TOP_TO_BOTTOM)
+		SetCursorPosition(0)
+		
+		AddHeaderOption("$PlayerCharactor")
+		enableArmorBreakID = AddToggleOption("$Enable", enableArmorBreak)
+		enableArmorUnequipModeID = AddToggleOption("$EnableArmorUnequipMode", enableArmorUnequipMode)
+		armorBreakChanceClothID = AddSliderOption("$Cloth", armorBreakChanceCloth)
+		armorBreakChanceLightArmorID = AddSliderOption("$LightArmor", armorBreakChanceLightArmor)
+		armorBreakChanceHeavyArmorID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmor)
+		
+		SetCursorPosition(1)
+
+		AddHeaderOption("$Follower")
 		enableArmorBreakNPCID = AddToggleOption("$Enable", enableArmorBreakNPC)
+		enableArmorUnequipModeNPCID = AddToggleOption("$EnableArmorUnequipMode", enableArmorUnequipModeNPC)
 		armorBreakChanceClothNPCID = AddSliderOption("$Cloth", armorBreakChanceClothNPC)
 		armorBreakChanceLightArmorNPCID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPC)
 		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPC)
-	elseif	(page == "$Enemy")
+	elseif	(page == "$YACREnemy")
 		SetCursorFillMode(LEFT_TO_RIGHT)
 		SetCursorPosition(0)
 		
@@ -161,7 +191,7 @@ Event OnPageReset(string page)
 			idx += 1
 		endwhile
 		; AppUtil.Log(multiplayEnemyFactionsIDS)
-	elseif (page == "$YACRDebug")
+	elseif (page == "$YACRSystem")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
 		
@@ -174,14 +204,14 @@ Event OnPageReset(string page)
 		enableSimpleSlaverySupportID = AddToggleOption("$EnableSimpleSlaverySupport", enableSimpleSlaverySupport)
 		simpleSlaveryChanceID = AddSliderOption("$SimpleSlaveryChance", simpleSlaveryChance)
 		
-		knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll)
-		
 		AddEmptyOption()
 		
 		AddHeaderOption("$YACRDebug")
-		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
+		registNotifFlagID = AddToggleOption("$OutputRegistNotif", registNotifFlag)
 		debugNotifFlagID = AddToggleOption("$OutputPapyrusNotif", debugNotifFlag)
-
+		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
+		; knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll) ; not support from 2.0alpha1
+		
 		SetCursorPosition(1)
 		AddHeaderOption("$YACRTeammates")
 
@@ -228,6 +258,14 @@ int Function GetHealthLimit(bool IsPlayer = true)
 	endif
 EndFunction
 
+int Function GetHealthLimitBottom(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.healthLimitBottom
+	else
+		return self.healthLimitBottomNPC
+	endif
+EndFunction
+
 int Function GetRapeChance(bool IsPlayer = true)
 	if (IsPlayer)
 		return self.rapeChance
@@ -249,6 +287,22 @@ bool Function GetEnableEndlessRape(bool IsPlayer = true)
 		return self.enableEndlessRape
 	else
 		return self.enableEndlessRapeNPC
+	endif
+EndFunction
+
+int Function GetMatchedSex(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.matchedSex
+	else
+		return self.matchedSexNPC
+	endif
+EndFunction
+
+bool Function GetEnableArmorUnequipMode(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.enableArmorUnequipMode
+	else
+		return self.enableArmorUnequipModeNPC
 	endif
 EndFunction
 
@@ -277,20 +331,26 @@ int[] Function GetBreakChances(bool IsPlayer = true)
 EndFunction
 
 Event OnOptionHighlight(int option)
-	if (option == knockDownAllID)
-		SetInfoText("$KnockDownAllInfo")
-	elseif (option == enablePlayerRapeID)
+	;if (option == knockDownAllID)
+	;	SetInfoText("$KnockDownAllInfo")
+	if (option == enablePlayerRapeID)
 		SetInfoText("$EnablePlayerRapeInfo")
-	elseif (option == enableArmorUnequipModeID)
+	elseif (option == enableArmorUnequipModeID || option == enableArmorUnequipModeNPCID)
 		SetInfoText("$EnableArmorUnequipModeInfo")
+	elseif (option == matchedSexID || option == matchedSexNPCID)
+		SetInfoText("$MatchedSexInfo")
 	elseif (option == healthLimitID || option == healthLimitNPCID)
 		SetInfoText("$HealthLimitInfo")
+	elseif (option == healthLimitBottomID || option == healthLimitBottomNPCID)
+		SetInfoText("$HealthLimitBottomInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
 		SetInfoText("$EndlessRapeInfo")
 	elseif (availableEnemyFactionsIDS.Find(option) > -1)
 		SetInfoText("$AvailableEnemyFactions")
 	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
 		SetInfoText("$MultiplayEnemyFactions")
+	elseif (option == registNotifFlagID)
+		SetInfoText("$OutputRegistNotifInfo")
 	elseif (option == debugNotifFlagID)
 		SetInfoText("$OutputPapyrusNotifInfo")
 	elseif (option == keyCodeRegistID)
@@ -324,9 +384,13 @@ Event OnOptionSelect(int option)
 	elseif (option == enablePlayerRapeID)
 		enablePlayerRape = !enablePlayerRape
 		SetToggleOptionValue(option, enablePlayerRape)
+		
 	elseif (option == enableArmorUnequipModeID)
 		enableArmorUnequipMode = !enableArmorUnequipMode
 		SetToggleOptionValue(option, enableArmorUnequipMode)
+	elseif (option == enableArmorUnequipModeNPCID)
+		enableArmorUnequipModeNPC = !enableArmorUnequipModeNPC
+		SetToggleOptionValue(option, enableArmorUnequipModeNPC)
 
 	elseif (option == enableSimpleSlaverySupportID)
 		enableSimpleSlaverySupport = !enableSimpleSlaverySupport
@@ -341,6 +405,9 @@ Event OnOptionSelect(int option)
 	elseif (option == debugNotifFlagID)
 		debugNotifFlag = !debugNotifFlag
 		SetToggleOptionValue(option, debugNotifFlag)
+	elseif (option == registNotifFlagID)
+		registNotifFlag = !registNotifFlag
+		SetToggleOptionValue(option, registNotifFlag)
 		
 	elseif (availableEnemyFactionsIDS.Find(option) > -1)
 		int idx = availableEnemyFactionsIDS.Find(option)
@@ -353,6 +420,8 @@ EndEvent
 Event OnOptionSliderOpen(int option)
 	if (option == healthLimitID)
 		self._setSliderDialogWithPercentage(healthLimit)
+	elseif (option == healthLimitBottomID)
+		self._setSliderDialogWithPercentage(healthLimitBottom)
 	elseif (option == rapeChanceID)
 		self._setSliderDialogWithPercentage(rapeChance)
 	elseif (option == rapeChanceNotNakedID)
@@ -366,6 +435,8 @@ Event OnOptionSliderOpen(int option)
 
 	elseif (option == healthLimitNPCID)
 		self._setSliderDialogWithPercentage(healthLimitNPC)
+	elseif (option == healthLimitBottomNPCID)
+		self._setSliderDialogWithPercentage(healthLimitBottomNPC)
 	elseif (option == rapeChanceNPCID)
 		self._setSliderDialogWithPercentage(rapeChanceNPC)
 	elseif (option == rapeChanceNotNakedNPCID)
@@ -406,6 +477,9 @@ Event OnOptionSliderAccept(int option, float value)
 	if (option == healthLimitID)
 		healthLimit = value as int
 		SetSliderOptionValue(option, healthLimit)
+	elseif (option == healthLimitBottomID)
+		healthLimitBottom = value as int
+		SetSliderOptionValue(option, healthLimitBottom)
 	elseif (option == rapeChanceID)
 		rapeChance = value as int
 		SetSliderOptionValue(option, rapeChance)
@@ -425,6 +499,9 @@ Event OnOptionSliderAccept(int option, float value)
 	elseif (option == healthLimitNPCID)
 		healthLimitNPC = value as int
 		SetSliderOptionValue(option, healthLimitNPC)
+	elseif (option == healthLimitBottomNPCID)
+		healthLimitBottomNPC = value as int
+		SetSliderOptionValue(option, healthLimitBottomNPC)
 	elseif (option == rapeChanceNPCID)
 		rapeChanceNPC = value as int
 		SetSliderOptionValue(option, rapeChanceNPC)
@@ -452,6 +529,27 @@ Event OnOptionSliderAccept(int option, float value)
 	endif
 EndEvent
 
+event OnOptionMenuOpen(int option)
+	if (option == matchedSexID)
+		SetMenuDialogStartIndex(matchedSex)
+	elseif (option == matchedSexNPCID)
+		SetMenuDialogStartIndex(matchedSexNPC)
+	endIf
+	
+	SetMenuDialogDefaultIndex(0)
+	SetMenuDialogOptions(matchedSexList)
+endEvent
+
+event OnOptionMenuAccept(int option, int index)
+	if (option == matchedSexID)
+		matchedSex = index
+		SetMenuOptionValue(option, matchedSexList[matchedSex])
+	elseif (option == matchedSexNPCID)
+		matchedSexNPC = index
+		SetMenuOptionValue(option, matchedSexList[matchedSexNPC])
+	endIf
+endEvent
+
 Event OnOptionKeyMapChange(int option, int keyCode, string conflictControl, string conflictName)
 	if (option == keyCodeRegistID)
 		keyCodeRegist = keyCode
@@ -469,3 +567,5 @@ Faction Property DLC1VampireFaction  Auto
 Faction Property SilverHandFaction  Auto  
 Faction Property MS08AlikrFaction  Auto  
 Faction Property MS09NorthwatchFaction  Auto  
+
+Quest Property SSLYACRQuestManager  Auto  

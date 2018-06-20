@@ -25,23 +25,14 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	SelfName = selfact.GetActorBase().GetName()
 	Weapon wpn = akSource as Weapon
 	
-	if (akAggressor == None || akProjectile || PreSource ==  akSource || !wpn)
+	if (akAggressor == None || akProjectile || PreSource ==  akSource || !wpn || \
+		selfact.IsGhost() || selfact.IsDead() || akAggr.IsPlayerTeammate() || akAggr == PlayerActor || \
+		selfact.IsInKillMove() || akAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape))
+	
 		AppUtil.Log("not if " + SelfName)
-		return
-	elseif (self.IsPlayer && !Config.enablePlayerRape) 
-		AppUtil.Log("not if, player isn't enabled " + SelfName)
 		return
 	elseif (selfact.GetAV("Health") <= 0)
 		AppUtil.Log("not if, player is dying or follower on bleedoutstart " + SelfName)
-		return
-	elseif (selfact.IsGhost() || selfact.IsDead())
-		AppUtil.Log("not if, isghost or dead " + SelfName)
-		return
-	elseif (akAggr.IsPlayerTeammate() || akAggr == PlayerActor)
-		AppUtil.Log("not if, onhit from teammate or player " + SelfName)
-		return
-	elseif (selfact.IsInKillMove() || akAggr.IsInKillMove())
-		AppUtil.Log("not if, detect killmoving " + SelfName)
 		return
 	endif
 
@@ -80,7 +71,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 						(selfarmor.HasKeyWord(ArmorLight) && rndintAB < chances[1]) || \
 						(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < chances[2]))
 						
-						if (Config.enableArmorUnequipMode)
+						if (Config.GetEnableArmorUnequipMode(self.IsPlayer))
 							selfact.UnEquipItem(selfarmor)
 						else
 							selfact.RemoveItem(selfarmor)
@@ -201,6 +192,9 @@ Function doSex(Actor aggr, Faction aggrFaction)
 	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
 		AppUtil.Log("victim already animating, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
+		return
+	elseif (aggr.HasKeyWord(ActorTypeNPC) && !AppUtil.ValidateSex(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
+		AppUtil.Log("invalid actor's sex, pass doSex " + SelfName)
 		return
 	elseif (!aggr.HasKeyWord(ActorTypeNPC) && SexLab.ValidateActor(aggr) < -16) ; not support(or none anime) creature
 		AppUtil.Log("aggr creature not supported or no valid animation, pass doSex " + SelfName)
@@ -420,6 +414,7 @@ EndFunction
 
 Event StageStartEventYACR(int tid, bool HasPlayer)
 	AppUtil.Log("StageStartEvent: " + SelfName)
+	UnregisterForUpdate()
 	self._getAudience()
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
@@ -458,10 +453,10 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		
 		if (rndint < 5) ; 20%
 			AppUtil.Log("endless sex loop...one more " + SelfName)
-			controller.AdvanceStage(true)
+			controller.AdvanceStage(true) ; has self controller.onUpdate
 		elseif (rndint < 10) ; 25%
 			AppUtil.Log("endless sex loop...one more from 2nd " + SelfName)
-			controller.GoToStage(stagecnt - 2)
+			controller.GoToStage(stagecnt - 2) ; has self controller.onUpdate
 			RegisterForSingleUpdate(ForceUpdatePeriod)
 		else
 			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr, fact)
@@ -469,13 +464,13 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			if (rndint < 90 && fact && (AppUtil.ArrayCount(actors) - 2) > 0) ; 30%
 				AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
 				EndlessSexLoop = true
+				controller.RegisterForSingleUpdate(0.2)
 			else ; 25%
 				AppUtil.Log("endless sex loop...change anim " + SelfName)
-				controller.ChangeAnimation()
+				controller.ChangeAnimation() ; has self controller.onUpdate
 				RegisterForSingleUpdate(ForceUpdatePeriod)
 			endif
 		endif
-		controller.RegisterForSingleUpdate(0.2)
 		; thank you obachan
 		; GetHelpersCombined() is heavy, when test with 40 npcs sometimes 1.5sec is too short time.
 	endif
@@ -633,6 +628,9 @@ Event EndSexEventYACR(int tid, bool HasPlayer)
 	self.EndSexEvent(controller.Positions[1])
 EndEvent
 
+; aggrのほうにonhitプロパティをつけて、Endlesssex判定を失くす・escapeはどうする？
+; knockdownallをやめて、ここでは個別にノックダウンさせる
+
 Function EndSexEvent(Actor aggr)
 	Faction fact = AppUtil.GetEnemyType(aggr)
 	
@@ -767,11 +765,12 @@ String Property HookName  Auto
 SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 
-Faction Property CurrentFollowerFaction  Auto  ; not use from 2.0alpha1 ?
-Faction Property CurrentHireling  Auto  ; not use from 2.0alpha1 ?
+Faction Property CurrentFollowerFaction  Auto  ; not use from 2.0alpha1
+Faction Property CurrentHireling  Auto  ; not use from 2.0alpha1
 Faction Property SSLYACRCalmFaction  Auto  
 Faction Property SSLYACRActiveFaction  Auto  
 Faction Property SSLYACRPurgedFollowerFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
-Faction Property dunPrisonerFaction  Auto  
+Faction Property dunPrisonerFaction  Auto  ; not use from 2.0alpha1
+Faction Property dunPrisonerExtendedFaction  Auto  

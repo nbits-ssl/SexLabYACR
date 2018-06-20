@@ -1,5 +1,9 @@
 Scriptname YACRUtil extends Quest  
 
+int Function GetVersion()
+	return 20180621
+EndFunction
+
 Function Log(String msg)
 	; bool debugflag = true
 	; bool debugflag = false
@@ -33,6 +37,23 @@ bool Function CheckSex(Actor act, int gender = -1)
 	else
 		return false
 	endif
+EndFunction
+
+bool Function ValidateSex(Actor victim, Actor aggr, int cfg)
+	; 0 is straight, 1 is both, 2 is homo
+	if (cfg == 1)
+		return true
+	else
+		int vsex = victim.GetLeveledActorBase().GetSex()
+		int asex = aggr.GetLeveledActorBase().GetSex()
+		if (cfg == 0 && vsex != asex)
+			return true
+		elseif (cfg == 2 && vsex == asex)
+			return true
+		endif
+	endif
+	
+	return false
 EndFunction
 
 Function CleanFlyingDeadBody(Actor act)
