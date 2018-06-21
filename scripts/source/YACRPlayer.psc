@@ -54,6 +54,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 			endif
 		elseif (selfarmor)
 			if (healthper < Config.GetHealthLimit(self.IsPlayer) && \
+				healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
 				rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer))
 				
 				AppUtil.Log("doSex " + SelfName)
