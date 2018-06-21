@@ -2,7 +2,7 @@ Scriptname YACRPlayer extends ReferenceAlias
 
 Form PreSource = None
 string SelfName
-bool AlreadyInPrisonerFaction = false
+bool AlreadyInPrisonerFaction = false ; not use
 bool EndlessSexLoop = false
 bool AlreadyKeyDown = false
 float ForceUpdatePeriod = 30.0
@@ -25,9 +25,6 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		selfact.IsInKillMove() || akAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape))
 	
 		AppUtil.Log("not if " + SelfName)
-		return
-	elseif (selfact.GetAV("Health") <= 0)
-		AppUtil.Log("not if, player is dying or follower on bleedoutstart " + SelfName)
 		return
 	endif
 
@@ -73,8 +70,10 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 					AppUtil.Log(" Armor break " + SelfName)
 				endif
 			endif
-		elseif (!selfarmor && healthper < Config.GetHealthLimit(self.IsPlayer) && \
-			rndintRP < Config.GetRapeChance(self.IsPlayer))
+		elseif (!selfarmor && \
+			healthper < Config.GetHealthLimit(self.IsPlayer) && \
+			healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
+			rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer))
 			
 			AppUtil.Log("doSex " + SelfName)
 			self.doSex(akAggr)
@@ -95,23 +94,14 @@ EndState
 
 Function _readySexVictim()
 	Actor act = self.GetActorRef()
-	Faction fact = dunPrisonerExtendedFaction
-	act.AddSpell(SSLYACRKillmoveArmorSpell, false) ; silently
 	act.SetGhost(true)
-	AlreadyInPrisonerFaction = false
-	self._disableControls()
 	
-	if (act.IsInFaction(fact))
-		AlreadyInPrisonerFaction = true
-	elseif (!self.IsPlayer)
-		act.AddToFaction(fact)
+	if (!self.IsPlayer || Config.knockDownAll)
+		VictimAlias.ForceRefTo(act)
 	endif
 	
 	if (self.IsPlayer)
-		act.AddToFaction(SSLYACRCalmFaction)
-		act.AddSpell(SSLYACRPlayerSlowMagic, false)
 		if (Config.knockDownAll)
-			act.AddToFaction(fact)
 			AppUtil.KnockDownAll()
 			AppUtil.BanishAllDaedra()
 		endif
@@ -120,7 +110,6 @@ Function _readySexVictim()
 		RegisterForKey(Config.keyCodeSubmit)
 		AlreadyKeyDown = false
 	else
-		act.AddToFaction(SSLYACRPurgedFollowerFaction)
 		baseFaction = AppUtil.purgeFollower(act)
 	endif
 	
@@ -131,34 +120,20 @@ EndFunction
 Function _endSexVictim()
 	Actor act = self.GetActorRef()
 	
-	if (!AlreadyInPrisonerFaction)
-		act.RemoveFromFaction(dunPrisonerExtendedFaction)
-	endif
-	
 	if (self.IsPlayer)
-		act.RemoveFromFaction(SSLYACRCalmFaction)
-		act.RemoveSpell(SSLYACRPlayerSlowMagic)
 		if (Config.knockDownAll)
 			AppUtil.WakeUpAll()
 		endif
-		Game.EnablePlayerControls()
 		UnregisterForKey(Config.keyCodeRegist)
 		UnregisterForKey(Config.keyCodeHelp)
 		UnregisterForKey(Config.keyCodeSubmit)
 	else
 		AppUtil.rejoinFollower(act, baseFaction)
-		act.RemoveFromFaction(SSLYACRPurgedFollowerFaction)
 	endif
 	
 	self._clearAudience()
-	act.RemoveSpell(SSLYACRKillmoveArmorSpell)
+	VictimAlias.Clear()
 	act.SetGhost(false)
-EndFunction
-
-Function _disableControls()
-	if (self.IsPlayer)
-		Game.ForceThirdPerson()
-	endif
 EndFunction
 
 Function _stopCombatOneMore(Actor aggr, Actor victim)
@@ -245,7 +220,6 @@ Function _storePlayerRegist(Actor selfact)
 EndFunction
 
 Function doSexLoop()
-	self._disableControls()
 	Actor aggr = Aggressor.GetActorRef()
 	Actor victim = self.GetActorRef()
 	
@@ -739,6 +713,7 @@ Faction property SSLAnimatingFaction Auto
 Actor Property PlayerActor  Auto
 
 ReferenceAlias Property Aggressor  Auto
+ReferenceAlias Property VictimAlias  Auto  
 ReferenceAlias Property Helper1  Auto  
 ReferenceAlias Property Helper2  Auto  
 ReferenceAlias Property Helper3  Auto  
@@ -751,12 +726,13 @@ Keyword Property ActorTypeNPC  Auto
 Bool Property IsPlayer  Auto  
 String Property HookName  Auto
 
-SPELL Property SSLYACRKillmoveArmorSpell  Auto
-SPELL Property SSLYACRPlayerSlowMagic  Auto  
-
-Faction Property SSLYACRCalmFaction  Auto  
 Faction Property SSLYACRActiveFaction  Auto  
 Faction Property SSLYACRPurgedFollowerFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
+
+; not use
+SPELL Property SSLYACRKillmoveArmorSpell  Auto
+SPELL Property SSLYACRPlayerSlowMagic  Auto  
+Faction Property SSLYACRCalmFaction  Auto  
 Faction Property dunPrisonerExtendedFaction  Auto  
