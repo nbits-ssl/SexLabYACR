@@ -97,9 +97,6 @@ Event OnConfigInit()
 	Pages[2] = "$YACREnemy"
 	Pages[3] = "$YACRSystem"
 	
-	availableEnemyFactionsIDS = new int[50]
-	multiplayEnemyFactionsIDS = new int[50]
-	
 	matchedSexList = new string[3]
 	matchedSexList[0] = "$YACRSexStraight"
 	matchedSexList[1] = "$YACRSexBoth"
@@ -156,41 +153,7 @@ Event OnPageReset(string page)
 		armorBreakChanceLightArmorNPCID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPC)
 		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPC)
 	elseif	(page == "$YACREnemy")
-		SetCursorFillMode(LEFT_TO_RIGHT)
-		SetCursorPosition(0)
-		
-		Faction[] aefacts = AppUtil.AvailableEnemyFactions
-		bool[] aefactsConfig = AppUtil.AvailableEnemyFactionsConfig
-		
-		int len = aefacts.Length
-		int idx = 0
-		string factname
-		while idx != len
-			factname = self._getFactionName(aefacts[idx])
-			availableEnemyFactionsIDS[idx] = AddToggleOption(factname, aefactsConfig[idx])
-			idx += 1
-		endwhile
-		; AppUtil.Log(availableEnemyFactionsIDS)
-	elseif	(page == "$Multiplay")
-		SetCursorFillMode(LEFT_TO_RIGHT)
-		SetCursorPosition(0)
-		
-		Faction[] mpfacts = AppUtil.MultiplayEnemyFactions
-		int[] mpfactsConfig = AppUtil.MultiplayEnemyFactionsConfig
-
-		int len = mpfacts.Length
-		int idx = 0
-		string factname
-		while idx != len
-			if (idx == 0) ; ActorTypeNPC
-				multiplayEnemyFactionsIDS[idx] = AddSliderOption("$ActorTypeNPCFaction", mpfactsConfig[idx])
-			else
-				factname = self._getFactionName(mpfacts[idx])
-				multiplayEnemyFactionsIDS[idx] = AddSliderOption(factname, mpfactsConfig[idx])
-			endif
-			idx += 1
-		endwhile
-		; AppUtil.Log(multiplayEnemyFactionsIDS)
+		; 
 	elseif (page == "$YACRSystem")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
@@ -345,10 +308,6 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$HealthLimitBottomInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
 		SetInfoText("$EndlessRapeInfo")
-	elseif (availableEnemyFactionsIDS.Find(option) > -1)
-		SetInfoText("$AvailableEnemyFactions")
-	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
-		SetInfoText("$MultiplayEnemyFactions")
 	elseif (option == registNotifFlagID)
 		SetInfoText("$OutputRegistNotifInfo")
 	elseif (option == debugNotifFlagID)
@@ -408,12 +367,6 @@ Event OnOptionSelect(int option)
 	elseif (option == registNotifFlagID)
 		registNotifFlag = !registNotifFlag
 		SetToggleOptionValue(option, registNotifFlag)
-		
-	elseif (availableEnemyFactionsIDS.Find(option) > -1)
-		int idx = availableEnemyFactionsIDS.Find(option)
-		bool opt = AppUtil.AvailableEnemyFactionsConfig[idx]
-		AppUtil.AvailableEnemyFactionsConfig[idx] = !opt
-		SetToggleOptionValue(availableEnemyFactionsIDS.Find(option), !opt)
 	endif
 EndEvent
 
@@ -450,10 +403,6 @@ Event OnOptionSliderOpen(int option)
 
 	elseif (option == simpleSlaveryChanceID)
 		self._setSliderDialogWithPercentage(simpleSlaveryChance)
-	
-	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
-		int idx = multiplayEnemyFactionsIDS.Find(option)
-		self._setSliderDialogWithHelpers(AppUtil.MultiplayEnemyFactionsConfig[idx])
 	endif
 EndEvent
 
@@ -521,11 +470,6 @@ Event OnOptionSliderAccept(int option, float value)
 	elseif (option == simpleSlaveryChanceID)
 		simpleSlaveryChance = value as int
 		SetSliderOptionValue(option, simpleSlaveryChance)
-		
-	elseif (multiplayEnemyFactionsIDS.Find(option) > -1)
-		int idx = multiplayEnemyFactionsIDS.Find(option)
-		AppUtil.MultiplayEnemyFactionsConfig[idx] = value as int
-		SetSliderOptionValue(multiplayEnemyFactionsIDS[idx], value as int)
 	endif
 EndEvent
 
@@ -534,7 +478,7 @@ event OnOptionMenuOpen(int option)
 		SetMenuDialogStartIndex(matchedSex)
 	elseif (option == matchedSexNPCID)
 		SetMenuDialogStartIndex(matchedSexNPC)
-	endIf
+	endif
 	
 	SetMenuDialogDefaultIndex(0)
 	SetMenuDialogOptions(matchedSexList)
@@ -547,7 +491,7 @@ event OnOptionMenuAccept(int option, int index)
 	elseif (option == matchedSexNPCID)
 		matchedSexNPC = index
 		SetMenuOptionValue(option, matchedSexList[matchedSexNPC])
-	endIf
+	endif
 endEvent
 
 Event OnOptionKeyMapChange(int option, int keyCode, string conflictControl, string conflictName)

@@ -13,11 +13,6 @@ int PlayerRegistPoint = 0
 Faction baseFaction
 sslThreadController UpdateController
 
-bool PlayerIsMale = false ; not use from alpha.3
-bool IsInCurrentFollowerFaction = false ;  not use from 2.0alpha1 ==> baseFaction
-bool IsInCurrentHireling = false ; not use from 2.0alpha1 ==> baseFaction
-bool AlreadyInEnemyFaction = false ; not use from 2.0alpha1 ==> dunPrisonerFaction
-
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 
 	Actor akAggr = akAggressor as Actor
@@ -42,49 +37,46 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	float healthper = selfact.GetAVPercentage("health") * 100
 	
 	if (!abHitBlocked && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
-		Faction aggrFaction = AppUtil.GetEnemyType(akAggr)
-		if (aggrFaction)
-			AppUtil.Log("onhit success " + SelfName)
-			
-			int rndintRP = Utility.RandomInt()
-			int rndintAB = Utility.RandomInt()
-			Armor selfarmor = selfact.GetWornForm(0x00000004) as Armor
+		AppUtil.Log("onhit success " + SelfName)
+		
+		int rndintRP = Utility.RandomInt()
+		int rndintAB = Utility.RandomInt()
+		Armor selfarmor = selfact.GetWornForm(0x00000004) as Armor
 
-			if (selfact.IsInFaction(SSLAnimatingFaction)) ; first check
-				if (selfact.IsWeaponDrawn())
-					AppUtil.Log("detect invalid SSLAnimatingFaction, delete " + SelfName)
-					selfact.RemoveFromFaction(SSLAnimatingFaction)
-				else
-					AppUtil.Log("StopCombat " + SelfName)
-					selfact.StopCombat()
-					akAggr.StopCombat()
-				endif
-			elseif (selfarmor)
-				if (healthper < Config.GetHealthLimit(self.IsPlayer) && \
-					rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer))
-					
-					AppUtil.Log("doSex " + SelfName)
-					self.doSex(akAggr, aggrFaction)
-				elseif (Config.GetEnableArmorBreak(self.IsPlayer))
-					int[] chances = Config.GetBreakChances(self.IsPlayer)
-					if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < chances[0]) || \
-						(selfarmor.HasKeyWord(ArmorLight) && rndintAB < chances[1]) || \
-						(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < chances[2]))
-						
-						if (Config.GetEnableArmorUnequipMode(self.IsPlayer))
-							selfact.UnEquipItem(selfarmor)
-						else
-							selfact.RemoveItem(selfarmor)
-						endif
-						AppUtil.Log(" Armor break " + SelfName)
-					endif
-				endif
-			elseif (!selfarmor && healthper < Config.GetHealthLimit(self.IsPlayer) && \
-				rndintRP < Config.GetRapeChance(self.IsPlayer))
+		if (selfact.IsInFaction(SSLAnimatingFaction)) ; first check
+			if (selfact.IsWeaponDrawn())
+				AppUtil.Log("detect invalid SSLAnimatingFaction, delete " + SelfName)
+				selfact.RemoveFromFaction(SSLAnimatingFaction)
+			else
+				AppUtil.Log("StopCombat " + SelfName)
+				selfact.StopCombat()
+				akAggr.StopCombat()
+			endif
+		elseif (selfarmor)
+			if (healthper < Config.GetHealthLimit(self.IsPlayer) && \
+				rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer))
 				
 				AppUtil.Log("doSex " + SelfName)
-				self.doSex(akAggr, aggrFaction)
+				self.doSex(akAggr)
+			elseif (Config.GetEnableArmorBreak(self.IsPlayer))
+				int[] chances = Config.GetBreakChances(self.IsPlayer)
+				if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < chances[0]) || \
+					(selfarmor.HasKeyWord(ArmorLight) && rndintAB < chances[1]) || \
+					(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < chances[2]))
+					
+					if (Config.GetEnableArmorUnequipMode(self.IsPlayer))
+						selfact.UnEquipItem(selfarmor)
+					else
+						selfact.RemoveItem(selfarmor)
+					endif
+					AppUtil.Log(" Armor break " + SelfName)
+				endif
 			endif
+		elseif (!selfarmor && healthper < Config.GetHealthLimit(self.IsPlayer) && \
+			rndintRP < Config.GetRapeChance(self.IsPlayer))
+			
+			AppUtil.Log("doSex " + SelfName)
+			self.doSex(akAggr)
 		endif
 	endif
 	
@@ -102,14 +94,14 @@ EndState
 
 Function _readySexVictim()
 	Actor act = self.GetActorRef()
-	Faction fact = dunPrisonerFaction
+	Faction fact = dunPrisonerExtendedFaction
 	act.AddSpell(SSLYACRKillmoveArmorSpell, false) ; silently
 	act.SetGhost(true)
 	AlreadyInPrisonerFaction = false
 	self._disableControls()
 	
 	if (act.IsInFaction(fact))
-		AlreadyInEnemyFaction = true
+		AlreadyInPrisonerFaction = true
 	elseif (!self.IsPlayer)
 		act.AddToFaction(fact)
 	endif
@@ -139,7 +131,7 @@ Function _endSexVictim()
 	Actor act = self.GetActorRef()
 	
 	if (!AlreadyInPrisonerFaction)
-		act.RemoveFromFaction(dunPrisonerFaction)
+		act.RemoveFromFaction(dunPrisonerExtendedFaction)
 	endif
 	
 	if (self.IsPlayer)
@@ -177,7 +169,7 @@ EndFunction
 
 ; _readySexAggr / _endSexAggr to StopCombatEffect.psc
 
-Function doSex(Actor aggr, Faction aggrFaction)
+Function doSex(Actor aggr)
 	Actor victim = self.GetActorRef()
 	SelfName = victim.GetActorBase().GetName()
 	
@@ -251,12 +243,12 @@ Function _storePlayerRegist(Actor selfact)
 	AppUtil.Log("                  Arousal: " + StartingArousalForRegist)
 EndFunction
 
-Function doSexLoop(Faction fact)
+Function doSexLoop()
 	self._disableControls()
 	Actor aggr = Aggressor.GetActorRef()
 	Actor victim = self.GetActorRef()
 	
-	Actor[] actors = AppUtil.GetHelpersCombined(victim, aggr, fact)
+	Actor[] actors = AppUtil.GetHelpersCombined(victim, aggr)
 	self._forceRefHelpers(actors)
 	int helpersCount = actors.Length - 2
 	
@@ -439,7 +431,6 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
 		AppUtil.Log("endless sex loop... " + SelfName)
 		int rndint = Utility.RandomInt()
-		Faction fact = AppUtil.GetEnemyType(aggr)
 		
 		selfact.SetGhost(false)
 		SexLab.ActorLib.ApplyCum(selfact, cumid)
@@ -459,9 +450,9 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			controller.GoToStage(stagecnt - 2) ; has self controller.onUpdate
 			RegisterForSingleUpdate(ForceUpdatePeriod)
 		else
-			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr, fact)
+			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr)
 			AppUtil.Log("endless sex loop... actors are " + actors)
-			if (rndint < 90 && fact && (AppUtil.ArrayCount(actors) - 2) > 0) ; 30%
+			if (rndint < 90 && (AppUtil.ArrayCount(actors) - 2) > 0) ; 30%
 				AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
 				EndlessSexLoop = true
 				controller.RegisterForSingleUpdate(0.2)
@@ -632,8 +623,6 @@ EndEvent
 ; knockdownallをやめて、ここでは個別にノックダウンさせる
 
 Function EndSexEvent(Actor aggr)
-	Faction fact = AppUtil.GetEnemyType(aggr)
-	
 	if (EndlessSexLoop)
 		AppUtil.Log("EndSexEvent, Goto to loop " + SelfName)
 		EndlessSexLoop = false
@@ -643,7 +632,7 @@ Function EndSexEvent(Actor aggr)
 			AppUtil.KnockDownAll()
 		endif
 		
-		self.doSexLoop(fact)
+		self.doSexLoop()
 	else ; Aggr's OnHit or Not EndlessRape
 		AppUtil.Log("EndSexEvent, truely end " + SelfName)
 		self._endSexVictim()
@@ -705,7 +694,7 @@ Function _searchBleedOutPartner()
 			aggr.AddToFaction(SSLYACRActiveFaction)
 			aggr.PathToReference(victim, 0.5)
 			Utility.Wait(Utility.RandomInt(2, 5))
-			self.doSex(aggr, AppUtil.GetEnemyType(aggr))
+			self.doSex(aggr)
 		else
 			AppUtil.Log("OnEnterBleedOut, valid faction actor not found " + SelfName)
 			RegisterForSingleUpdate(BleedOutUpdatePeriod)
@@ -725,8 +714,7 @@ Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
 	int idx = 0
 	while idx < len
 		aggr = npcs[idx]
-		if (AppUtil.GetEnemyType(aggr) && \
-			!aggr.IsInCombat() && !aggr.HasKeyWordString("SexLabActive") && \
+		if (!aggr.IsInCombat() && !aggr.HasKeyWordString("SexLabActive") && \
 			AppUtil.CheckSex(aggr, Gender) && !aggr.IsInFaction(SSLYACRActiveFaction))
 			
 			return aggr
@@ -765,12 +753,9 @@ String Property HookName  Auto
 SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 
-Faction Property CurrentFollowerFaction  Auto  ; not use from 2.0alpha1
-Faction Property CurrentHireling  Auto  ; not use from 2.0alpha1
 Faction Property SSLYACRCalmFaction  Auto  
 Faction Property SSLYACRActiveFaction  Auto  
 Faction Property SSLYACRPurgedFollowerFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
-Faction Property dunPrisonerFaction  Auto  ; not use from 2.0alpha1
 Faction Property dunPrisonerExtendedFaction  Auto  

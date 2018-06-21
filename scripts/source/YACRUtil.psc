@@ -64,27 +64,6 @@ Function CleanFlyingDeadBody(Actor act)
 	endif
 EndFunction
 
-Faction Function GetEnemyType(Actor act)
-	if (act.GetLeveledActorBase().GetSex() == 1) ; female
-		return None
-	endif
-	
-	int x = AvailableEnemyFactions.Length
-	while x
-		x -= 1
-		AvailableEnemyFactions[x]
-		if (act.IsInFaction(AvailableEnemyFactions[x]))
-			if (AvailableEnemyFactionsConfig[x])
-				return AvailableEnemyFactions[x]
-			else
-				return None
-			endif
-		endif
-	endwhile
-	
-	return None
-EndFunction
-
 Function BanishAllDaedra()
 	if (SSLYACRDaedraBreaker.IsRunning())
 		SSLYACRDaedraBreaker.Stop()
@@ -219,7 +198,7 @@ Function rejoinFollower(Actor act, Faction fact)
 	act.AddToFaction(fact)
 EndFunction
 
-Actor[] Function GetHelpersCombined(Actor victim, Actor aggr, Faction fact)
+Actor[] Function GetHelpersCombined(Actor victim, Actor aggr)
 	Actor[] actors
 	Quest searcherQuest
 	ReferenceAlias mainAggr
@@ -365,32 +344,22 @@ EndFunction
 
 YACRConfig Property Config Auto
 SexLabFramework Property SexLab  Auto
+Faction Property sla_Arousal  Auto  
+Keyword Property ActorTypeNPC  Auto  
 
-Faction[] Property AvailableEnemyFactions  Auto  
-Faction[] Property MultiplayEnemyFactions  Auto  
-Quest[] Property MultiplayEnemySearcher  Auto  
-Quest Property SSLYACRHelperHumanSearcher  Auto  
-Quest Property SSLYACRHelperHumanMain  Auto  
 Quest Property SSLYACRDaedraBreaker  Auto  
-
-Bool[] Property AvailableEnemyFactionsConfig  Auto  
-Int[] Property MultiplayEnemyFactionsConfig  Auto  
+SPELL Property SSLYACRParalyseMagic  Auto  
 
 ReferenceAlias[] Property Teammates  Auto  
 ReferenceAlias Property PlayerAggressor  Auto  
-ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto  
+SPELL Property PlayerHelperAngrySpell  Auto  
 
-SPELL Property SSLYACRParalyseMagic  Auto  
-Keyword Property ActorTypeNPC  Auto  
+Quest Property SSLYACRHelperHumanMain  Auto  
+Quest Property SSLYACRHelperHumanSearcher  Auto  
+ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto  
+Quest Property SSLYACRHelperCreatureMain  Auto  
+Quest Property SSLYACRHelperCreatureSearcher  Auto  
+ReferenceAlias Property SSLYACRHelperCreatureMainAggr  Auto  
 
 Faction Property CurrentFollowerFaction  Auto  
 Faction Property CurrentHireling  Auto  
-
-SPELL Property PlayerHelperAngrySpell  Auto  
-Faction Property sla_Arousal  Auto  
-
-Quest Property SSLYACRHelperCreatureMain  Auto  
-
-Quest Property SSLYACRHelperCreatureSearcher  Auto  
-
-ReferenceAlias Property SSLYACRHelperCreatureMainAggr  Auto  
