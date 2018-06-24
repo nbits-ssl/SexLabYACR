@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20180622
+	return 20180623
 EndFunction
 
 Function Log(String msg)
@@ -100,7 +100,6 @@ Function KnockDownAll()
 	Actor PlayerActor = Game.GetPlayer()
 	Actor act
 	ReferenceAlias ref
-	float health
 	int len = Teammates.Length
 	
 	while len
@@ -110,33 +109,38 @@ Function KnockDownAll()
 		if (act && act.IsEnabled() && !act.HasKeyWordString("SexLabActive") && \
 			PlayerActor.GetParentCell() == act.GetParentCell())
 			
-			if (act.HasKeyWord(ActorTypeNPC))
-				if (act.GetAV("health") > 0)
-					act.SetGhost()
-					act.StopCombat()
-					act.StopCombatAlarm()
-					
-					act.SetNoBleedoutRecovery(true)
-					health = act.GetAV("health")
-					act.DamageAV("health", health + 30.0)
-					act.SetGhost(false)
-				endif
-				if (!act.IsBleedingOut() || act.GetAnimationVariableInt("iState") != 5) ; bleedout
-					debug.SendAnimationEvent(act, "BleedOutStart")
-				endif
-			else
-				if (!act.HasSpell(SSLYACRParalyseMagic))
-					act.SetGhost()
-					act.StopCombat()
-					act.StopCombatAlarm()
-					
-					act.SetGhost(false)
-					act.AddSpell(SSLYACRParalyseMagic)
-					PlayerActor.PushActorAway(act, 2.0)
-				endif
-			endif
+			self.KnockDown(act, PlayerActor)
 		endif
 	endwhile
+EndFunction
+
+Function KnockDown(Actor act, Actor PlayerActor)
+	float health
+	if (act.HasKeyWord(ActorTypeNPC))
+		if (act.GetAV("health") > 0)
+			act.SetGhost()
+			act.StopCombat()
+			act.StopCombatAlarm()
+			
+			act.SetNoBleedoutRecovery(true)
+			health = act.GetAV("health")
+			act.DamageAV("health", health + 30.0)
+			act.SetGhost(false)
+		endif
+		if (!act.IsBleedingOut() || act.GetAnimationVariableInt("iState") != 5) ; bleedout
+			debug.SendAnimationEvent(act, "BleedOutStart")
+		endif
+	else
+		if (!act.HasSpell(SSLYACRParalyseMagic))
+			act.SetGhost()
+			act.StopCombat()
+			act.StopCombatAlarm()
+			
+			act.SetGhost(false)
+			act.AddSpell(SSLYACRParalyseMagic)
+			PlayerActor.PushActorAway(act, 2.0)
+		endif
+	endif
 EndFunction
 
 Function WakeUpAll()
@@ -150,13 +154,17 @@ Function WakeUpAll()
 		ref = Teammates[len]
 		act = ref.GetActorRef()
 		if (act)
-			if (act.HasKeyWord(ActorTypeNPC))
-				act.SetNoBleedoutRecovery(false)
-			else
-				act.RemoveSpell(SSLYACRParalyseMagic)
-			endif
+			self.wakeUp(act)
 		endif
 	endwhile
+EndFunction
+
+Function wakeUp(Actor act)
+	if (act.HasKeyWord(ActorTypeNPC))
+		act.SetNoBleedoutRecovery(false)
+	else
+		act.RemoveSpell(SSLYACRParalyseMagic)
+	endif
 EndFunction
 
 Actor Function CallHelp(Actor aggr)
@@ -178,12 +186,7 @@ Actor Function CallHelp(Actor aggr)
 		if (act && act.IsEnabled() && !act.HasKeyWordString("SexLabActive") && \
 			PlayerActor.GetParentCell() == act.GetParentCell() && act.GetActorBase().GetSex() == 0)
 			
-			if (act.HasKeyWord(ActorTypeNPC))
-				act.SetNoBleedoutRecovery(false)
-			else
-				act.RemoveSpell(SSLYACRParalyseMagic)
-			endif
-			
+			self.wakeUp(act)
 			act.ForceAV("health", 100.0)
 			Utility.Wait(1.5)
 			act.DoCombatSpellApply(PlayerHelperAngrySpell, aggr)

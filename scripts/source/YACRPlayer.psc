@@ -529,19 +529,19 @@ Event EndSexEventYACR(int tid, bool HasPlayer)
 	if (HasPlayer && EndlessSexLoop)
 		debug.SendAnimationEvent(self.GetActorRef(), "BleedOutStart")
 	endif
-	self.EndSexEvent(Aggressor.GetActorRef())  ; Position is change when fm animation
+	self.EndSexEvent(Aggressor.GetActorRef())  ; Position is change when PC=>M, NPC=>F animation
 EndEvent
 
-; knockdownallをやめて、ここでは個別にノックダウンさせる
-
 Function EndSexEvent(Actor aggr)
+	Actor selfact = self.GetActorRef()
 	if (EndlessSexLoop)
 		AppUtil.Log("EndSexEvent, Goto to loop " + SelfName)
 		EndlessSexLoop = false
 		self._clearHelpers()
 		
 		if (!self.IsPlayer && Config.knockDownAll && PlayerActor.HasKeyWordString("SexLabActive"))
-			AppUtil.KnockDownAll()
+			; AppUtil.KnockDownAll()
+			AppUtil.KnockDown(selfact, PlayerActor)
 		endif
 		
 		self.doSexLoop()
@@ -558,7 +558,8 @@ Function EndSexEvent(Actor aggr)
 		self._clearHelpers()
 		
 		if (!self.IsPlayer && Config.knockDownAll && PlayerActor.HasKeyWordString("SexLabActive"))
-			AppUtil.KnockDownAll()
+			; AppUtil.KnockDownAll()
+			AppUtil.KnockDown(selfact, PlayerActor)
 		endif
 		
 		GotoState("Busy")
