@@ -40,7 +40,7 @@ Function CleanFlyingDeadBody(Actor act)
 EndFunction
 
 Faction Function GetEnemyType(Actor act)
-	if (act.GetActorBase().GetSex() == 1) ; female
+	if (act.GetLeveledActorBase().GetSex() == 1) ; female
 		return None
 	endif
 	
