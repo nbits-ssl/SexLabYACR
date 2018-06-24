@@ -1,8 +1,12 @@
 Scriptname YACRReload extends ReferenceAlias  
 
 Event OnCellLoad()
-	AppUtil.Log("OnCellLoad Quest will reload")
-	RegisterForSingleUpdate(5)
+	if (Config.modEnabled)
+		AppUtil.Log("OnCellLoad Quest will reload")
+		RegisterForSingleUpdate(5)
+	else
+		AppUtil.Log("OnCellLoad Quest will not reload, mod disabled")
+	endif
 EndEvent
 
 Event OnUpdate()
@@ -20,3 +24,4 @@ EndFunction
 
 Quest Property SSLYACR  Auto  
 YACRUtil Property AppUtil Auto
+YACRConfig Property Config Auto

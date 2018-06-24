@@ -1,5 +1,6 @@
 Scriptname YACRConfig extends SKI_ConfigBase  
 
+bool Property modEnabled = true Auto
 bool Property debugNotifFlag = true Auto
 bool Property debugLogFlag = false Auto
 bool Property registNotifFlag = true Auto
@@ -39,6 +40,8 @@ int Property simpleSlaveryChance = 100 Auto
 
 Race[] Property DisableRaces  Auto  
 Bool[] Property DisableRacesConfig  Auto  
+
+int enableDisableID
 
 int knockDownAllID
 int debugLogFlagID
@@ -89,7 +92,7 @@ EndFunction
 Event OnVersionUpdate(int a_version)
 	OnConfigInit()
 	(SSLYACRQuestManager as YACRInit).Reboot()
-	debug.notification("SexLab YACR updated to " + a_version)
+	debug.notification("SexLab YACR updated to " + a_version + ", YACR has rebooted.")
 EndEvent
 
 Event OnConfigInit()
@@ -176,6 +179,9 @@ Event OnPageReset(string page)
 		SetCursorPosition(0)
 		
 		AddHeaderOption("$YACRSystem")
+		
+		modEnabled = SSLYACR.IsRunning()
+		enableDisableID = AddToggleOption("$EnableDisableMain", modEnabled)
 		
 		keyCodeRegistID = AddKeyMapOption("$KeyCodeRegist", keyCodeRegist)
 		keyCodeHelpID = AddKeyMapOption("$KeyCodeHelp", keyCodeHelp)
@@ -324,6 +330,8 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$OutputRegistNotifInfo")
 	elseif (option == debugNotifFlagID)
 		SetInfoText("$OutputPapyrusNotifInfo")
+	elseif (option == enableDisableID)
+		SetInfoText("$EnableDisableMainInfo")
 	elseif (option == keyCodeRegistID)
 		SetInfoText("$KeyCodeRegistInfo")
 	elseif (option == keyCodeHelpID)
@@ -383,6 +391,20 @@ Event OnOptionSelect(int option)
 		registNotifFlag = !registNotifFlag
 		SetToggleOptionValue(option, registNotifFlag)
 
+	elseif (option == enableDisableID)
+		modEnabled = SSLYACR.IsRunning()
+		modEnabled = !modEnabled
+		SetToggleOptionValue(option, modEnabled)
+
+		if !(modEnabled)  ; is running
+			AppUtil.WakeUpAll()
+			SSLYACR.Stop()
+			debug.notification("SexLab YACR has stopped.")
+		else
+			SSLYACR.Start()
+			debug.notification("SexLab YACR has started.")
+		endif
+		
 	elseif (disableEnemyRacesIDS.Find(option) > -1)
 		int idx = disableEnemyRacesIDS.Find(option)
 		bool opt = DisableRacesConfig[idx]
@@ -527,6 +549,7 @@ Event OnOptionKeyMapChange(int option, int keyCode, string conflictControl, stri
 EndEvent
 
 Quest Property SSLYACRQuestManager  Auto  
+Quest Property SSLYACR  Auto  
 
 ; not use
 ;Faction Property BanditFaction  Auto  
