@@ -37,6 +37,9 @@ int Property keyCodeSubmit = 281 Auto
 bool Property enableSimpleSlaverySupport = false Auto
 int Property simpleSlaveryChance = 100 Auto
 
+Race[] Property DisableRaces  Auto  
+Bool[] Property DisableRacesConfig  Auto  
+
 int knockDownAllID
 int debugLogFlagID
 int debugNotifFlagID
@@ -74,8 +77,7 @@ int healthLimitNPCID
 int healthLimitBottomNPCID
 int matchedSexNPCID
 
-int[] availableEnemyFactionsIDS
-int[] multiplayEnemyFactionsIDS
+int[] disableEnemyRacesIDS
 string[] matchedSexList
 
 YACRUtil Property AppUtil Auto
@@ -101,6 +103,8 @@ Event OnConfigInit()
 	matchedSexList[0] = "$YACRSexStraight"
 	matchedSexList[1] = "$YACRSexBoth"
 	matchedSexList[2] = "$YACRSexHomo"
+	
+	disableEnemyRacesIDS = new int[20]
 EndEvent
 
 Event OnPageReset(string page)
@@ -153,7 +157,20 @@ Event OnPageReset(string page)
 		armorBreakChanceLightArmorNPCID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPC)
 		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPC)
 	elseif	(page == "$YACREnemy")
-		; 
+		SetCursorFillMode(TOP_TO_BOTTOM)
+		SetCursorPosition(0)
+		
+		AddHeaderOption("$YACREnemyRaces")
+		
+		int len = DisableRaces.Length
+		int idx = 0
+		string raceName
+		while idx != len
+			raceName = DisableRaces[idx].GetName()
+			disableEnemyRacesIDS[idx] = AddToggleOption(raceName, DisableRacesConfig[idx])
+			idx += 1
+		endwhile
+		;AppUtil.Log(disableEnemyRacesIDS)
 	elseif (page == "$YACRSystem")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
@@ -205,25 +222,6 @@ string Function GetFlavor(string fkey)
 		return "$CALLHELP_FAIL"
 	elseif (fkey == "GIVEUP")
 		return "$GIVEUP"
-	endif
-EndFunction
-
-; why empty, Bethesda !!
-string Function _getFactionName(Faction fact)
-	if (fact == BanditFaction)
-		return "$BanditFaction"
-	elseif (fact == VampireFaction)
-		return "$VampireFaction"
-	elseif (fact == DLC1VampireFaction)
-		return "$DLC1VampireFaction"
-	elseif (fact == SilverHandFaction)
-		return "$SilverHandFaction"
-	elseif (fact == MS08AlikrFaction)
-		return "$MS08AlikrFaction"
-	elseif (fact == MS09NorthwatchFaction)
-		return "$MS09NorthwatchFaction"
-	else
-		return fact.GetName()
 	endif
 EndFunction
 
@@ -336,10 +334,13 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$EnableSimpleSlaverySupportInfo")
 	elseif (option == simpleSlaveryChanceID)
 		SetInfoText("$SimpleSlaveryChanceInfo")
+	elseif (disableEnemyRacesIDS.Find(option) > -1)
+		SetInfoText("$DisableRacesInfo")
 	endif
 EndEvent
 
 Event OnOptionSelect(int option)
+	;AppUtil.Log(option)
 	if (option == enableArmorBreakID)
 		enableArmorBreak = !enableArmorBreak
 		SetToggleOptionValue(option, enableArmorBreak)
@@ -381,6 +382,12 @@ Event OnOptionSelect(int option)
 	elseif (option == registNotifFlagID)
 		registNotifFlag = !registNotifFlag
 		SetToggleOptionValue(option, registNotifFlag)
+
+	elseif (disableEnemyRacesIDS.Find(option) > -1)
+		int idx = disableEnemyRacesIDS.Find(option)
+		bool opt = DisableRacesConfig[idx]
+		DisableRacesConfig[idx] = !opt
+		SetToggleOptionValue(option, !opt)
 	endif
 EndEvent
 
@@ -519,11 +526,12 @@ Event OnOptionKeyMapChange(int option, int keyCode, string conflictControl, stri
 	SetKeymapOptionValue(option, keyCode)
 EndEvent
 
-Faction Property BanditFaction  Auto  
-Faction Property VampireFaction  Auto  
-Faction Property DLC1VampireFaction  Auto  
-Faction Property SilverHandFaction  Auto  
-Faction Property MS08AlikrFaction  Auto  
-Faction Property MS09NorthwatchFaction  Auto  
-
 Quest Property SSLYACRQuestManager  Auto  
+
+; not use
+;Faction Property BanditFaction  Auto  
+;Faction Property VampireFaction  Auto  
+;Faction Property DLC1VampireFaction  Auto  
+;Faction Property SilverHandFaction  Auto  
+;Faction Property MS08AlikrFaction  Auto  
+;Faction Property MS09NorthwatchFaction  Auto  

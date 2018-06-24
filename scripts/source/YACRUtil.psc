@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20180621
+	return 20180622
 EndFunction
 
 Function Log(String msg)
@@ -29,18 +29,51 @@ int Function GetArousal(Actor act)
 	return act.GetFactionRank(sla_Arousal)
 EndFunction
 
-bool Function ValidateSex(Actor victim, Actor aggr, int cfg)
+bool Function _validateSex(Actor victim, Actor aggr, int cfg, int aggrsex = -1)
+	; check gender
 	; 0 is straight, 1 is both, 2 is homo
 	if (cfg == 1)
 		return true
 	else
 		int vsex = victim.GetLeveledActorBase().GetSex()
-		int asex = aggr.GetLeveledActorBase().GetSex()
+		int asex
+		if (aggrsex == -1)
+			asex = aggr.GetLeveledActorBase().GetSex()
+		else
+			asex = aggrsex
+		endif
 		if (cfg == 0 && vsex != asex)
 			return true
 		elseif (cfg == 2 && vsex == asex)
 			return true
 		endif
+	endif
+	
+	return false
+EndFunction
+
+bool Function ValidateAggr(Actor victim, Actor aggr, int cfg)
+	string SelfName = victim.GetActorBase().GetName()
+	
+	if (aggr.HasKeyWord(ActorTypeNPC))
+		return self._validateSex(victim, aggr, cfg)
+	else
+		; check race
+		if (SexLab.ValidateActor(aggr) < -16) ; not support(or none anime) creature
+			self.Log("aggr creature not supported or no valid animation " + SelfName)
+			return false
+		elseif (aggr.IsInFaction(SprigganFaction)) ; fuck spriggan, spriggan fuck
+			return self._validateSex(victim, aggr, cfg, 1) ; female
+		else
+			Race aggrRace = aggr.GetLeveledActorBase().GetRace()
+			int idx = Config.DisableRaces.Find(aggrRace)
+			if (idx > -1 && Config.DisableRacesConfig[idx])
+				self.Log("aggr creature disabled by yacr config " + SelfName)
+				return false
+			endif
+		endif
+		
+		return true
 	endif
 	
 	return false
@@ -387,3 +420,5 @@ ReferenceAlias Property SSLYACRHelperCreatureMainAggr  Auto
 
 Faction Property CurrentFollowerFaction  Auto  
 Faction Property CurrentHireling  Auto  
+
+Faction Property SprigganFaction  Auto  

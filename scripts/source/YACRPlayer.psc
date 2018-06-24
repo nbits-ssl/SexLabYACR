@@ -161,11 +161,7 @@ Function doSex(Actor aggr)
 		AppUtil.Log("victim already animating, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 		return
-	elseif (aggr.HasKeyWord(ActorTypeNPC) && !AppUtil.ValidateSex(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
-		AppUtil.Log("invalid actor's sex, pass doSex " + SelfName)
-		return
-	elseif (!aggr.HasKeyWord(ActorTypeNPC) && SexLab.ValidateActor(aggr) < -16) ; not support(or none anime) creature
-		AppUtil.Log("aggr creature not supported or no valid animation, pass doSex " + SelfName)
+	elseif (!AppUtil.ValidateAggr(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
 		return
 	endif
 	
@@ -632,7 +628,7 @@ Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
 		aggr = npcs[idx]
 		if (!aggr.IsInCombat() && !aggr.HasKeyWordString("SexLabActive") && \
 			!aggr.IsInFaction(SSLYACRActiveFaction) && !aggr.IsPlayerTeammate() && \
-			AppUtil.ValidateSex(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
+			AppUtil.ValidateAggr(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
 			
 			return aggr
 		endif
@@ -677,4 +673,4 @@ Quest Property AudienceQuest  Auto
 SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
-Faction Property dunPrisonerExtendedFaction  Auto  
+;Faction Property dunPrisonerExtendedFaction  Auto  
