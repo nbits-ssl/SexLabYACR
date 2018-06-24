@@ -180,7 +180,7 @@ Function doSex(Actor aggr)
 		actor[] sexActors = new actor[2]
 		sexActors[0] = victim
 		sexActors[1] = aggr
-		sslBaseAnimation[] anims = AppUtil.BuildAnimation2(sexActors, aggr)
+		sslBaseAnimation[] anims = AppUtil.BuildAnimation(sexActors, aggr)
 		
 		AppUtil.Log("run SexLab " + SelfName)
 		int tid = self._quickSex(sexActors, anims, victim = victim)
@@ -229,7 +229,7 @@ Function doSexLoop()
 	
 	AppUtil.Log("LOOPING run SexLab aggr " + aggr + ", helpers count " + helpersCount)
 	
-	sslBaseAnimation[] anims = AppUtil.BuildAnimation2(actors, aggr)
+	sslBaseAnimation[] anims = AppUtil.BuildAnimation(actors, aggr)
 	
 	AppUtil.Log("LOOPING run SexLab " + SelfName)
 	int tid = self._quickSex(actors, anims, victim = victim, CenterOn = aggr)
@@ -254,7 +254,6 @@ Function doSexLoop()
 		AppUtil.Log("LOOPING aggr setghost disable " + SelfName)
 	else
 		AppUtil.Log("LOOPING ###FIXME### controller not found, recover setup " + SelfName)
-		AppUtil.Notif("Missing Anim: " + SelfName + " " + AppUtil.DebugBuildAnimationTags(aggr, helpersCount))
 		self.EndSexEvent(aggr)
 	endif
 EndFunction

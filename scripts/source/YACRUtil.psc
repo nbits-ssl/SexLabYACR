@@ -36,7 +36,6 @@ bool Function ValidateSex(Actor victim, Actor aggr, int cfg)
 	else
 		int vsex = victim.GetLeveledActorBase().GetSex()
 		int asex = aggr.GetLeveledActorBase().GetSex()
-		self.log("########################## " + vsex + " ############ " + asex)
 		if (cfg == 0 && vsex != asex)
 			return true
 		elseif (cfg == 2 && vsex == asex)
@@ -286,13 +285,13 @@ sslBaseAnimation[] Function _pickAnimationsByActors(Actor[] actors, bool aggress
 	return anims
 EndFunction
 
-sslBaseAnimation[] Function BuildAnimation2(Actor[] actors, Actor caller, bool rape = true) ; from slapp
+sslBaseAnimation[] Function BuildAnimation(Actor[] actors, Actor caller, bool rape = true) ; from slapp
 	sslBaseAnimation[] anims
 	string tag = SexLab.MakeAnimationGenderTag(actors)
 	string tagsuppress = ""
 	bool requireall = true
 	
-	if (!rape)
+	if (!rape) ; is not occured on yacr
 		if (tag == "mm" || tag == "ff")
 			tag += ",fm"
 			requireall = false
@@ -316,36 +315,6 @@ sslBaseAnimation[] Function BuildAnimation2(Actor[] actors, Actor caller, bool r
 	self.Log("BuildAnimation(): " + tag)
 	
 	return SexLab.GetAnimationsByTags(actors.Length, tag, tagsuppress, requireall)
-EndFunction
-
-string Function DebugBuildAnimationTags(Actor male, int count = 0)
-	if (count == 3)
-		if (male.HasKeyWord(ActorTypeNPC))
-			return "MMMMF"
-		else
-			return "FCCCC"
-		endif
-	elseif (count == 2)
-		if (male.HasKeyWord(ActorTypeNPC))
-			return "MMMF"
-		else
-			return "FCCC"
-		endif
-	elseif (count == 1)
-		if (male.HasKeyWord(ActorTypeNPC))
-			return "MMF,Aggressive"
-		else
-			return "FCC"
-		endif
-	elseif (count == 0)
-		if (male.HasKeyWord(ActorTypeNPC))
-			return "MF,Aggressive - Oral"
-		else
-			return "FC - Oral"
-		endif
-	endif
-	
-	return "invalid count"
 EndFunction
 
 ; from creationkit.com, author is Chesko || Form[] => Actor[]
