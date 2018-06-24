@@ -39,15 +39,15 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		int rndintRP = Utility.RandomInt()
 		int rndintAB = Utility.RandomInt()
 		Armor selfarmor = selfact.GetWornForm(0x00000004) as Armor
-
+			
 		if (selfact.IsInFaction(SSLAnimatingFaction)) ; first check
-			if (selfact.IsWeaponDrawn())
+			if selfact.HasKeyWordString("SexLabActive")  ; other sexlab's sex
+				AppUtil.Log("detect other SexLab's Sex, EndAnimation " + SelfName)
+				sslThreadController controller = SexLab.GetActorController(selfact)
+				controller.EndAnimation()
+			else  ; not animating, this is yacr's bug
 				AppUtil.Log("detect invalid SSLAnimatingFaction, delete " + SelfName)
 				selfact.RemoveFromFaction(SSLAnimatingFaction)
-			else
-				AppUtil.Log("StopCombat " + SelfName)
-				selfact.StopCombat()
-				akAggr.StopCombat()
 			endif
 		elseif (selfarmor)
 			if (healthper < Config.GetHealthLimit(self.IsPlayer) && \
@@ -177,10 +177,10 @@ Function doSex(Actor aggr)
 		
 		self._readySexVictim()
 		
-		sslBaseAnimation[] anims = self._buildAnimation(aggr)
 		actor[] sexActors = new actor[2]
 		sexActors[0] = victim
 		sexActors[1] = aggr
+		sslBaseAnimation[] anims = AppUtil.BuildAnimation2(sexActors, aggr)
 		
 		AppUtil.Log("run SexLab " + SelfName)
 		int tid = self._quickSex(sexActors, anims, victim = victim)
@@ -229,7 +229,7 @@ Function doSexLoop()
 	
 	AppUtil.Log("LOOPING run SexLab aggr " + aggr + ", helpers count " + helpersCount)
 	
-	sslBaseAnimation[] anims = self._buildAnimation(aggr, helpersCount)
+	sslBaseAnimation[] anims = AppUtil.BuildAnimation2(actors, aggr)
 	
 	AppUtil.Log("LOOPING run SexLab " + SelfName)
 	int tid = self._quickSex(actors, anims, victim = victim, CenterOn = aggr)
@@ -254,7 +254,7 @@ Function doSexLoop()
 		AppUtil.Log("LOOPING aggr setghost disable " + SelfName)
 	else
 		AppUtil.Log("LOOPING ###FIXME### controller not found, recover setup " + SelfName)
-		AppUtil.Notif("Missing Anim: " + SelfName + " " + self._debugBuildAnimationTags(aggr, helpersCount))
+		AppUtil.Notif("Missing Anim: " + SelfName + " " + AppUtil.DebugBuildAnimationTags(aggr, helpersCount))
 		self.EndSexEvent(aggr)
 	endif
 EndFunction
@@ -277,74 +277,12 @@ int Function _forceRefHelpers(Actor[] sppt)
 	return len
 EndFunction
 
-sslBaseAnimation[] Function _buildAnimation(Actor male, int count = 0)
-	sslBaseAnimation[] anims
-	
-	if (count == 3)
-		if (male.HasKeyWord(ActorTypeNPC))
-			anims = SexLab.GetAnimationsByTags(5, "MMMMF")
-		else
-			anims = SexLab.GetAnimationsByTags(5, "FCCCC")
-		endif
-	elseif (count == 2)
-		if (male.HasKeyWord(ActorTypeNPC))
-			anims = SexLab.GetAnimationsByTags(4, "MMMF")
-		else
-			anims = SexLab.GetAnimationsByTags(4, "FCCC")
-		endif
-	elseif (count == 1)
-		if (male.HasKeyWord(ActorTypeNPC))
-			anims = SexLab.GetAnimationsByTags(3, "MMF,Aggressive")
-		else
-			anims = SexLab.GetAnimationsByTags(3, "FCC")
-		endif
-	elseif (count == 0)
-		if (male.HasKeyWord(ActorTypeNPC))
-			anims = SexLab.GetAnimationsByTags(2, "MF,Aggressive", "Oral", true)
-		else
-			anims = SexLab.GetAnimationsByTags(2, "FC", "Oral", true)
-		endif
-	endif
-	
-	return anims
-EndFunction
-
-string Function _debugBuildAnimationTags(Actor male, int count = 0)
-	if (count == 3)
-		if (male.HasKeyWord(ActorTypeNPC))
-			return "MMMMF"
-		else
-			return "FCCCC"
-		endif
-	elseif (count == 2)
-		if (male.HasKeyWord(ActorTypeNPC))
-			return "MMMF"
-		else
-			return "FCCC"
-		endif
-	elseif (count == 1)
-		if (male.HasKeyWord(ActorTypeNPC))
-			return "MMF,Aggressive"
-		else
-			return "FCC"
-		endif
-	elseif (count == 0)
-		if (male.HasKeyWord(ActorTypeNPC))
-			return "MF,Aggressive - Oral"
-		else
-			return "FC - Oral"
-		endif
-	endif
-	
-	return "invalid count"
-EndFunction
-
-; code from SexLab's StartSex with disable beduse, disable leadin, and YACR Hook
+; code from SexLab's StartSex with disable beduse, disable leadin, SortActors for fm, and YACR Hook
 int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim = None, Actor CenterOn = None)
 	sslThreadModel Thread = SexLab.NewThread()
 	if !Thread
 		return -1
-	elseIf !Thread.AddActors(Positions, Victim)
+	elseIf !Thread.AddActors(SexLab.SortActors(Positions), Victim)
 		return -1
 	endif
 	Thread.SetAnimations(Anims)
@@ -389,7 +327,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	int cumid = controller.Animation.GetCum(0)
 
 	Actor selfact = self.GetActorRef()
-	Actor aggr = controller.Positions[1]
+	Actor aggr = Aggressor.GetActorRef()
 	
 	; for Onhit missing de-ghost
 	if (controller.Stage > 1 && aggr.IsGhost())
@@ -408,13 +346,16 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		int rndint = Utility.RandomInt()
 		
 		selfact.SetGhost(false)
-		SexLab.ActorLib.ApplyCum(selfact, cumid)
+		SexLab.ActorLib.ApplyCum(controller.Positions[0], cumid)
 		selfact.SetGhost(true)
 
 		controller.UnregisterForUpdate()
 		float laststagewait = SexLab.Config.StageTimerAggr[4]
 		if (laststagewait > 1)
-			Utility.Wait(laststagewait - 2.0) 
+			Utility.Wait(laststagewait - 1.5) 
+		endif
+		if !(Aggressor.GetActorRef())  ; already escape because some reason 
+			return
 		endif
 		
 		if (rndint < 5) ; 20%
@@ -434,6 +375,8 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			else ; 25%
 				AppUtil.Log("endless sex loop...change anim " + SelfName)
 				controller.ChangeAnimation() ; has self controller.onUpdate
+				controller.Stage = 2
+				controller.Action("Advancing")
 				RegisterForSingleUpdate(ForceUpdatePeriod)
 			endif
 		endif
@@ -457,18 +400,18 @@ Event OnKeyDown(int keyCode)
 	if (keyCode == Config.keyCodeRegist)
 		AppUtil.Log("OnkeyDown: Regist")
 		AlreadyKeyDown = true
-		debug.Notification(SelfName + " is registing...")
+		AppUtil.Flavor(Config.GetFlavor("REGISTING"))
 		Actor aggr = Aggressor.GetActorRef()
 		Utility.Wait(2.0)
 		if (aggr && Utility.RandomInt() < PlayerRegistPoint)
 			self._escapePlayer(aggr)
 		else
-			debug.Notification(SelfName + " could not escape...")
+			AppUtil.Flavor(Config.GetFlavor("REGISTING_FAIL"))
 		endif
 	elseif (keyCode == Config.keyCodeHelp)
 		AppUtil.Log("OnkeyDown: CallHelp")
 		AlreadyKeyDown = true
-		debug.Notification(SelfName + " is calling help...")
+		AppUtil.Flavor(Config.GetFlavor("CALLHELP"))
 		Actor aggr = Aggressor.GetActorRef()
 		if (aggr)
 			Actor helper = AppUtil.CallHelp(aggr)
@@ -478,13 +421,13 @@ Event OnKeyDown(int keyCode)
 				self._escapePlayer(aggr)
 			else
 				Utility.Wait(2.0)
-				debug.Notification("Nobody helps you...")
+				AppUtil.Flavor(Config.GetFlavor("CALLHELP_FAIL"))
 			endif
 		endif
 	elseif (keyCode == Config.keyCodeSubmit)
 		AppUtil.Log("OnkeyDown: Submit")
 		AlreadyKeyDown = true
-		debug.Notification(SelfName + " gave up on everything...")
+		AppUtil.Flavor(Config.GetFlavor("GIVEUP"))
 		Utility.Wait(3.0)
 		self._submitPlayer()
 	endif
@@ -589,12 +532,11 @@ Event EndSexEventYACR(int tid, bool HasPlayer)
 	AppUtil.Log("EndSexEvent " + SelfName)
 	sslThreadController controller = SexLab.GetController(tid)
 	if (HasPlayer && EndlessSexLoop)
-		debug.SendAnimationEvent(controller.Positions[0], "BleedOutStart")
+		debug.SendAnimationEvent(self.GetActorRef(), "BleedOutStart")
 	endif
-	self.EndSexEvent(controller.Positions[1])
+	self.EndSexEvent(Aggressor.GetActorRef())  ; Position is change when fm animation
 EndEvent
 
-; aggrのほうにonhitプロパティをつけて、Endlesssex判定を失くす・escapeはどうする？
 ; knockdownallをやめて、ここでは個別にノックダウンさせる
 
 Function EndSexEvent(Actor aggr)
@@ -690,7 +632,8 @@ Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
 	while idx < len
 		aggr = npcs[idx]
 		if (!aggr.IsInCombat() && !aggr.HasKeyWordString("SexLabActive") && \
-			AppUtil.CheckSex(aggr, Gender) && !aggr.IsInFaction(SSLYACRActiveFaction))
+			!aggr.IsInFaction(SSLYACRActiveFaction) && !aggr.IsPlayerTeammate() && \
+			AppUtil.ValidateSex(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
 			
 			return aggr
 		endif

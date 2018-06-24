@@ -194,6 +194,20 @@ Event OnPageReset(string page)
 	endif
 EndEvent
 
+string Function GetFlavor(string fkey)
+	if (fkey == "REGISTING")
+		return "$REGISTING"
+	elseif (fkey == "REGISTING_FAIL")
+		return "$REGISTING_FAIL"
+	elseif (fkey == "CALLHELP")
+		return "$CALLHELP"
+	elseif (fkey == "CALLHELP_FAIL")
+		return "$CALLHELP_FAIL"
+	elseif (fkey == "GIVEUP")
+		return "$GIVEUP"
+	endif
+EndFunction
+
 ; why empty, Bethesda !!
 string Function _getFactionName(Faction fact)
 	if (fact == BanditFaction)

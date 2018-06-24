@@ -14,29 +14,19 @@ Function Log(String msg)
 EndFunction
 
 Function Notif(String msg)
-	; bool debugflag = true
-	; bool debugflag = false
-
 	if (Config.debugNotifFlag)
 		debug.notification("[yacr] " + msg)
 	endif
 EndFunction
 
-int Function GetArousal(Actor act)
-	return act.GetFactionRank(sla_Arousal)
+Function Flavor(String msg)
+	if (Config.registNotifFlag)
+		debug.notification(msg)
+	endif
 EndFunction
 
-bool Function CheckSex(Actor act, int gender = -1)
-	if (gender == -1)
-		return true
-	endif
-	
-	int agender = SexLab.GetGender(act)
-	if (agender == gender || agender == gender + 2)
-		return true
-	else
-		return false
-	endif
+int Function GetArousal(Actor act)
+	return act.GetFactionRank(sla_Arousal)
 EndFunction
 
 bool Function ValidateSex(Actor victim, Actor aggr, int cfg)
@@ -46,6 +36,7 @@ bool Function ValidateSex(Actor victim, Actor aggr, int cfg)
 	else
 		int vsex = victim.GetLeveledActorBase().GetSex()
 		int asex = aggr.GetLeveledActorBase().GetSex()
+		self.log("########################## " + vsex + " ############ " + asex)
 		if (cfg == 0 && vsex != asex)
 			return true
 		elseif (cfg == 2 && vsex == asex)
@@ -161,7 +152,7 @@ Actor Function CallHelp(Actor aggr)
 				act.RemoveSpell(SSLYACRParalyseMagic)
 			endif
 			
-			act.ForceAV("health", 50.0)
+			act.ForceAV("health", 100.0)
 			Utility.Wait(1.5)
 			act.DoCombatSpellApply(PlayerHelperAngrySpell, aggr)
 			act.RemoveSpell(PlayerHelperAngrySpell)
@@ -195,7 +186,9 @@ EndFunction
 
 Function rejoinFollower(Actor act, Faction fact)
 	act.SetPlayerTeammate(true)
-	act.AddToFaction(fact)
+	if (fact)  ; serana is none faction
+		act.AddToFaction(fact)
+	endif
 EndFunction
 
 Actor[] Function GetHelpersCombined(Actor victim, Actor aggr)
@@ -291,6 +284,68 @@ sslBaseAnimation[] Function _pickAnimationsByActors(Actor[] actors, bool aggress
 	endif
 	
 	return anims
+EndFunction
+
+sslBaseAnimation[] Function BuildAnimation2(Actor[] actors, Actor caller, bool rape = true) ; from slapp
+	sslBaseAnimation[] anims
+	string tag = SexLab.MakeAnimationGenderTag(actors)
+	string tagsuppress = ""
+	bool requireall = true
+	
+	if (!rape)
+		if (tag == "mm" || tag == "ff")
+			tag += ",fm"
+			requireall = false
+		elseif (tag == "mmm" || tag == "fff")
+			tag = ""
+		endif
+		tagsuppress = "aggressive"
+	elseif (actors.Length == 2)
+		int srcSex = SexLab.GetGender(caller)
+		tag = "fm" ; workaround
+		
+		if (srcSex == 1) ; female
+			tag += ",cowgirl"
+		elseif (srcSex == 0) ; male
+			tag += ",aggressive"
+			tagsuppress = "cowgirl"
+		endif ; creature is none settings
+	elseif (actors.Length == 3 && rape)
+		tag += ",aggressive"
+	endif
+	self.Log("BuildAnimation(): " + tag)
+	
+	return SexLab.GetAnimationsByTags(actors.Length, tag, tagsuppress, requireall)
+EndFunction
+
+string Function DebugBuildAnimationTags(Actor male, int count = 0)
+	if (count == 3)
+		if (male.HasKeyWord(ActorTypeNPC))
+			return "MMMMF"
+		else
+			return "FCCCC"
+		endif
+	elseif (count == 2)
+		if (male.HasKeyWord(ActorTypeNPC))
+			return "MMMF"
+		else
+			return "FCCC"
+		endif
+	elseif (count == 1)
+		if (male.HasKeyWord(ActorTypeNPC))
+			return "MMF,Aggressive"
+		else
+			return "FCC"
+		endif
+	elseif (count == 0)
+		if (male.HasKeyWord(ActorTypeNPC))
+			return "MF,Aggressive - Oral"
+		else
+			return "FC - Oral"
+		endif
+	endif
+	
+	return "invalid count"
 EndFunction
 
 ; from creationkit.com, author is Chesko || Form[] => Actor[]
