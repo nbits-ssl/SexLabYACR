@@ -364,8 +364,6 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		else
 			bool multiplayLimit = false
 			int origLength = controller.Positions.Length
-			AppUtil.Log("################## " + controller.Positions)
-			
 			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr)
 			AppUtil.Log("endless sex loop... actors are " + actors)
 			
