@@ -60,6 +60,20 @@ Faction Function GetEnemyType(Actor act)
 	return None
 EndFunction
 
+int Function ValidateCreature(Actor ActorRef)  ; from ActorLib.ValidateActor
+	ActorBase BaseRef = ActorRef.GetLeveledActorBase()
+	
+	if !SexLab.Config.AllowCreatures
+		return -17
+	elseIf !sslCreatureAnimationSlots.HasCreatureType(ActorRef)
+		return -18
+	elseIf !SexLab.CreatureSlots.HasAnimation(BaseRef.GetRace(), SexLab.GetGender(ActorRef))
+		return -19
+	endIf
+	
+	return 1
+EndFunction
+
 Actor Function GetPlayerAggressor()
 	Actor act
 	if (PlayerAggressor)

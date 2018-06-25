@@ -212,7 +212,7 @@ Function doSex(Actor aggr, Faction aggrFaction)
 		AppUtil.Log("victim already animating, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 		return
-	elseif (!aggr.HasKeyWord(ActorTypeNPC) && SexLab.ValidateActor(aggr) < -16)
+	elseif (!aggr.HasKeyWord(ActorTypeNPC) && AppUtil.ValidateCreature(aggr) < -16)
 		AppUtil.Log("aggr creature not supported or no valid animation, pass doSex " + SelfName)
 		return
 	endif
