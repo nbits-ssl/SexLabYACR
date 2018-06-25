@@ -10,8 +10,10 @@ Event OnCellLoad()
 EndEvent
 
 Event OnUpdate()
-	self._reload()
-	AppUtil.Log("Reload quest done")
+	if (Config.modEnabled)
+		self._reload()
+		AppUtil.Log("Reload quest done")
+	endif
 EndEvent
 
 Function _reload()

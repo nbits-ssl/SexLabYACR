@@ -6,7 +6,7 @@ bool Property debugLogFlag = false Auto
 bool Property registNotifFlag = true Auto
 bool Property knockDownAll = true Auto
 
-bool Property enablePlayerRape = false Auto
+bool Property enablePlayerRape = true Auto
 
 bool Property enableArmorBreak = true Auto
 bool Property enableArmorUnequipMode = false Auto
@@ -32,9 +32,9 @@ int Property healthLimitNPC = 50 Auto
 int Property healthLimitBottomNPC = 0 Auto
 int Property matchedSexNPC = 0 Auto
 
-int Property keyCodeRegist = 277 Auto
+int Property keyCodeRegist = 278 Auto
 int Property keyCodeHelp = 274 Auto
-int Property keyCodeSubmit = 281 Auto
+int Property keyCodeSubmit = 280 Auto
 bool Property enableSimpleSlaverySupport = false Auto
 int Property simpleSlaveryChance = 100 Auto
 
@@ -90,9 +90,17 @@ int Function GetVersion()
 EndFunction 
 
 Event OnVersionUpdate(int a_version)
-	OnConfigInit()
-	(SSLYACRQuestManager as YACRInit).Reboot()
-	debug.notification("SexLab YACR updated to " + a_version + ", YACR has rebooted.")
+	if (CurrentVersion == 0) ; new game
+		debug.notification("SexLab YACR [" + a_version + "] installed.")
+	elseif (a_version != CurrentVersion)
+		OnConfigInit()
+		if (self.modEnabled)
+			(SSLYACRQuestManager as YACRInit).Reboot()
+			debug.notification("SexLab YACR updated to [" + a_version + "], YACR has rebooted.")
+		else
+			debug.notification("SexLab YACR updated to [" + a_version + "], but YACR is disabled.")
+		endif
+	endif
 EndEvent
 
 Event OnConfigInit()
