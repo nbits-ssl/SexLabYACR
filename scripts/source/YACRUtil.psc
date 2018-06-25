@@ -52,6 +52,20 @@ bool Function _validateSex(Actor victim, Actor aggr, int cfg, int aggrsex = -1)
 	return false
 EndFunction
 
+int Function _validateCreature(Actor ActorRef)  ; from ActorLib.ValidateActor
+	ActorBase BaseRef = ActorRef.GetLeveledActorBase()
+	
+	if !SexLab.Config.AllowCreatures
+		return -17
+	elseIf !sslCreatureAnimationSlots.HasCreatureType(ActorRef)
+		return -18
+	elseIf !SexLab.CreatureSlots.HasAnimation(BaseRef.GetRace(), SexLab.GetGender(ActorRef))
+		return -19
+	endIf
+	
+	return 1
+EndFunction
+
 bool Function ValidateAggr(Actor victim, Actor aggr, int cfg)
 	string SelfName = victim.GetActorBase().GetName()
 	
@@ -59,7 +73,7 @@ bool Function ValidateAggr(Actor victim, Actor aggr, int cfg)
 		return self._validateSex(victim, aggr, cfg)
 	else
 		; check race
-		if (SexLab.ValidateActor(aggr) < -16) ; not support(or none anime) creature
+		if (self._validateCreature(aggr) < -16) ; not support(or none anime) creature
 			self.Log("aggr creature not supported or no valid animation " + SelfName)
 			return false
 		elseif (aggr.IsInFaction(SprigganFaction)) ; fuck spriggan, spriggan fuck

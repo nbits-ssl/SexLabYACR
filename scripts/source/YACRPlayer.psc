@@ -48,6 +48,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 			else  ; not animating, this is yacr's bug
 				AppUtil.Log("detect invalid SSLAnimatingFaction, delete " + SelfName)
 				selfact.RemoveFromFaction(SSLAnimatingFaction)
+				; ##FIXME## Instead ActorLib.ValidateActor ?
 			endif
 		elseif (selfarmor)
 			if (healthper < Config.GetHealthLimit(self.IsPlayer) && \
