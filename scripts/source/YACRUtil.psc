@@ -321,32 +321,29 @@ sslBaseAnimation[] Function _pickAnimationsByActors(Actor[] actors, bool aggress
 	return anims
 EndFunction
 
-sslBaseAnimation[] Function BuildAnimation(Actor[] actors, Actor caller, bool rape = true) ; from slapp
+sslBaseAnimation[] Function BuildAnimation(Actor[] actors)
+	Actor victim = actors[0]
+	Actor aggr = actors[1]
+
 	sslBaseAnimation[] anims
 	string tag = SexLab.MakeAnimationGenderTag(actors)
 	string tagsuppress = ""
 	bool requireall = true
 	
-	if (!rape) ; is not occured on yacr
-		if (tag == "mm" || tag == "ff")
-			tag += ",fm"
-			requireall = false
-		elseif (tag == "mmm" || tag == "fff")
-			tag = ""
-		endif
-		tagsuppress = "aggressive"
-	elseif (actors.Length == 2)
-		int srcSex = SexLab.GetGender(caller)
-		tag = "fm" ; workaround
-		
-		if (srcSex == 1) ; female
-			tag += ",cowgirl"
-		elseif (srcSex == 0) ; male
+	if (aggr.HasKeyWord(ActorTypeNPC))
+		if (actors.Length == 2)
+			int srcSex = SexLab.GetGender(aggr)
+			tag = "fm" ; workaround
+			
+			if (srcSex == 1 && SexLab.GetGender(victim) == 0) ; female => male
+				tag += ",cowgirl"
+			else
+				tag += ",aggressive"
+				tagsuppress = "cowgirl"
+			endif
+		elseif (actors.Length == 3)
 			tag += ",aggressive"
-			tagsuppress = "cowgirl"
-		endif ; creature is none settings
-	elseif (actors.Length == 3 && rape)
-		tag += ",aggressive"
+		endif
 	endif
 	self.Log("BuildAnimation(): " + tag)
 	

@@ -176,7 +176,7 @@ Function doSex(Actor aggr)
 		actor[] sexActors = new actor[2]
 		sexActors[0] = victim
 		sexActors[1] = aggr
-		sslBaseAnimation[] anims = AppUtil.BuildAnimation(sexActors, aggr)
+		sslBaseAnimation[] anims = AppUtil.BuildAnimation(sexActors)
 		
 		AppUtil.Log("run SexLab " + SelfName)
 		int tid = self._quickSex(sexActors, anims, victim = victim)
@@ -226,7 +226,7 @@ Function doSexLoop()
 	
 	AppUtil.Log("LOOPING run SexLab aggr " + aggr + ", helpers count " + helpersCount)
 	
-	sslBaseAnimation[] anims = AppUtil.BuildAnimation(actors, aggr)
+	sslBaseAnimation[] anims = AppUtil.BuildAnimation(actors)
 	int tid = self._quickSex(actors, anims, victim = victim, CenterOn = aggr)
 	sslThreadController controller = SexLab.GetController(tid)
 	
