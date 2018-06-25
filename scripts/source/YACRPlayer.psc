@@ -181,6 +181,7 @@ Function doSex(Actor aggr)
 		AppUtil.Log("run SexLab " + SelfName)
 		int tid = self._quickSex(sexActors, anims, victim = victim)
 		sslThreadController controller = SexLab.GetController(tid)
+		AppUtil.Log("run SexLab [" + tid + "] " + SelfName)
 		
 		if (controller)
 			; wait for sync, max 12 sec.
@@ -226,10 +227,10 @@ Function doSexLoop()
 	AppUtil.Log("LOOPING run SexLab aggr " + aggr + ", helpers count " + helpersCount)
 	
 	sslBaseAnimation[] anims = AppUtil.BuildAnimation(actors, aggr)
-	
-	AppUtil.Log("LOOPING run SexLab " + SelfName)
 	int tid = self._quickSex(actors, anims, victim = victim, CenterOn = aggr)
 	sslThreadController controller = SexLab.GetController(tid)
+	
+	AppUtil.Log("LOOPING run SexLab [" + tid + "] " + SelfName)
 	
 	if (controller)
 		; wait for sync, max 12 sec.
@@ -361,9 +362,18 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			controller.GoToStage(stagecnt - 2) ; has self controller.onUpdate
 			RegisterForSingleUpdate(ForceUpdatePeriod)
 		else
+			bool multiplayLimit = false
+			int origLength = controller.Positions.Length
+			AppUtil.Log("################## " + controller.Positions)
+			
 			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr)
 			AppUtil.Log("endless sex loop... actors are " + actors)
-			if (rndint < 90 && (AppUtil.ArrayCount(actors) - 2) > 0) ; 30%
+			
+			if (origLength == 5 || origLength == actors.Length)
+				multiplayLimit = true
+			endif
+			
+			if (!multiplayLimit && rndint < 90 && (AppUtil.ArrayCount(actors) - 2) > 0) ; 30%
 				AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
 				EndlessSexLoop = true
 				controller.RegisterForSingleUpdate(0.2)
