@@ -188,8 +188,8 @@ Event OnPageReset(string page)
 		
 		AddHeaderOption("$YACRSystem")
 		
-		modEnabled = SSLYACR.IsRunning()
-		enableDisableID = AddToggleOption("$EnableDisableMain", modEnabled)
+		;modEnabled = SSLYACR.IsRunning()
+		;enableDisableID = AddToggleOption("$EnableDisableMain", modEnabled)
 		
 		keyCodeRegistID = AddKeyMapOption("$KeyCodeRegist", keyCodeRegist)
 		keyCodeHelpID = AddKeyMapOption("$KeyCodeHelp", keyCodeHelp)
@@ -399,20 +399,26 @@ Event OnOptionSelect(int option)
 		registNotifFlag = !registNotifFlag
 		SetToggleOptionValue(option, registNotifFlag)
 
+	;/
 	elseif (option == enableDisableID)
-		modEnabled = SSLYACR.IsRunning()
-		modEnabled = !modEnabled
-		SetToggleOptionValue(option, modEnabled)
-
-		if !(modEnabled)  ; is running
-			AppUtil.WakeUpAll()
-			SSLYACR.Stop()
+		; modEnabled = SSLYACR.IsRunning()
+		if (modEnabled)  ; is running
+			if (SSLYACR.IsRunning())
+				AppUtil.WakeUpAll()
+				SSLYACR.Stop()
+			endif
 			debug.notification("SexLab YACR has stopped.")
 		else
-			SSLYACR.Start()
+			if !(SSLYACR.IsRunning())
+				SSLYACR.Start()
+			endif
 			debug.notification("SexLab YACR has started.")
 		endif
 		
+		modEnabled = !modEnabled
+		SetToggleOptionValue(option, modEnabled)
+	/;
+	
 	elseif (disableEnemyRacesIDS.Find(option) > -1)
 		int idx = disableEnemyRacesIDS.Find(option)
 		bool opt = DisableRacesConfig[idx]
