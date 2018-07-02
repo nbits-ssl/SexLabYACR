@@ -10,7 +10,12 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		SelfName = selfact.GetActorBase().GetName()
 	endif
 	
+	Spell spl = akSource as Spell
+	
 	if (PreSource == akSource)
+		return
+	elseif (spl && !spl.IsHostile())
+		AppUtil.Log("enemy onhit pass, not hostile spell " + SelfName)
 		return
 	elseif (selfact.IsGhost())
 		AppUtil.Log("enemy onhit pass, isghost " + SelfName)
