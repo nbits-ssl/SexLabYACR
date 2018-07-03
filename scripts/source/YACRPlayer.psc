@@ -329,6 +329,14 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	int stagecnt = controller.Animation.StageCount
 	int cumid = controller.Animation.GetCum(0)
 
+	if (Config.enableDrippingWASupport)
+		if (controller.Stage >= stagecnt - 1)
+			selfact.SetGhost(false)
+		else
+			selfact.SetGhost(true)
+		endif
+	endif
+	
 	; for Onhit missing de-ghost
 	if (controller.Stage > 1 && aggr.IsGhost())
 		aggr.SetGhost(false)
@@ -347,7 +355,9 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		
 		selfact.SetGhost(false)
 		SexLab.ActorLib.ApplyCum(controller.Positions[0], cumid)
-		selfact.SetGhost(true)
+		if (!Config.enableDrippingWASupport)
+			selfact.SetGhost(true)
+		endif
 		
 		controller.UnregisterForUpdate()
 		float laststagewait = SexLab.Config.StageTimerAggr[4]

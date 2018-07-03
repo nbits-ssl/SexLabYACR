@@ -37,6 +37,7 @@ int Property keyCodeHelp = 274 Auto
 int Property keyCodeSubmit = 280 Auto
 bool Property enableSimpleSlaverySupport = false Auto
 int Property simpleSlaveryChance = 100 Auto
+bool Property enableDrippingWASupport = false Auto
 
 Race[] Property DisableRaces  Auto  
 Bool[] Property DisableRacesConfig  Auto  
@@ -53,7 +54,7 @@ int keyCodeHelpID
 int keyCodeSubmitID
 int enableSimpleSlaverySupportID
 int simpleSlaveryChanceID
-
+int enableDrippingWASupportID
 int enablePlayerRapeID
 
 int enableArmorBreakID
@@ -197,6 +198,8 @@ Event OnPageReset(string page)
 		
 		enableSimpleSlaverySupportID = AddToggleOption("$EnableSimpleSlaverySupport", enableSimpleSlaverySupport)
 		simpleSlaveryChanceID = AddSliderOption("$SimpleSlaveryChance", simpleSlaveryChance)
+		
+		enableDrippingWASupportID = AddToggleOption("$EnableDrippingWASupport", enableDrippingWASupport)
 		
 		AddEmptyOption()
 		
@@ -352,6 +355,8 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$SimpleSlaveryChanceInfo")
 	elseif (disableEnemyRacesIDS.Find(option) > -1)
 		SetInfoText("$DisableRacesInfo")
+	elseif (option == enableDrippingWASupportID)
+		SetInfoText("$EnableDrippingWASupportInfo")
 	endif
 EndEvent
 
@@ -385,6 +390,9 @@ Event OnOptionSelect(int option)
 	elseif (option == enableSimpleSlaverySupportID)
 		enableSimpleSlaverySupport = !enableSimpleSlaverySupport
 		SetToggleOptionValue(option, enableSimpleSlaverySupport)
+	elseif (option == enableDrippingWASupportID)
+		enableDrippingWASupport = !enableDrippingWASupport
+		SetToggleOptionValue(option, enableDrippingWASupport)
 		
 	elseif (option == knockDownAllID)
 		knockDownAll = !knockDownAll
