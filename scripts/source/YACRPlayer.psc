@@ -26,6 +26,9 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 		AppUtil.Log("not if " + SelfName)
 		return
+	elseif (wpn == Unarmed && selfact.GetDistance(akAggr) > 150.0)
+		AppUtil.Log("not if, mystery unarmed spell (explode) " + SelfName)
+		return
 	endif
 
 	GotoState("Busy")
@@ -154,8 +157,8 @@ Function doSex(Actor aggr)
 		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 		return
-	elseif (Aggressor.GetActorRef() || aggr.IsDead())
-		AppUtil.Log("already filled ref or dead actor, pass doSex " + SelfName)
+	elseif (Aggressor.GetActorRef() || aggr.IsDead() || !aggr.Is3DLoaded() || aggr.IsDisabled())
+		AppUtil.Log("already filled ref, dead actor, or not loaded, pass doSex " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 		return
 	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
@@ -316,6 +319,9 @@ EndFunction
 
 Event StageStartEventYACR(int tid, bool HasPlayer)
 	AppUtil.Log("StageStartEvent: " + SelfName)
+	Actor selfact = self.GetActorRef()
+	Actor aggr = Aggressor.GetActorRef()
+	
 	UnregisterForUpdate()
 	self._getAudience()
 	UpdateController = SexLab.GetController(tid)
@@ -323,9 +329,6 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	int stagecnt = controller.Animation.StageCount
 	int cumid = controller.Animation.GetCum(0)
 
-	Actor selfact = self.GetActorRef()
-	Actor aggr = Aggressor.GetActorRef()
-	
 	; for Onhit missing de-ghost
 	if (controller.Stage > 1 && aggr.IsGhost())
 		aggr.SetGhost(false)
@@ -345,7 +348,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		selfact.SetGhost(false)
 		SexLab.ActorLib.ApplyCum(controller.Positions[0], cumid)
 		selfact.SetGhost(true)
-
+		
 		controller.UnregisterForUpdate()
 		float laststagewait = SexLab.Config.StageTimerAggr[4]
 		if (laststagewait > 1)
@@ -477,14 +480,17 @@ EndFunction
 
 ; from rapespell, genius!
 Event OnUpdate()
+	AppUtil.Log("# OnUpdate YACRPlayer " + SelfName)
 	if (UpdateController && UpdateController.GetState() == "animating")
 		AppUtil.Log("OnUpdate, UpdateController is alive " + SelfName)
 		UpdateController.OnUpdate()
 		RegisterForSingleUpdate(ForceUpdatePeriod)
-	endif
-	
-	if (self.GetActorRef().IsBleedingOut())
+	elseif (self.GetActorRef().IsBleedingOut())
+		AppUtil.Log("OnUpdate, _searchBleedOutPartner " + SelfName)
 		self._searchBleedOutPartner()
+	else
+		AppUtil.Log("OnUpdate, Unregister for single update loop " + SelfName)
+		; UnregisterForUpdate()
 	endif
 EndEvent
 
@@ -606,7 +612,6 @@ Function _searchBleedOutPartner()
 	endif
 	Actor victim = self.GetActorRef()
 	ObjectReference center = victim as ObjectReference
-	Utility.Wait(Utility.RandomInt(1, 4))
 	
 	Actor aggr = self._getBleedOutPartner(0)
 	if (aggr)
@@ -614,8 +619,6 @@ Function _searchBleedOutPartner()
 		if (!aggr.HasKeyWordString("SexLabActive") && !aggr.IsInFaction(SSLYACRActiveFaction))
 			AppUtil.Log("OnEnterBleedOut, actor found " + SelfName)
 			aggr.AddToFaction(SSLYACRActiveFaction)
-			aggr.PathToReference(victim, 0.5)
-			Utility.Wait(Utility.RandomInt(2, 5))
 			self.doSex(aggr)
 		else
 			AppUtil.Log("OnEnterBleedOut, valid faction actor not found " + SelfName)
@@ -625,6 +628,7 @@ Function _searchBleedOutPartner()
 		AppUtil.Log("OnEnterBleedOut, valid actor not found " + SelfName)
 		RegisterForSingleUpdate(BleedOutUpdatePeriod)
 	endif
+	AppUtil.Log("OnEnterBleedOut, ended _searchBleedOutPartner " + SelfName)
 EndFunction
 
 Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
@@ -684,3 +688,5 @@ SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
 ;Faction Property dunPrisonerExtendedFaction  Auto  
+
+WEAPON Property Unarmed  Auto  

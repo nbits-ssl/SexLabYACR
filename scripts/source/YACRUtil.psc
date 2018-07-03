@@ -76,7 +76,7 @@ bool Function ValidateAggr(Actor victim, Actor aggr, int cfg)
 		if (self._validateCreature(aggr) < -16) ; not support(or none anime) creature
 			self.Log("aggr creature not supported or no valid animation " + SelfName)
 			return false
-		elseif (aggr.IsInFaction(SprigganFaction)) ; fuck spriggan, spriggan fuck
+		elseif (aggr.IsInFaction(SprigganFaction) || aggr.IsInFaction(HagravenFaction)) ; fuck spriggan, spriggan fuck
 			return self._validateSex(victim, aggr, cfg, 1) ; female
 		else
 			Race aggrRace = aggr.GetLeveledActorBase().GetRace()
@@ -436,3 +436,5 @@ Faction Property CurrentFollowerFaction  Auto
 Faction Property CurrentHireling  Auto  
 
 Faction Property SprigganFaction  Auto  
+
+Faction Property HagravenFaction  Auto  
