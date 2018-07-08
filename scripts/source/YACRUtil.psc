@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20180624
+	return 20180707
 EndFunction
 
 Function Log(String msg)
@@ -364,6 +364,10 @@ sslBaseAnimation[] Function BuildAnimation(Actor[] actors)
 	return SexLab.GetAnimationsByTags(actors.Length, tag, tagsuppress, requireall)
 EndFunction
 
+Function PlayImpactSound(ObjectReference center)
+	YACRImpactUnarmed.Play(center)
+EndFunction
+
 ; from creationkit.com, author is Chesko || Form[] => Actor[]
 bool function ArraySort(Actor[] myArray, int i = 0)
 	bool bFirstNoneFound = false
@@ -436,5 +440,6 @@ Faction Property CurrentFollowerFaction  Auto
 Faction Property CurrentHireling  Auto  
 
 Faction Property SprigganFaction  Auto  
-
 Faction Property HagravenFaction  Auto  
+
+Sound Property YACRImpactUnarmed  Auto  

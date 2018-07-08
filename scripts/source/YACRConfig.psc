@@ -105,6 +105,8 @@ Event OnVersionUpdate(int a_version)
 EndEvent
 
 Event OnConfigInit()
+	knockDownAll = true ; always from 2.0alpha3
+	
 	Pages = new string[4]
 	Pages[0] = "$YACRRapeChance"
 	Pages[1] = "$YACRArmorBreak"

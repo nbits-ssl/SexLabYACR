@@ -5,7 +5,7 @@ string SelfName
 bool AlreadyInPrisonerFaction = false ; not use
 bool EndlessSexLoop = false
 bool AlreadyKeyDown = false
-float ForceUpdatePeriod = 30.0
+float ForceUpdatePeriod = 30.0  ; still need ? 2.0alpha3
 float BleedOutUpdatePeriod = 10.0
 int StartingHealthForRegist = 0
 int StartingArousalForRegist = 0
@@ -138,6 +138,8 @@ Function _endSexVictim()
 	self._clearAudience()
 	VictimAlias.Clear()
 	act.SetGhost(false)
+	
+	RegisterForSingleUpdate(0.5) ; for Unregist ForceUpdateController
 EndFunction
 
 Function _stopCombatOneMore(Actor aggr, Actor victim)
@@ -479,6 +481,7 @@ bool Function _stopPlayerRape(Actor selfact)
 	if (selfact)
 		if selfact.HasKeyWordString("SexLabActive")
 			AppUtil.Log("Player escaped, Stop rape")
+			AppUtil.PlayImpactSound(selfact as ObjectReference)
 			sslThreadController controller = SexLab.GetActorController(selfact)
 			controller.EndAnimation()
 			ret = true
@@ -500,7 +503,7 @@ Event OnUpdate()
 		self._searchBleedOutPartner()
 	else
 		AppUtil.Log("OnUpdate, Unregister for single update loop " + SelfName)
-		; UnregisterForUpdate()
+		UnregisterForUpdate() ; for ForceUpdateController
 	endif
 EndEvent
 
@@ -652,6 +655,7 @@ Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
 		aggr = npcs[idx]
 		if (!aggr.IsInCombat() && !aggr.HasKeyWordString("SexLabActive") && \
 			!aggr.IsInFaction(SSLYACRActiveFaction) && !aggr.IsPlayerTeammate() && \
+			!aggr.IsDead() && aggr.Is3DLoaded() && !aggr.IsDisabled() && \
 			AppUtil.ValidateAggr(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
 			
 			return aggr
