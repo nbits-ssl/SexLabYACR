@@ -35,6 +35,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 	PreSource = akSource
 	float healthper = selfact.GetAVPercentage("health") * 100
+	; AppUtil.Log("############## healthper " + healthper + " " + SelfName)
 	
 	if (!abHitBlocked && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
 		AppUtil.Log("onhit success " + SelfName)
@@ -641,7 +642,7 @@ Function _searchBleedOutPartner()
 		AppUtil.Log("OnEnterBleedOut, valid actor not found " + SelfName)
 		RegisterForSingleUpdate(BleedOutUpdatePeriod)
 	endif
-	AppUtil.Log("OnEnterBleedOut, ended _searchBleedOutPartner " + SelfName)
+	; AppUtil.Log("OnEnterBleedOut, ended _searchBleedOutPartner " + SelfName)
 EndFunction
 
 Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
