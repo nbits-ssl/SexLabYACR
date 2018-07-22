@@ -455,10 +455,11 @@ EndEvent
 
 Function _escapePlayer(Actor aggr)
 	Actor selfact = PlayerActor
-	if (self._stopPlayerRape(selfact))
-		selfact.PushActorAway(aggr, 5.0)
-		;debug.sendAnimationEvent(selfact, "IdleStaggerBack")
-	endif
+	self._stopPlayerRape(selfact)
+	;if (self._stopPlayerRape(selfact))
+	;	selfact.PushActorAway(aggr, 5.0)
+	;	debug.sendAnimationEvent(selfact, "IdleStaggerBack")
+	;endif
 EndFunction
 
 Function _submitPlayer()
@@ -554,7 +555,6 @@ EndFunction
 
 Event EndSexEventYACR(int tid, bool HasPlayer)
 	AppUtil.Log("EndSexEvent " + SelfName)
-	sslThreadController controller = SexLab.GetController(tid)
 	if (HasPlayer && EndlessSexLoop)
 		debug.SendAnimationEvent(self.GetActorRef(), "BleedOutStart")
 	endif
@@ -609,9 +609,8 @@ Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
 	Actor victim = self.GetActorRef()
 	
 	if (aeCombatState == 0 && !victim.HasKeyWordString("SexLabActive"))
-		Actor selfact = self.GetActorRef()
-		selfact.EnableAI(false)
-		selfact.EnableAI()
+		victim.EnableAI(false)
+		victim.EnableAI()
 		AppUtil.Log("OnCombatStateChanged, reset ai " + SelfName)
 	endif
 EndEvent
@@ -655,7 +654,7 @@ Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
 	while idx < len
 		aggr = npcs[idx]
 		if (!aggr.IsInCombat() && !aggr.HasKeyWordString("SexLabActive") && \
-			!aggr.IsInFaction(SSLYACRActiveFaction) && !aggr.IsPlayerTeammate() && \
+			!aggr.IsInFaction(SSLYACRActiveFaction) && !aggr == PlayerActor && !aggr.IsPlayerTeammate() && \
 			!aggr.IsDead() && aggr.Is3DLoaded() && !aggr.IsDisabled() && \
 			AppUtil.ValidateAggr(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
 			
