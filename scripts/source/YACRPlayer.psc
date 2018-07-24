@@ -455,11 +455,11 @@ EndEvent
 
 Function _escapePlayer(Actor aggr)
 	Actor selfact = PlayerActor
-	self._stopPlayerRape(selfact)
-	;if (self._stopPlayerRape(selfact))
-	;	selfact.PushActorAway(aggr, 5.0)
+	;self._stopPlayerRape(selfact)
+	if (self._stopPlayerRape(selfact))
+		selfact.PushActorAway(aggr, 5.0)
 	;	debug.sendAnimationEvent(selfact, "IdleStaggerBack")
-	;endif
+	endif
 EndFunction
 
 Function _submitPlayer()
