@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20180707
+	return 20180727
 EndFunction
 
 Function Log(String msg)
@@ -64,6 +64,14 @@ int Function _validateCreature(Actor ActorRef)  ; from ActorLib.ValidateActor
 	endIf
 	
 	return 1
+EndFunction
+
+bool Function ValidateHorse(Actor horse)
+	if (horse.IsInFaction(PlayerHorseFaction) || horse == Frost || horse == Shadowmere)
+		return true
+	else
+		return false
+	endif
 EndFunction
 
 bool Function ValidateAggr(Actor victim, Actor aggr, int cfg)
@@ -443,3 +451,7 @@ Faction Property SprigganFaction  Auto
 Faction Property HagravenFaction  Auto  
 
 Sound Property YACRImpactUnarmed  Auto  
+
+Actor Property Frost  Auto  
+Actor Property Shadowmere  Auto  
+Faction Property PlayerHorseFaction  Auto  

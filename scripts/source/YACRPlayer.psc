@@ -35,7 +35,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 	PreSource = akSource
 	float healthper = selfact.GetAVPercentage("health") * 100
-	; AppUtil.Log("############## healthper " + healthper + " " + SelfName)
+	AppUtil.Log("############## healthper " + healthper + " " + SelfName)
 	
 	if (!abHitBlocked && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
 		AppUtil.Log("onhit success " + SelfName)
@@ -291,6 +291,7 @@ int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim
 	Thread.SetAnimations(Anims)
 	Thread.DisableBedUse(true)
 	Thread.DisableLeadIn()
+	Thread.DisableRagdollEnd()
 	Thread.CenterOnObject(CenterOn)
 	
 	Thread.SetHook("YACR" + HookName)
@@ -407,10 +408,15 @@ EndEvent
 
 Event OnKeyDown(int keyCode)
 	Actor selfact = self.GetActorRef()
-	if (!self.IsPlayer || Utility.IsInMenuMode())
+	Actor aggr = Aggressor.GetActorRef()
+
+	if (!self.IsPlayer || !aggr || Utility.IsInMenuMode())
 		return
 	elseif !(selfact.HasKeyWordString("SexLabActive"))
 		AppUtil.Log("not in anim")
+		return
+	elseif (aggr.IsGhost())
+		AppUtil.Log("aggr is ghost, please wait")
 		return
 	elseif (AlreadyKeyDown)
 		AppUtil.Log("Already key down, wait for next stage")
@@ -421,9 +427,9 @@ Event OnKeyDown(int keyCode)
 		AppUtil.Log("OnkeyDown: Regist")
 		AlreadyKeyDown = true
 		AppUtil.Flavor(Config.GetFlavor("REGISTING"))
-		Actor aggr = Aggressor.GetActorRef()
 		Utility.Wait(2.0)
-		if (aggr && Utility.RandomInt() < PlayerRegistPoint)
+		
+		if (Utility.RandomInt() < PlayerRegistPoint)
 			self._escapePlayer(aggr)
 		else
 			AppUtil.Flavor(Config.GetFlavor("REGISTING_FAIL"))
@@ -432,39 +438,36 @@ Event OnKeyDown(int keyCode)
 		AppUtil.Log("OnkeyDown: CallHelp")
 		AlreadyKeyDown = true
 		AppUtil.Flavor(Config.GetFlavor("CALLHELP"))
-		Actor aggr = Aggressor.GetActorRef()
-		if (aggr)
-			Actor helper = AppUtil.CallHelp(aggr)
-			if (helper)
-				AppUtil.Log("CallHelp, helper is " + helper.GetActorBase().GetName())
-				Utility.Wait(0.5)
-				self._escapePlayer(aggr)
-			else
-				Utility.Wait(2.0)
-				AppUtil.Flavor(Config.GetFlavor("CALLHELP_FAIL"))
-			endif
+		Actor helper = AppUtil.CallHelp(aggr)
+		
+		if (helper)
+			AppUtil.Log("CallHelp, helper is " + helper.GetActorBase().GetName())
+			Utility.Wait(0.5)
+			self._escapePlayer(aggr)
+		else
+			Utility.Wait(2.0)
+			AppUtil.Flavor(Config.GetFlavor("CALLHELP_FAIL"))
 		endif
 	elseif (keyCode == Config.keyCodeSubmit)
 		AppUtil.Log("OnkeyDown: Submit")
 		AlreadyKeyDown = true
 		AppUtil.Flavor(Config.GetFlavor("GIVEUP"))
 		Utility.Wait(3.0)
-		self._submitPlayer()
+		self._submitPlayer(aggr)
 	endif
 EndEvent
 
 Function _escapePlayer(Actor aggr)
-	Actor selfact = PlayerActor
-	;self._stopPlayerRape(selfact)
-	if (self._stopPlayerRape(selfact))
-		selfact.PushActorAway(aggr, 5.0)
-	;	debug.sendAnimationEvent(selfact, "IdleStaggerBack")
+	if (self._stopPlayerRape(aggr))
+		aggr.AddSpell(SSLYACRParalyseMagic)
+		Utility.Wait(0.5)
+		aggr.RemoveSpell(SSLYACRParalyseMagic)
 	endif
 EndFunction
 
-Function _submitPlayer()
-	Actor selfact = self.GetActorRef()
-	if (self._stopPlayerRape(selfact))
+Function _submitPlayer(Actor aggr)
+	Actor selfact = PlayerActor
+	if (self._stopPlayerRape(aggr))
 		if (Config.enableSimpleSlaverySupport && \
 			Utility.RandomInt() <= Config.simpleSlaveryChance)
 			
@@ -477,17 +480,16 @@ Function _submitPlayer()
 	endif
 EndFunction
 
-bool Function _stopPlayerRape(Actor selfact)
+bool Function _stopPlayerRape(Actor aggr)
+	Actor selfact = PlayerActor
 	bool ret
-
-	if (selfact)
-		if selfact.HasKeyWordString("SexLabActive")
-			AppUtil.Log("Player escaped, Stop rape")
-			AppUtil.PlayImpactSound(selfact as ObjectReference)
-			sslThreadController controller = SexLab.GetActorController(selfact)
-			controller.EndAnimation()
-			ret = true
-		endif
+	
+	if selfact.HasKeyWordString("SexLabActive")
+		AppUtil.Log("Player escaped, Stop rape")
+		AppUtil.PlayImpactSound(selfact as ObjectReference)
+		sslThreadController controller = SexLab.GetActorController(selfact)
+		controller.EndAnimation()
+		ret = true
 	endif
 	
 	return ret
@@ -626,7 +628,7 @@ Function _searchBleedOutPartner()
 	Actor victim = self.GetActorRef()
 	ObjectReference center = victim as ObjectReference
 	
-	Actor aggr = self._getBleedOutPartner(0)
+	Actor aggr = self._getBleedOutPartner()
 	if (aggr)
 		; 2nd check
 		if (!aggr.HasKeyWordString("SexLabActive") && !aggr.IsInFaction(SSLYACRActiveFaction))
@@ -644,17 +646,19 @@ Function _searchBleedOutPartner()
 	; AppUtil.Log("OnEnterBleedOut, ended _searchBleedOutPartner " + SelfName)
 EndFunction
 
-Actor Function _getBleedOutPartner(int Gender = -1, Keyword kwd = None)
+Actor Function _getBleedOutPartner()
 	Actor aggr
 	Actor victim = Self.GetActorRef()
 	Actor[] npcs = MiscUtil.ScanCellNPCs(victim as ObjectReference, 1000.0)
 
 	int len = npcs.Length
 	int idx = 0
+	AppUtil.Log("_getBleedOutPartner, actors length " + len)
 	while idx < len
 		aggr = npcs[idx]
-		if (!aggr.IsInCombat() && !aggr.HasKeyWordString("SexLabActive") && \
-			!aggr.IsInFaction(SSLYACRActiveFaction) && !aggr == PlayerActor && !aggr.IsPlayerTeammate() && \
+		if (!aggr.IsInCombat() && \
+			!aggr.HasKeyWordString("SexLabActive") && !aggr.IsInFaction(SSLYACRActiveFaction) && \
+			aggr != PlayerActor && !aggr.IsPlayerTeammate() && !AppUtil.ValidateHorse(aggr) && \
 			!aggr.IsDead() && aggr.Is3DLoaded() && !aggr.IsDisabled() && \
 			AppUtil.ValidateAggr(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
 			
@@ -691,6 +695,7 @@ Keyword Property ActorTypeNPC  Auto
 
 Bool Property IsPlayer  Auto  
 String Property HookName  Auto
+SPELL Property SSLYACRParalyseMagic  Auto  
 
 Faction Property SSLYACRActiveFaction  Auto  
 Faction Property SSLYACRPurgedFollowerFaction  Auto  
