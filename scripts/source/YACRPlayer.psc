@@ -458,10 +458,15 @@ Event OnKeyDown(int keyCode)
 EndEvent
 
 Function _escapePlayer(Actor aggr)
+	Actor selfact = PlayerActor
 	if (self._stopPlayerRape(aggr))
-		aggr.AddSpell(SSLYACRParalyseMagic)
 		Utility.Wait(0.5)
-		aggr.RemoveSpell(SSLYACRParalyseMagic)
+		; Wait 0.5 sec when stop animation, and check aggr is dead (for SuccubusHeart, from >>96.460)
+		if(!aggr.IsDead() && !aggr.IsBleedingOut())	; aggr alive!
+			AppUtil.PlayImpactSound(selfact as ObjectReference)
+			selfact.PushActorAway(aggr, 5.0)
+		endif
+		; dead aggr, do nothing.
 	endif
 EndFunction
 
@@ -486,7 +491,7 @@ bool Function _stopPlayerRape(Actor aggr)
 	
 	if selfact.HasKeyWordString("SexLabActive")
 		AppUtil.Log("Player escaped, Stop rape")
-		AppUtil.PlayImpactSound(selfact as ObjectReference)
+		; AppUtil.PlayImpactSound(selfact as ObjectReference)  ; not here for SuccubusHeart
 		sslThreadController controller = SexLab.GetActorController(selfact)
 		controller.EndAnimation()
 		ret = true
