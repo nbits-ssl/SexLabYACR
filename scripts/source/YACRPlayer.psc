@@ -78,7 +78,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		elseif (!selfarmor && \
 			healthper < Config.GetHealthLimit(self.IsPlayer) && \
 			healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
-			rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer))
+			rndintRP < Config.GetRapeChance(self.IsPlayer))
 			
 			AppUtil.Log("doSex " + SelfName)
 			self.doSex(akAggr)
@@ -457,16 +457,28 @@ Event OnKeyDown(int keyCode)
 	endif
 EndEvent
 
-Function _escapePlayer(Actor aggr)
+Function _escapePlayer(Actor aggr) ; (almost rewritten by >>96.860)
 	Actor selfact = PlayerActor
 	if (self._stopPlayerRape(aggr))
-		Utility.Wait(0.5)
-		; Wait 0.5 sec when stop animation, and check aggr is dead (for SuccubusHeart, from >>96.460)
+		; Wait 0.8 sec when stop animation. (0.5+ sec for more safety?)
+		Utility.Wait(0.8)
+		; Check aggr is dead (for SuccubusHeart)
 		if(!aggr.IsDead() && !aggr.IsBleedingOut())	; aggr alive!
-			AppUtil.PlayImpactSound(selfact as ObjectReference)
-			selfact.PushActorAway(aggr, 5.0)
+			float fAngle = selfact.GetAngleZ()
+			float fX = selfact.GetPositionX() - Math.Sin(fAngle) * 30
+			float fY = selfact.GetPositionY() - Math.Cos(fAngle) * 30
+			float fZ = selfact.GetPositionZ()
+			if (fAngle < 180)
+				fAngle += 180
+			else
+				fAngle -= 180
+			endif
+			selfact.SetPosition(fX,fY,fZ) ; set player's position to aggr's back
+			aggr.SetAngle(0.0,0.0,fAngle) ; invert aggr's angle, face to face
+			Utility.Wait(0.3) ; stand by stand by .....
+			AppUtil.PlayImpactSound(selfact as ObjectReference) ; play impact sound
+			selfact.PushActorAway(aggr, 2.5) ; ..... go!
 		endif
-		; dead aggr, do nothing.
 	endif
 EndFunction
 
