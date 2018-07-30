@@ -354,7 +354,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	endif
 	
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
-		AppUtil.Log("endless sex loop... " + SelfName)
+		AppUtil.Log("endless sex loop for " + SelfName)
 		int rndint = Utility.RandomInt()
 		
 		selfact.SetGhost(false)
@@ -383,7 +383,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			bool multiplayLimit = false
 			int origLength = controller.Positions.Length
 			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr)
-			AppUtil.Log("endless sex loop... actors are " + actors)
+			AppUtil.Log("endless sex loop...actors are " + actors)
 			
 			if (origLength == 5 || origLength == actors.Length)
 				multiplayLimit = true

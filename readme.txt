@@ -104,6 +104,9 @@ SSL用の戦闘レイプMod。Defeatが自環境ではうまく動かないた�
 * The Amazing World of Bikini Armor - Armor Break
 * Ecchina Armor Break
 
+破壊ではなく脱衣を使いたい方でフォロワーの自動着直しが必要な方は、
+SexLab RapeSpellのおまけについているMySexlabSupplyなどを導入してください
+
 
 ## 製作環境で関係ありそうなModや設定
 
