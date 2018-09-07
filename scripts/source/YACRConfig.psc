@@ -223,7 +223,7 @@ Event OnPageReset(string page)
 			ref = AppUtil.Teammates[n]
 			act = ref.GetActorRef()
 			if (act)
-				AddTextOption(act.GetActorBase().GetName(), "")
+				AddTextOption(act.GetLeveledActorBase().GetName(), "")
 			endif
 			n += 1
 		endWhile
