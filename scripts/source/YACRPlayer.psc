@@ -325,14 +325,22 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	AppUtil.Log("StageStartEvent: " + SelfName)
 	Actor selfact = self.GetActorRef()
 	Actor aggr = Aggressor.GetActorRef()
-	
+		
 	UnregisterForUpdate()
 	self._getAudience()
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
 	int cumid = controller.Animation.GetCum(0)
-
+	
+	if (self.IsPlayer && SexLab.Config.DisablePlayer == false && Config.GetEnableEndlessRape(self.IsPlayer))
+		if (SexLab.Config.AutoAdvance == false)
+			controller.AutoAdvance = false
+		endif
+		controller.EnableHotkeys()
+		AppUtil.Log("AutoAdvance check, disable hotkeys " + SelfName)
+	endif
+	
 	if (Config.enableDrippingWASupport)
 		if (controller.Stage >= stagecnt - 1)
 			selfact.SetGhost(false)
@@ -356,6 +364,14 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
 		AppUtil.Log("endless sex loop for " + SelfName)
 		int rndint = Utility.RandomInt()
+		
+		if (self.IsPlayer && SexLab.Config.DisablePlayer == false)
+			if (SexLab.Config.AutoAdvance == false)
+				controller.AutoAdvance = true
+			endif
+			controller.DisableHotkeys()
+			AppUtil.Log("AutoAdvance check, disable hotkeys " + SelfName)
+		endif
 		
 		selfact.SetGhost(false)
 		SexLab.ActorLib.ApplyCum(controller.Positions[0], cumid)
