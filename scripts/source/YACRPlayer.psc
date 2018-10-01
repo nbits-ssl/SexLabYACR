@@ -115,6 +115,7 @@ Function _readySexVictim()
 		RegisterForKey(Config.keyCodeSubmit)
 		AlreadyKeyDown = false
 	else
+		act.AddToFaction(SSLYACRPurgedFollowerFaction)
 		baseFaction = AppUtil.purgeFollower(act)
 	endif
 	
@@ -132,8 +133,9 @@ Function _endSexVictim()
 		UnregisterForKey(Config.keyCodeRegist)
 		UnregisterForKey(Config.keyCodeHelp)
 		UnregisterForKey(Config.keyCodeSubmit)
-	else
+	elseif (act.IsInFaction(SSLYACRPurgedFollowerFaction))
 		AppUtil.rejoinFollower(act, baseFaction)
+		act.RemoveFromFaction(SSLYACRPurgedFollowerFaction)
 	endif
 	
 	self._clearAudience()
