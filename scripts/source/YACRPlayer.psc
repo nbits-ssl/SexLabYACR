@@ -22,7 +22,8 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 	if (akAggressor == None || akProjectile || PreSource ==  akSource || !wpn || \
 		selfact.IsGhost() || selfact.IsDead() || akAggr.IsPlayerTeammate() || akAggr == PlayerActor || \
-		selfact.IsInKillMove() || akAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape))
+		selfact.IsInKillMove() || akAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape) || \
+		!selfact.HasKeyWord(ActorTypeNPC))
 	
 		AppUtil.Log("not if " + SelfName)
 		return
@@ -340,7 +341,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			controller.AutoAdvance = false
 		endif
 		controller.EnableHotkeys()
-		AppUtil.Log("AutoAdvance check, disable hotkeys " + SelfName)
+		AppUtil.Log("AutoAdvance check, enable hotkeys " + SelfName)
 	endif
 	
 	if (Config.enableDrippingWASupport)
