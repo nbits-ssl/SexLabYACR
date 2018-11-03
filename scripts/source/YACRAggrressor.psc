@@ -29,7 +29,8 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	if (selfact)
 		if selfact.HasKeyWordString("SexLabActive")
 			AppUtil.Log("enemy OnHit, Stop " + SelfName)
-			selfact.SetGhost(true)
+			selfact.SetGhost(true) 
+			; selfact.SetGhost(true) ; in rare case, also un-setghost case happened ###
 			sslThreadController controller = SexLab.GetActorController(selfact)
 			controller.EndAnimation()
 			; selfact.SetGhost(false) ;  in Alias's spell YACRStopCombatEffect

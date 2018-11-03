@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20181001
+	return 20181010
 EndFunction
 
 Function Log(String msg)
@@ -64,6 +64,10 @@ int Function _validateCreature(Actor ActorRef)  ; from ActorLib.ValidateActor
 	endIf
 	
 	return 1
+EndFunction
+
+bool Function IsDragon(Actor dragon)
+	return dragon.IsInFaction(DragonFaction)
 EndFunction
 
 bool Function ValidateHorse(Actor horse)
@@ -447,6 +451,7 @@ ReferenceAlias Property SSLYACRHelperCreatureMainAggr  Auto
 Faction Property CurrentFollowerFaction  Auto  
 Faction Property CurrentHireling  Auto  
 
+Faction Property DragonFaction  Auto  
 Faction Property SprigganFaction  Auto  
 Faction Property HagravenFaction  Auto  
 

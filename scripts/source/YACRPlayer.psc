@@ -27,7 +27,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 		AppUtil.Log("not if " + SelfName)
 		return
-	elseif (wpn == Unarmed && selfact.GetDistance(akAggr) > 150.0)
+	elseif (wpn == Unarmed && !AppUtil.IsDragon(akAggr) && selfact.GetDistance(akAggr) > 150.0)
 		AppUtil.Log("not if, mystery unarmed spell (explode) " + SelfName)
 		return
 	endif
