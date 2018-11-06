@@ -36,7 +36,10 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 	PreSource = akSource
 	float healthper = selfact.GetAVPercentage("health") * 100
-	AppUtil.Log("############## healthper " + healthper + " " + SelfName)
+	if (healthper > 100.0)
+		healthper = 100.0
+	endif
+	AppUtil.Log("############## healthper " + healthper + " " + SelfName + " abPowerAttack = " + abPowerAttack)
 	
 	if (!abHitBlocked && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
 		AppUtil.Log("onhit success " + SelfName)
@@ -56,14 +59,14 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 				; ##FIXME## Instead ActorLib.ValidateActor ?
 			endif
 		elseif (selfarmor)
-			if (healthper < Config.GetHealthLimit(self.IsPlayer) && \
+			if (healthper <= Config.GetHealthLimit(self.IsPlayer) && \
 				healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
-				rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer))
+				rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer, abPowerAttack))
 				
 				AppUtil.Log("doSex " + SelfName)
 				self.doSex(akAggr)
 			elseif (Config.GetEnableArmorBreak(self.IsPlayer))
-				int[] chances = Config.GetBreakChances(self.IsPlayer)
+				int[] chances = Config.GetBreakChances(self.IsPlayer, abPowerAttack)
 				if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < chances[0]) || \
 					(selfarmor.HasKeyWord(ArmorLight) && rndintAB < chances[1]) || \
 					(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < chances[2]))
@@ -77,16 +80,16 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 				endif
 			endif
 		elseif (!selfarmor && \
-			healthper < Config.GetHealthLimit(self.IsPlayer) && \
+			healthper <= Config.GetHealthLimit(self.IsPlayer) && \
 			healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
-			rndintRP < Config.GetRapeChance(self.IsPlayer))
+			rndintRP < Config.GetRapeChance(self.IsPlayer, abPowerAttack))
 			
 			AppUtil.Log("doSex " + SelfName)
 			self.doSex(akAggr)
 		endif
 	endif
 	
-	Utility.Wait(0.5)
+	Utility.Wait(1)
 	PreSource = None
 	GotoState("")
 EndEvent
@@ -334,7 +337,6 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
-	int cumid = controller.Animation.GetCum(0)
 	
 	if (self.IsPlayer && SexLab.Config.DisablePlayer == false && Config.GetEnableEndlessRape(self.IsPlayer))
 		if (SexLab.Config.AutoAdvance == false)
@@ -376,12 +378,6 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 			AppUtil.Log("AutoAdvance check, disable hotkeys " + SelfName)
 		endif
 		
-		selfact.SetGhost(false)
-		SexLab.ActorLib.ApplyCum(controller.Positions[0], cumid)
-		if (!Config.enableDrippingWASupport)
-			selfact.SetGhost(true)
-		endif
-		
 		controller.UnregisterForUpdate()
 		float laststagewait = SexLab.Config.StageTimerAggr[4]
 		if (laststagewait > 1)
@@ -389,6 +385,13 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		endif
 		if !(Aggressor.GetActorRef())  ; already escape because some reason 
 			return
+		endif
+		
+		selfact.SetGhost(false)
+		controller.SendThreadEvent("OrgasmEnd") ; for Aroused
+		SexLab.ActorLib.ApplyCum(controller.Positions[0], controller.Animation.GetCum(0))
+		if (!Config.enableDrippingWASupport)
+			selfact.SetGhost(true)
 		endif
 		
 		if (rndint < 5) ; 20%

@@ -6,31 +6,51 @@ bool Property debugLogFlag = false Auto
 bool Property registNotifFlag = true Auto
 bool Property knockDownAll = true Auto
 
+; Player ========================================
 bool Property enablePlayerRape = true Auto
+
+int Property matchedSex = 0 Auto
+int Property healthLimit = 50 Auto
+int Property healthLimitBottom = 0 Auto
+bool Property enableEndlessRape = true Auto
+
+int Property rapeChance = 50 Auto
+int Property rapeChanceNotNaked = 10 Auto
+int Property rapeChancePA = 75 Auto
+int Property rapeChanceNotNakedPA = 25 Auto
 
 bool Property enableArmorBreak = true Auto
 bool Property enableArmorUnequipMode = false Auto
-bool Property enableEndlessRape = true Auto
+
 int Property armorBreakChanceCloth = 50 Auto
 int Property armorBreakChanceLightArmor = 20 Auto
 int Property armorBreakChanceHeavyArmor = 10 Auto
-int Property rapeChance = 50 Auto
-int Property rapeChanceNotNaked = 10 Auto
-int Property healthLimit = 50 Auto
-int Property healthLimitBottom = 0 Auto
-int Property matchedSex = 0 Auto
+int Property armorBreakChanceClothPA = 75 Auto
+int Property armorBreakChanceLightArmorPA = 30 Auto
+int Property armorBreakChanceHeavyArmorPA = 20 Auto
+
+; Follower ========================================
+int Property matchedSexNPC = 0 Auto
+int Property healthLimitNPC = 50 Auto
+int Property healthLimitBottomNPC = 0 Auto
+bool Property enableEndlessRapeNPC = true Auto
+
+int Property rapeChanceNPC = 50 Auto
+int Property rapeChanceNotNakedNPC = 10 Auto
+int Property rapeChanceNPCPA = 75 Auto
+int Property rapeChanceNotNakedNPCPA = 25 Auto
 
 bool Property enableArmorBreakNPC = true Auto
 bool Property enableArmorUnequipModeNPC = false Auto
-bool Property enableEndlessRapeNPC = true Auto
+
 int Property armorBreakChanceClothNPC = 50 Auto
 int Property armorBreakChanceLightArmorNPC = 20 Auto
 int Property armorBreakChanceHeavyArmorNPC = 10 Auto
-int Property rapeChanceNPC = 50 Auto
-int Property rapeChanceNotNakedNPC = 10 Auto
-int Property healthLimitNPC = 50 Auto
-int Property healthLimitBottomNPC = 0 Auto
-int Property matchedSexNPC = 0 Auto
+int Property armorBreakChanceClothNPCPA = 75 Auto
+int Property armorBreakChanceLightArmorNPCPA = 30 Auto
+int Property armorBreakChanceHeavyArmorNPCPA = 20 Auto
+
+; ========================================
 
 int Property keyCodeRegist = 278 Auto
 int Property keyCodeHelp = 274 Auto
@@ -55,31 +75,52 @@ int keyCodeSubmitID
 int enableSimpleSlaverySupportID
 int simpleSlaveryChanceID
 int enableDrippingWASupportID
+
+; Player ========================================
 int enablePlayerRapeID
+
+int matchedSexID
+int healthLimitID
+int healthLimitBottomID
+int enableEndlessRapeID
+
+int rapeChanceID
+int rapeChanceNotNakedID
+int rapeChancePAID
+int rapeChanceNotNakedPAID
 
 int enableArmorBreakID
 int enableArmorUnequipModeID
-int enableEndlessRapeID
+
 int armorBreakChanceClothID
 int armorBreakChanceLightArmorID
 int armorBreakChanceHeavyArmorID
-int rapeChanceID
-int rapeChanceNotNakedID
-int healthLimitID
-int healthLimitBottomID
-int matchedSexID
+int armorBreakChanceClothPAID
+int armorBreakChanceLightArmorPAID
+int armorBreakChanceHeavyArmorPAID
+
+; Follower ========================================
+int matchedSexNPCID
+int healthLimitNPCID
+int healthLimitBottomNPCID
+int enableEndlessRapeNPCID
+
+int rapeChanceNPCID
+int rapeChanceNotNakedNPCID
+int rapeChanceNPCPAID
+int rapeChanceNotNakedNPCPAID
 
 int enableArmorBreakNPCID
 int enableArmorUnequipModeNPCID
-int enableEndlessRapeNPCID
+
 int armorBreakChanceClothNPCID
 int armorBreakChanceLightArmorNPCID
 int armorBreakChanceHeavyArmorNPCID
-int rapeChanceNPCID
-int rapeChanceNotNakedNPCID
-int healthLimitNPCID
-int healthLimitBottomNPCID
-int matchedSexNPCID
+int armorBreakChanceClothNPCPAID
+int armorBreakChanceLightArmorNPCPAID
+int armorBreakChanceHeavyArmorNPCPAID
+
+; ========================================
 
 int[] disableEnemyRacesIDS
 string[] matchedSexList
@@ -132,11 +173,15 @@ Event OnPageReset(string page)
 		matchedSexID = AddMenuOption("$MatchedSex", matchedSexList[matchedSex])
 		healthLimitID = AddSliderOption("$HealthLimit", healthLimit)
 		healthLimitBottomID = AddSliderOption("$HealthLimitBottom", healthLimitBottom)
+		enableEndlessRapeID = AddToggleOption("$EndlessRape", enableEndlessRape)
 		
 		AddHeaderOption("$RapeChance")
 		rapeChanceID = AddSliderOption("$Naked", rapeChance)
 		rapeChanceNotNakedID = AddSliderOption("$NotNaked", rapeChanceNotNaked)
-		enableEndlessRapeID = AddToggleOption("$EndlessRape", enableEndlessRape)
+
+		AddHeaderOption("$RapeChancePA")
+		rapeChancePAID = AddSliderOption("$Naked", rapeChancePA)
+		rapeChanceNotNakedPAID = AddSliderOption("$NotNaked", rapeChanceNotNakedPA)
 		
 		SetCursorPosition(1)
 		AddEmptyOption()
@@ -145,11 +190,15 @@ Event OnPageReset(string page)
 		matchedSexNPCID = AddMenuOption("$MatchedSex", matchedSexList[matchedSexNPC])
 		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
 		healthLimitBottomNPCID = AddSliderOption("$HealthLimitBottom", healthLimitBottomNPC)
+		enableEndlessRapeNPCID = AddToggleOption("$EndlessRape", enableEndlessRapeNPC)
 		
 		AddHeaderOption("$RapeChance")
 		rapeChanceNPCID = AddSliderOption("$Naked", rapeChanceNPC)
 		rapeChanceNotNakedNPCID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPC)
-		enableEndlessRapeNPCID = AddToggleOption("$EndlessRape", enableEndlessRapeNPC)
+		
+		AddHeaderOption("$RapeChancePA")
+		rapeChanceNPCPAID = AddSliderOption("$Naked", rapeChanceNPCPA)
+		rapeChanceNotNakedNPCPAID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPCPA)
 		
 	elseif (page == "$YACRArmorBreak")
 		SetCursorFillMode(TOP_TO_BOTTOM)
@@ -158,18 +207,33 @@ Event OnPageReset(string page)
 		AddHeaderOption("$PlayerCharactor")
 		enableArmorBreakID = AddToggleOption("$Enable", enableArmorBreak)
 		enableArmorUnequipModeID = AddToggleOption("$EnableArmorUnequipMode", enableArmorUnequipMode)
+		
+		AddHeaderOption("$YACRArmorBreakAttack")
 		armorBreakChanceClothID = AddSliderOption("$Cloth", armorBreakChanceCloth)
 		armorBreakChanceLightArmorID = AddSliderOption("$LightArmor", armorBreakChanceLightArmor)
 		armorBreakChanceHeavyArmorID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmor)
 		
+		AddHeaderOption("$YACRArmorBreakPowerAttack")
+		armorBreakChanceClothPAID = AddSliderOption("$Cloth", armorBreakChanceClothPA)
+		armorBreakChanceLightArmorPAID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorPA)
+		armorBreakChanceHeavyArmorPAID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorPA)
+		
 		SetCursorPosition(1)
-
+		
 		AddHeaderOption("$Follower")
 		enableArmorBreakNPCID = AddToggleOption("$Enable", enableArmorBreakNPC)
 		enableArmorUnequipModeNPCID = AddToggleOption("$EnableArmorUnequipMode", enableArmorUnequipModeNPC)
+		
+		AddHeaderOption("$YACRArmorBreakAttack")
 		armorBreakChanceClothNPCID = AddSliderOption("$Cloth", armorBreakChanceClothNPC)
 		armorBreakChanceLightArmorNPCID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPC)
 		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPC)
+		
+		AddHeaderOption("$YACRArmorBreakPowerAttack")
+		armorBreakChanceClothNPCPAID = AddSliderOption("$Cloth", armorBreakChanceClothNPCPA)
+		armorBreakChanceLightArmorNPCPAID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPCPA)
+		armorBreakChanceHeavyArmorNPCPAID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPCPA)
+
 	elseif	(page == "$YACREnemy")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
@@ -185,6 +249,7 @@ Event OnPageReset(string page)
 			idx += 1
 		endwhile
 		;AppUtil.Log(disableEnemyRacesIDS)
+		
 	elseif (page == "$YACRSystem")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
@@ -260,19 +325,35 @@ int Function GetHealthLimitBottom(bool IsPlayer = true)
 	endif
 EndFunction
 
-int Function GetRapeChance(bool IsPlayer = true)
+int Function GetRapeChance(bool IsPlayer = true, bool IsPowerAttack = false)
 	if (IsPlayer)
-		return self.rapeChance
+		if (!IsPowerAttack)
+			return self.rapeChance
+		else
+			return self.rapeChancePA
+		endif
 	else
-		return self.rapeChanceNPC
+		if (!IsPowerAttack)
+			return self.rapeChanceNPC
+		else
+			return self.rapeChanceNPCPA
+		endif
 	endif
 EndFunction
 
-int Function GetRapeChanceNotNaked(bool IsPlayer = true)
+int Function GetRapeChanceNotNaked(bool IsPlayer = true, bool IsPowerAttack = false)
 	if (IsPlayer)
-		return self.rapeChanceNotNaked
+		if (!IsPowerAttack)
+			return self.rapeChanceNotNaked
+		else
+			return self.rapeChanceNotNakedPA
+		endif
 	else
-		return self.rapeChanceNotNakedNPC
+		if (!IsPowerAttack)
+			return self.rapeChanceNotNakedNPC
+		else
+			return self.rapeChanceNotNakedNPCPA
+		endif
 	endif
 EndFunction
 
@@ -308,17 +389,29 @@ bool Function GetEnableArmorBreak(bool IsPlayer = true)
 	endif
 EndFunction
 
-int[] Function GetBreakChances(bool IsPlayer = true)
+int[] Function GetBreakChances(bool IsPlayer = true, bool IsPowerAttack = false)
 	int[] chances = new int[3]
 	
 	if (IsPlayer)
-		chances[0] = self.armorBreakChanceCloth
-		chances[1] = self.armorBreakChanceLightArmor
-		chances[2] = self.armorBreakChanceHeavyArmor
+		if (!IsPowerAttack)
+			chances[0] = self.armorBreakChanceCloth
+			chances[1] = self.armorBreakChanceLightArmor
+			chances[2] = self.armorBreakChanceHeavyArmor
+		else
+			chances[0] = self.armorBreakChanceClothPA
+			chances[1] = self.armorBreakChanceLightArmorPA
+			chances[2] = self.armorBreakChanceHeavyArmorPA
+		endif
 	else
-		chances[0] = self.armorBreakChanceClothNPC
-		chances[1] = self.armorBreakChanceLightArmorNPC
-		chances[2] = self.armorBreakChanceHeavyArmorNPC
+		if (!IsPowerAttack)
+			chances[0] = self.armorBreakChanceClothNPC
+			chances[1] = self.armorBreakChanceLightArmorNPC
+			chances[2] = self.armorBreakChanceHeavyArmorNPC
+		else
+			chances[0] = self.armorBreakChanceClothNPCPA
+			chances[1] = self.armorBreakChanceLightArmorNPCPA
+			chances[2] = self.armorBreakChanceHeavyArmorNPCPA
+		endif
 	endif
 	
 	return chances
@@ -438,35 +531,66 @@ Event OnOptionSelect(int option)
 EndEvent
 
 Event OnOptionSliderOpen(int option)
+	; Player --------------------------------------
 	if (option == healthLimitID)
 		self._setSliderDialogWithPercentage(healthLimit)
 	elseif (option == healthLimitBottomID)
 		self._setSliderDialogWithPercentage(healthLimitBottom)
+
 	elseif (option == rapeChanceID)
 		self._setSliderDialogWithPercentage(rapeChance)
 	elseif (option == rapeChanceNotNakedID)
 		self._setSliderDialogWithPercentage(rapeChanceNotNaked)
+	; PA
+	elseif (option == rapeChancePAID)
+		self._setSliderDialogWithPercentage(rapeChancePA)
+	elseif (option == rapeChanceNotNakedPAID)
+		self._setSliderDialogWithPercentage(rapeChanceNotNakedPA)
+
 	elseif (option == armorBreakChanceClothID)
 		self._setSliderDialogWithPercentage(armorBreakChanceCloth)
 	elseif (option == armorBreakChanceLightArmorID)
 		self._setSliderDialogWithPercentage(armorBreakChanceLightArmor)
 	elseif (option == armorBreakChanceHeavyArmorID)
 		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmor)
+	; PA
+	elseif (option == armorBreakChanceClothPAID)
+		self._setSliderDialogWithPercentage(armorBreakChanceClothPA)
+	elseif (option == armorBreakChanceLightArmorPAID)
+		self._setSliderDialogWithPercentage(armorBreakChanceLightArmorPA)
+	elseif (option == armorBreakChanceHeavyArmorPAID)
+		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorPA)
 
+	; Follower --------------------------------------
 	elseif (option == healthLimitNPCID)
 		self._setSliderDialogWithPercentage(healthLimitNPC)
 	elseif (option == healthLimitBottomNPCID)
 		self._setSliderDialogWithPercentage(healthLimitBottomNPC)
+		
 	elseif (option == rapeChanceNPCID)
 		self._setSliderDialogWithPercentage(rapeChanceNPC)
 	elseif (option == rapeChanceNotNakedNPCID)
 		self._setSliderDialogWithPercentage(rapeChanceNotNakedNPC)
+	; PA
+	elseif (option == rapeChanceNPCPAID)
+		self._setSliderDialogWithPercentage(rapeChanceNPCPA)
+	elseif (option == rapeChanceNotNakedNPCPAID)
+		self._setSliderDialogWithPercentage(rapeChanceNotNakedNPCPA)
+
 	elseif (option == armorBreakChanceClothNPCID)
 		self._setSliderDialogWithPercentage(armorBreakChanceClothNPC)
 	elseif (option == armorBreakChanceLightArmorNPCID)
 		self._setSliderDialogWithPercentage(armorBreakChanceLightArmorNPC)
 	elseif (option == armorBreakChanceHeavyArmorNPCID)
 		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorNPC)
+	; PA
+	elseif (option == armorBreakChanceClothNPCPAID)
+		self._setSliderDialogWithPercentage(armorBreakChanceClothNPCPA)
+	elseif (option == armorBreakChanceLightArmorNPCPAID)
+		self._setSliderDialogWithPercentage(armorBreakChanceLightArmorNPCPA)
+	elseif (option == armorBreakChanceHeavyArmorNPCPAID)
+		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorNPCPA)
+
 
 	elseif (option == simpleSlaveryChanceID)
 		self._setSliderDialogWithPercentage(simpleSlaveryChance)
@@ -490,18 +614,28 @@ Function _setSliderDialogWithHelpers(int x)
 EndFunction
 
 Event OnOptionSliderAccept(int option, float value)
+	; Player --------------------------------------
 	if (option == healthLimitID)
 		healthLimit = value as int
 		SetSliderOptionValue(option, healthLimit)
 	elseif (option == healthLimitBottomID)
 		healthLimitBottom = value as int
 		SetSliderOptionValue(option, healthLimitBottom)
+		
 	elseif (option == rapeChanceID)
 		rapeChance = value as int
 		SetSliderOptionValue(option, rapeChance)
 	elseif (option == rapeChanceNotNakedID)
 		rapeChanceNotNaked = value as int
 		SetSliderOptionValue(option, rapeChanceNotNaked)
+	; PA
+	elseif (option == rapeChancePAID)
+		rapeChancePA = value as int
+		SetSliderOptionValue(option, rapeChancePA)
+	elseif (option == rapeChanceNotNakedPAID)
+		rapeChanceNotNakedPA = value as int
+		SetSliderOptionValue(option, rapeChanceNotNakedPA)
+		
 	elseif (option == armorBreakChanceClothID)
 		armorBreakChanceCloth = value as int
 		SetSliderOptionValue(option, armorBreakChanceCloth)
@@ -511,19 +645,39 @@ Event OnOptionSliderAccept(int option, float value)
 	elseif (option == armorBreakChanceHeavyArmorID)
 		armorBreakChanceHeavyArmor = value as int
 		SetSliderOptionValue(option, armorBreakChanceHeavyArmor)
-		
+	; PA
+	elseif (option == armorBreakChanceClothPAID)
+		armorBreakChanceClothPA = value as int
+		SetSliderOptionValue(option, armorBreakChanceClothPA)
+	elseif (option == armorBreakChanceLightArmorPAID)
+		armorBreakChanceLightArmorPA = value as int
+		SetSliderOptionValue(option, armorBreakChanceLightArmorPA)
+	elseif (option == armorBreakChanceHeavyArmorPAID)
+		armorBreakChanceHeavyArmorPA = value as int
+		SetSliderOptionValue(option, armorBreakChanceHeavyArmorPA)
+
+	; Follower --------------------------------------
 	elseif (option == healthLimitNPCID)
 		healthLimitNPC = value as int
 		SetSliderOptionValue(option, healthLimitNPC)
 	elseif (option == healthLimitBottomNPCID)
 		healthLimitBottomNPC = value as int
 		SetSliderOptionValue(option, healthLimitBottomNPC)
+		
 	elseif (option == rapeChanceNPCID)
 		rapeChanceNPC = value as int
 		SetSliderOptionValue(option, rapeChanceNPC)
 	elseif (option == rapeChanceNotNakedNPCID)
 		rapeChanceNotNakedNPC = value as int
 		SetSliderOptionValue(option, rapeChanceNotNakedNPC)
+	; PA
+	elseif (option == rapeChanceNPCPAID)
+		rapeChanceNPCPA = value as int
+		SetSliderOptionValue(option, rapeChanceNPCPA)
+	elseif (option == rapeChanceNotNakedNPCPAID)
+		rapeChanceNotNakedNPCPA = value as int
+		SetSliderOptionValue(option, rapeChanceNotNakedNPCPA)
+		
 	elseif (option == armorBreakChanceClothNPCID)
 		armorBreakChanceClothNPC = value as int
 		SetSliderOptionValue(option, armorBreakChanceClothNPC)
@@ -533,6 +687,16 @@ Event OnOptionSliderAccept(int option, float value)
 	elseif (option == armorBreakChanceHeavyArmorNPCID)
 		armorBreakChanceHeavyArmorNPC = value as int
 		SetSliderOptionValue(option, armorBreakChanceHeavyArmorNPC)
+	; PA
+	elseif (option == armorBreakChanceClothNPCPAID)
+		armorBreakChanceClothNPCPA = value as int
+		SetSliderOptionValue(option, armorBreakChanceClothNPCPA)
+	elseif (option == armorBreakChanceLightArmorNPCPAID)
+		armorBreakChanceLightArmorNPCPA = value as int
+		SetSliderOptionValue(option, armorBreakChanceLightArmorNPCPA)
+	elseif (option == armorBreakChanceHeavyArmorNPCPAID)
+		armorBreakChanceHeavyArmorNPCPA = value as int
+		SetSliderOptionValue(option, armorBreakChanceHeavyArmorNPCPA)
 
 	elseif (option == simpleSlaveryChanceID)
 		simpleSlaveryChance = value as int
@@ -574,11 +738,3 @@ EndEvent
 
 Quest Property SSLYACRQuestManager  Auto  
 Quest Property SSLYACR  Auto  
-
-; not use
-;Faction Property BanditFaction  Auto  
-;Faction Property VampireFaction  Auto  
-;Faction Property DLC1VampireFaction  Auto  
-;Faction Property SilverHandFaction  Auto  
-;Faction Property MS08AlikrFaction  Auto  
-;Faction Property MS09NorthwatchFaction  Auto  
