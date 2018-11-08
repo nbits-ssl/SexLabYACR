@@ -333,22 +333,16 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	Actor aggr = Aggressor.GetActorRef()
 		
 	UnregisterForUpdate()
-	self._getAudience()
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
 	
-	if (self.IsPlayer && SexLab.Config.DisablePlayer == false && Config.GetEnableEndlessRape(self.IsPlayer))
-		if (SexLab.Config.AutoAdvance == false)
-			controller.AutoAdvance = false
-		endif
-		controller.EnableHotkeys()
-		AppUtil.Log("AutoAdvance check, enable hotkeys " + SelfName)
-	endif
+	self._getAudience()
+	self._reEnableHotkeysForKeyControlConfigUser(controller)
 	
 	if (Config.enableDrippingWASupport)
 		if (controller.Stage >= stagecnt - 1)
-			selfact.SetGhost(false)
+			selfact.SetGhost(false)  ; for DWA effect in last stage StageStartEventYACR
 		else
 			selfact.SetGhost(true)
 		endif
@@ -367,66 +361,99 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	endif
 	
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
-		AppUtil.Log("endless sex loop for " + SelfName)
-		int rndint = Utility.RandomInt()
-		
-		if (self.IsPlayer && SexLab.Config.DisablePlayer == false)
-			if (SexLab.Config.AutoAdvance == false)
-				controller.AutoAdvance = true
-			endif
-			controller.DisableHotkeys()
-			AppUtil.Log("AutoAdvance check, disable hotkeys " + SelfName)
-		endif
-		
-		controller.UnregisterForUpdate()
-		float laststagewait = SexLab.Config.StageTimerAggr[4]
-		if (laststagewait > 1)
-			Utility.Wait(laststagewait - 1.5) 
-		endif
-		if !(Aggressor.GetActorRef())  ; already escape because some reason 
-			return
-		endif
-		
-		selfact.SetGhost(false)
-		controller.SendThreadEvent("OrgasmEnd") ; for Aroused
-		SexLab.ActorLib.ApplyCum(controller.Positions[0], controller.Animation.GetCum(0))
-		if (!Config.enableDrippingWASupport)
-			selfact.SetGhost(true)
-		endif
-		
-		if (rndint < 5) ; 20%
-			AppUtil.Log("endless sex loop...one more " + SelfName)
-			controller.AdvanceStage(true) ; has self controller.onUpdate
-		elseif (rndint < 10) ; 25%
-			AppUtil.Log("endless sex loop...one more from 2nd " + SelfName)
-			controller.GoToStage(stagecnt - 2) ; has self controller.onUpdate
-			RegisterForSingleUpdate(ForceUpdatePeriod)
-		else
-			bool multiplayLimit = false
-			int origLength = controller.Positions.Length
-			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr)
-			AppUtil.Log("endless sex loop...actors are " + actors)
-			
-			if (origLength == 5 || origLength == actors.Length)
-				multiplayLimit = true
-			endif
-			
-			if (!multiplayLimit && rndint < 90 && (AppUtil.ArrayCount(actors) - 2) > 0) ; 30%
-				AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
-				EndlessSexLoop = true
-				controller.RegisterForSingleUpdate(0.2)
-			else ; 25%
-				AppUtil.Log("endless sex loop...change anim " + SelfName)
-				controller.ChangeAnimation() ; has self controller.onUpdate
-				controller.Stage = 2
-				controller.Action("Advancing")
-				RegisterForSingleUpdate(ForceUpdatePeriod)
-			endif
-		endif
-		; thank you obachan
-		; GetHelpersCombined() is heavy, when test with 40 npcs sometimes 1.5sec is too short time.
+		self._sexLoop(selfact, aggr, controller)
 	endif
 EndEvent
+
+Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
+	AppUtil.Log("endless sex loop for " + SelfName)
+	self._disableHotkeysForKeyControlConfigUser(controller)
+	controller.UnregisterForUpdate()
+	
+	float laststagewait = SexLab.Config.StageTimerAggr[4]
+	if (laststagewait > 1)
+		Utility.Wait(laststagewait - 1.5) 
+	endif
+	if !(Aggressor.GetActorRef())  ; already escape because some reason 
+		return
+	endif
+	
+	selfact.SetGhost(false)
+	controller.SendThreadEvent("OrgasmEnd") ; for Aroused
+	SexLab.ActorLib.ApplyCum(controller.Positions[0], controller.Animation.GetCum(0))
+	if (!Config.enableDrippingWASupport)
+		selfact.SetGhost(true)
+	endif
+	
+	int rndint = Utility.RandomInt()
+	if (rndint < 5) ; 20%
+		self._sexLoopOneMore(controller)
+	elseif (rndint < 10) ; 25%
+		self._sexLoopOneMoreFromSecond(controller)
+	else
+		bool multiplayLimit = false
+		int origLength = controller.Positions.Length
+		Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr)
+		AppUtil.Log("endless sex loop...actors are " + actors)
+		
+		if (origLength == 5 || origLength == actors.Length)
+			multiplayLimit = true
+		endif
+		
+		if (!multiplayLimit && rndint < 90 && (AppUtil.ArrayCount(actors) - 2) > 0) ; 30%
+			self._sexLoopSendToMultiplay(controller)
+		else ; 25%
+			self._sexLoopChangeAnim(controller)
+		endif
+	endif
+	; GetHelpersCombined() is heavy, when test with 40 npcs sometimes 1.5sec is too short time.
+EndFunction
+
+Function _sexLoopOneMore(sslThreadController controller)
+	AppUtil.Log("endless sex loop...one more " + SelfName)
+	controller.AdvanceStage(true) ; has self controller.onUpdate
+EndFunction
+
+Function _sexLoopOneMoreFromSecond(sslThreadController controller)
+	AppUtil.Log("endless sex loop...one more from 2nd " + SelfName)
+	int stagecnt = controller.Animation.StageCount
+	controller.GoToStage(stagecnt - 2) ; has self controller.onUpdate
+	RegisterForSingleUpdate(ForceUpdatePeriod)
+EndFunction
+
+Function _sexLoopChangeAnim(sslThreadController controller) ; thank you obachan
+	AppUtil.Log("endless sex loop...change anim " + SelfName)
+	controller.ChangeAnimation() ; has self controller.onUpdate
+	controller.Stage = 2
+	controller.Action("Advancing")
+	RegisterForSingleUpdate(ForceUpdatePeriod)
+EndFunction
+
+Function _sexLoopSendToMultiplay(sslThreadController controller)
+	AppUtil.Log("endless sex loop...change to Multiplay " + SelfName)
+	EndlessSexLoop = true
+	controller.RegisterForSingleUpdate(0.2) ; finish current sex
+EndFunction
+
+Function _disableHotkeysForKeyControlConfigUser(sslThreadController controller)
+	if (self.IsPlayer && SexLab.Config.DisablePlayer == false)
+		if (SexLab.Config.AutoAdvance == false)
+			controller.AutoAdvance = true
+		endif
+		controller.DisableHotkeys()
+		AppUtil.Log("AutoAdvance check, disable hotkeys " + SelfName)
+	endif
+EndFunction
+
+Function _reEnableHotkeysForKeyControlConfigUser(sslThreadController controller)
+	if (self.IsPlayer && SexLab.Config.DisablePlayer == false && Config.GetEnableEndlessRape(self.IsPlayer))
+		if (SexLab.Config.AutoAdvance == false)
+			controller.AutoAdvance = false
+		endif
+		controller.EnableHotkeys()
+		AppUtil.Log("AutoAdvance check, enable hotkeys " + SelfName)
+	endif
+EndFunction
 
 Event OnKeyDown(int keyCode)
 	Actor selfact = self.GetActorRef()
