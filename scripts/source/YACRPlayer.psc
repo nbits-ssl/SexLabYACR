@@ -14,10 +14,9 @@ Faction baseFaction
 sslThreadController UpdateController
 
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
-
 	Actor akAggr = akAggressor as Actor
 	Actor selfact = self.GetActorRef()
-	SelfName = selfact.GetActorBase().GetName()
+	SelfName = selfact.GetLeveledActorBase().GetName()
 	Weapon wpn = akSource as Weapon
 	
 	if (akAggressor == None || akProjectile || PreSource ==  akSource || !wpn || \
@@ -31,7 +30,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		AppUtil.Log("not if, mystery unarmed spell (explode) " + SelfName)
 		return
 	endif
-
+	
 	GotoState("Busy")
 	
 	PreSource = akSource
@@ -161,20 +160,8 @@ EndFunction
 Function doSex(Actor aggr)
 	Actor victim = self.GetActorRef()
 	SelfName = victim.GetActorBase().GetName()
-	
-	if (victim.IsGhost() || aggr.IsGhost())
-		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
-		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
-		return
-	elseif (Aggressor.GetActorRef() || aggr.IsDead() || !aggr.Is3DLoaded() || aggr.IsDisabled())
-		AppUtil.Log("already filled ref, dead actor, or not loaded, pass doSex " + SelfName)
-		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
-		return
-	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
-		AppUtil.Log("victim already animating, pass doSex " + SelfName)
-		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
-		return
-	elseif (!AppUtil.ValidateAggr(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
+
+ 	if (!self._isValidActors(victim, aggr))
 		return
 	endif
 	
@@ -218,6 +205,26 @@ Function doSex(Actor aggr)
 	else
 		AppUtil.Log("already filled aggr reference, pass doSex " + SelfName)
 	endif
+EndFunction
+
+bool Function _isValidActors(Actor victim, Actor aggr)
+	if (victim.IsGhost() || aggr.IsGhost())
+		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
+		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
+		return false
+	elseif (Aggressor.GetActorRef() || aggr.IsDead() || !aggr.Is3DLoaded() || aggr.IsDisabled())
+		AppUtil.Log("already filled ref, dead actor, or not loaded, pass doSex " + SelfName)
+		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
+		return false
+	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
+		AppUtil.Log("victim already animating, pass doSex " + SelfName)
+		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
+		return false
+	elseif (!AppUtil.ValidateAggr(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
+		return false
+	endif
+	
+	return true
 EndFunction
 
 Function _storePlayerRegist(Actor selfact)

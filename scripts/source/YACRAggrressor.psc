@@ -7,7 +7,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 	Actor selfact = self.GetActorRef()
 	if (selfact)
-		SelfName = selfact.GetActorBase().GetName()
+		SelfName = selfact.GetLeveledActorBase().GetName()
 	endif
 	
 	Spell spl = akSource as Spell
