@@ -270,6 +270,11 @@ Function ReleaseHelperSearcherLock(Actor aggr)
 	self._getSearcherQuest(aggr).Stop()
 EndFunction
 
+Function ForceReleaseHelperSearcherLock() ; for _reload()
+	SSLYACRHelperHumanSearcher.Stop()
+	SSLYACRHelperCreatureSearcher.Stop()
+EndFunction
+
 Actor[] Function GetHelpersCombined(Actor victim, Actor aggr)
 	SSLYACRHelperMainAggr.ForceRefTo(aggr)
 	Quest searcherQuest = self._getSearcherQuest(aggr)
