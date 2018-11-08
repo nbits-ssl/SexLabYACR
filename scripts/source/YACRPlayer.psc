@@ -450,7 +450,9 @@ EndFunction
 
 Function _sexLoopChangeAnim(sslThreadController controller) ; thank you obachan
 	AppUtil.Log("endless sex loop...change anim " + SelfName)
-	controller.ChangeAnimation() ; has self controller.onUpdate
+	controller.SetAnimation(Utility.RandomInt(0, controller.Animations.Length - 1))
+	controller.SendThreadEvent("AnimationChange")
+	controller.RegisterForSingleUpdate(0.2)
 	controller.Stage = 2
 	controller.Action("Advancing")
 	RegisterForSingleUpdate(ForceUpdatePeriod)
