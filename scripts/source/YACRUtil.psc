@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20181106
+	return 20181107
 EndFunction
 
 Function Log(String msg)
@@ -252,23 +252,37 @@ Function rejoinFollower(Actor act, Faction fact)
 	endif
 EndFunction
 
-Actor[] Function GetHelpersCombined(Actor victim, Actor aggr)
-	Actor[] actors
-	Quest searcherQuest
-	ReferenceAlias mainAggr
+bool Function GetHelperSearcherLock(Actor aggr)
+	Quest searcherQuest = self._getSearcherQuest(aggr)
 	
-	if (aggr.HasKeyWord(ActorTypeNPC))
-		searcherQuest = SSLYACRHelperHumanSearcher
-		mainAggr = SSLYACRHelperHumanMainAggr
+	if (searcherQuest.IsRunning())
+		self.Log("GetHelperSearcherLock(): failed")
+		return false
 	else
-		searcherQuest = SSLYACRHelperCreatureSearcher
-		mainAggr = SSLYACRHelperCreatureMainAggr
+		self.Log("GetHelperSearcherLock(): success")
+		searcherQuest.Start()
+		return true
 	endif
+EndFunction
+
+Function ReleaseHelperSearcherLock(Actor aggr)
+	self.Log("ReleaseHelperSearcherLock()")
+	self._getSearcherQuest(aggr).Stop()
+EndFunction
+
+Actor[] Function GetHelpersCombined(Actor victim, Actor aggr)
+	SSLYACRHelperMainAggr.ForceRefTo(aggr)
+	Quest searcherQuest = self._getSearcherQuest(aggr)
 	
-	mainAggr.ForceRefTo(aggr)
-	actors = self._getHelpersCombined(victim, aggr, searcherQuest)
-	
-	return actors
+	return self._getHelpersCombined(victim, aggr, searcherQuest)
+EndFunction
+
+Quest Function _getSearcherQuest(Actor aggr)
+	if (aggr.HasKeyWord(ActorTypeNPC))
+		return SSLYACRHelperHumanSearcher
+	else
+		return SSLYACRHelperCreatureSearcher
+	endif
 EndFunction
 
 Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst)
@@ -276,12 +290,10 @@ Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst)
 	Actor[] actors
 	sslBaseAnimation[] anims
 	int idx = 0
-
-	if (!qst.IsRunning())
-		qst.Start()
-		tmpArray = (qst as YACRHelperSearch).Gather()
-		qst.Stop()
-	endif
+	
+	; qst.IsRunning by QuestLock
+	
+	tmpArray = (qst as YACRHelperSearch).Gather()
 	ArraySort(tmpArray)
 	idx = ArrayCount(tmpArray)
 	
@@ -441,12 +453,10 @@ ReferenceAlias[] Property Teammates  Auto
 ReferenceAlias Property PlayerAggressor  Auto  
 SPELL Property PlayerHelperAngrySpell  Auto  
 
-Quest Property SSLYACRHelperHumanMain  Auto  
+Quest Property SSLYACRHelperMain  Auto  
+ReferenceAlias Property SSLYACRHelperMainAggr  Auto  
 Quest Property SSLYACRHelperHumanSearcher  Auto  
-ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto  
-Quest Property SSLYACRHelperCreatureMain  Auto  
 Quest Property SSLYACRHelperCreatureSearcher  Auto  
-ReferenceAlias Property SSLYACRHelperCreatureMainAggr  Auto  
 
 Faction Property CurrentFollowerFaction  Auto  
 Faction Property CurrentHireling  Auto  
@@ -460,3 +470,9 @@ Sound Property YACRImpactUnarmed  Auto
 Actor Property Frost  Auto  
 Actor Property Shadowmere  Auto  
 Faction Property PlayerHorseFaction  Auto  
+
+; not use
+Quest Property SSLYACRHelperHumanMain  Auto  
+ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto  
+Quest Property SSLYACRHelperCreatureMain  Auto  
+ReferenceAlias Property SSLYACRHelperCreatureMainAggr  Auto  
