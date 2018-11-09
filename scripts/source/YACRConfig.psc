@@ -272,7 +272,7 @@ Event OnPageReset(string page)
 		
 		AddHeaderOption("$YACRDebug")
 		registNotifFlagID = AddToggleOption("$OutputRegistNotif", registNotifFlag)
-		debugNotifFlagID = AddToggleOption("$OutputPapyrusNotif", debugNotifFlag)
+		; debugNotifFlagID = AddToggleOption("$OutputPapyrusNotif", debugNotifFlag)
 		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
 		; knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll) ; not support from 2.0alpha1
 		
@@ -434,10 +434,10 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$EndlessRapeInfo")
 	elseif (option == registNotifFlagID)
 		SetInfoText("$OutputRegistNotifInfo")
-	elseif (option == debugNotifFlagID)
-		SetInfoText("$OutputPapyrusNotifInfo")
-	elseif (option == enableDisableID)
-		SetInfoText("$EnableDisableMainInfo")
+	;elseif (option == debugNotifFlagID)
+	;	SetInfoText("$OutputPapyrusNotifInfo")
+	;elseif (option == enableDisableID)
+	;	SetInfoText("$EnableDisableMainInfo")
 	elseif (option == keyCodeRegistID)
 		SetInfoText("$KeyCodeRegistInfo")
 	elseif (option == keyCodeHelpID)
@@ -489,15 +489,15 @@ Event OnOptionSelect(int option)
 		enableDrippingWASupport = !enableDrippingWASupport
 		SetToggleOptionValue(option, enableDrippingWASupport)
 		
-	elseif (option == knockDownAllID)
-		knockDownAll = !knockDownAll
-		SetToggleOptionValue(option, knockDownAll)
+	;elseif (option == knockDownAllID)
+	;	knockDownAll = !knockDownAll
+	;	SetToggleOptionValue(option, knockDownAll)
 	elseif (option == debugLogFlagID)
 		debugLogFlag = !debugLogFlag
 		SetToggleOptionValue(option, debugLogFlag)
-	elseif (option == debugNotifFlagID)
-		debugNotifFlag = !debugNotifFlag
-		SetToggleOptionValue(option, debugNotifFlag)
+	;elseif (option == debugNotifFlagID)
+	;	debugNotifFlag = !debugNotifFlag
+	;	SetToggleOptionValue(option, debugNotifFlag)
 	elseif (option == registNotifFlagID)
 		registNotifFlag = !registNotifFlag
 		SetToggleOptionValue(option, registNotifFlag)
