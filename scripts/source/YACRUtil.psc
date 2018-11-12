@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20181108
+	return 20181109
 EndFunction
 
 Function Log(String msg)
@@ -301,30 +301,39 @@ Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst)
 	tmpArray = (qst as YACRHelperSearch).Gather()
 	ArraySort(tmpArray)
 	idx = ArrayCount(tmpArray)
+	int rndint = Utility.RandomInt()
 	
 	if (idx == 3)
-		actors = new Actor[5]
-		actors[4] = tmpArray[2]
-		actors[3] = tmpArray[1]
-		actors[2] = tmpArray[0]
-		actors[1] = aggr
-		actors[0] = victim
-		anims = self._pickAnimationsByActors(actors)
-		self.Log("###3### " + anims)
-		if !(anims)
+		if (rndint < Config.GetGlobal("5P"))
+			actors = new Actor[5]
+			actors[4] = tmpArray[2]
+			actors[3] = tmpArray[1]
+			actors[2] = tmpArray[0]
+			actors[1] = aggr
+			actors[0] = victim
+			anims = self._pickAnimationsByActors(actors)
+			self.Log("###3### " + anims)
+			if !(anims)
+				idx = 2
+			endif
+		else
 			idx = 2
 		endif
 	endif
 		
 	if (idx == 2)
-		actors = new Actor[4]
-		actors[3] = tmpArray[1]
-		actors[2] = tmpArray[0]
-		actors[1] = aggr
-		actors[0] = victim
-		anims = self._pickAnimationsByActors(actors)
-		self.Log("###2### " + anims)
-		if !(anims)
+		if (rndint < Config.GetGlobal("4P"))
+			actors = new Actor[4]
+			actors[3] = tmpArray[1]
+			actors[2] = tmpArray[0]
+			actors[1] = aggr
+			actors[0] = victim
+			anims = self._pickAnimationsByActors(actors)
+			self.Log("###2### " + anims)
+			if !(anims)
+				idx = 1
+			endif
+		else
 			idx = 1
 		endif
 	endif

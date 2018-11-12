@@ -309,6 +309,20 @@ string Function GetFlavor(string fkey)
 	endif
 EndFunction
 
+int Function GetGlobal(string str)
+	if (str == "OneMore")
+		return SSLYACROneMore.GetValue() as int
+	elseif (str == "OneMore2")
+		return SSLYACROneMoreFromSecond.GetValue() as int
+	elseif (str == "MultiPlay")
+		return SSLYACRMultiPlay.GetValue() as int
+	elseif (str == "5P")
+		return SSLYACRMultiPlay5P.GetValue() as int
+	elseif (str == "4P")
+		return SSLYACRMultiPlay4P.GetValue() as int
+	endif
+EndFunction
+
 int Function GetHealthLimit(bool IsPlayer = true)
 	if (IsPlayer)
 		return self.healthLimit
@@ -738,3 +752,9 @@ EndEvent
 
 Quest Property SSLYACRQuestManager  Auto  
 Quest Property SSLYACR  Auto  
+
+GlobalVariable Property SSLYACROneMore  Auto  
+GlobalVariable Property SSLYACROneMoreFromSecond  Auto  
+GlobalVariable Property SSLYACRMultiPlay  Auto  
+GlobalVariable Property SSLYACRMultiPlay5P  Auto  
+GlobalVariable Property SSLYACRMultiPlay4P  Auto  

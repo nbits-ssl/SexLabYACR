@@ -408,19 +408,21 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 	endif
 	
 	int rndint = Utility.RandomInt()
-	if (rndint < 5) ; 20%
+	if (rndint < Config.GetGlobal("OneMore"))
 		self._sexLoopOneMore(controller)
-	elseif (rndint < 10) ; 25%
+	elseif (rndint < Config.GetGlobal("OneMoreFromSecond"))
 		self._sexLoopOneMoreFromSecond(controller)
 	else
 		int origLength = controller.Positions.Length
 		bool locked = AppUtil.GetHelperSearcherLock(aggr)
 		
-		if (origLength != 5 && locked)
+		if (locked)
 			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr)
 			AppUtil.Log("endless sex loop...actors are " + actors)
 			
-			if (origLength != actors.Length && rndint < 90 && (AppUtil.ArrayCount(actors) - 2) > 0)
+			if (rndint < Config.GetGlobal("MultiPlay") && \
+				(AppUtil.ArrayCount(actors) > 2 && origLength != 3))
+				
 				self._sexLoopSendToMultiplay(controller)
 			else
 				self._sexLoopChangeAnim(controller)

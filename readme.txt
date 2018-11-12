@@ -138,6 +138,35 @@ SexLab RapeSpellのおまけについているMySexlabSupplyなどを導入し�
   ロワー制御Modの機能と競合します。
 
 
+## MCMに出ないニッチな設定
+
+右の数字はデフォルト値です。グローバル変数なので、"set Global変数名 to 数値"で
+変更できます。
+
+### 群衆参加の確率(1人目から5人目)
+
+SSLYACRAudienceChance1 95
+SSLYACRAudienceChance2 95
+SSLYACRAudienceChance3 95
+SSLYACRAudienceChance4 90
+SSLYACRAudienceChance5 80
+
+### エンドレスレイプ時の行為分岐確率
+
+コード的には100DとOneMore(もう一度最初から)を比較、OneMoreFromSecond(もう一度
+ステージ2から)を比較、複数プレイの条件が合えばSSLYACRMultiPlayと比較、どれも
+条件に合わなかったらアニメーションチェンジ。
+
+複数プレイの場合、条件に合えば、まず100DをSSLYACRMultiPlay5Pと比較、次に
+SSLYACRMultiPlay4Pと比較、どれも条件に合わなかったら3Pという形になります。
+
+SSLYACROneMore 15
+SSLYACROneMoreFromSecond 30
+SSLYACRMultiPlay 70
+SSLYACRMultiPlay5P 75
+SSLYACRMultiPlay4P 75
+
+
 ## アップグレード
 
 特に注記がない限り、更新は上書きするだけです。勝手に再起動するため、戦闘中で
@@ -175,11 +204,13 @@ SaveTool.exeなどをその後にかけるとより安全です。
 ## 更新履歴
 
 
-### 2018/11/** - 2.*
+### 2018/11/13 - 2.2beta
 
 * エンドレスレイプ時のアニメーション選択のランダム化
+
 * 群衆参加の確率を100%から90%程度まで削減してランダム化
- (この確率はグローバル変数 SSLYACRAudienceChance1～5 でいじれます。
+* エンドレスレイプ時の行為分岐を複数プレイの確率を下げる形で調整
+ (上記2項目のグローバル変数化。詳細はReadmeにて。
   ニッチな調整値だと思うのでMCMに入れる予定はありません)
 
 * 複数プレイに使っているクエストの重複起動防止機能を追加
