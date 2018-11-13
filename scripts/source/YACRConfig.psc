@@ -8,6 +8,7 @@ bool Property knockDownAll = true Auto
 
 ; Player ========================================
 bool Property enablePlayerRape = true Auto
+bool Property knockDownOnly = true Auto
 
 int Property matchedSex = 0 Auto
 int Property healthLimit = 50 Auto
@@ -78,6 +79,7 @@ int enableDrippingWASupportID
 
 ; Player ========================================
 int enablePlayerRapeID
+int knockDownOnlyID
 
 int matchedSexID
 int healthLimitID
@@ -184,7 +186,8 @@ Event OnPageReset(string page)
 		rapeChanceNotNakedPAID = AddSliderOption("$NotNaked", rapeChanceNotNakedPA)
 		
 		SetCursorPosition(1)
-		AddEmptyOption()
+		
+		knockDownOnlyID = AddToggleOption("$KnockDownOnly", knockDownOnly)
 		
 		AddHeaderOption("$Follower")
 		matchedSexNPCID = AddMenuOption("$MatchedSex", matchedSexList[matchedSexNPC])
@@ -436,6 +439,8 @@ Event OnOptionHighlight(int option)
 	;	SetInfoText("$KnockDownAllInfo")
 	if (option == enablePlayerRapeID)
 		SetInfoText("$EnablePlayerRapeInfo")
+	elseif (option == knockDownOnlyID)
+		SetInfoText("$KnockDownOnlyInfo")
 	elseif (option == enableArmorUnequipModeID || option == enableArmorUnequipModeNPCID)
 		SetInfoText("$EnableArmorUnequipModeInfo")
 	elseif (option == matchedSexID || option == matchedSexNPCID)
@@ -488,6 +493,9 @@ Event OnOptionSelect(int option)
 	elseif (option == enablePlayerRapeID)
 		enablePlayerRape = !enablePlayerRape
 		SetToggleOptionValue(option, enablePlayerRape)
+	elseif (option == knockDownOnlyID)
+		knockDownOnly = !knockDownOnly
+		SetToggleOptionValue(option, knockDownOnly)
 		
 	elseif (option == enableArmorUnequipModeID)
 		enableArmorUnequipMode = !enableArmorUnequipMode

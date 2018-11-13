@@ -62,8 +62,8 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 				healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
 				rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer, abPowerAttack))
 				
-				AppUtil.Log("doSex " + SelfName)
-				self.doSex(akAggr)
+				AppUtil.Log("doBleedOut " + SelfName)
+				self.doBleedOut(akAggr)
 			elseif (Config.GetEnableArmorBreak(self.IsPlayer))
 				int[] chances = Config.GetBreakChances(self.IsPlayer, abPowerAttack)
 				if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < chances[0]) || \
@@ -83,8 +83,8 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 			healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
 			rndintRP < Config.GetRapeChance(self.IsPlayer, abPowerAttack))
 			
-			AppUtil.Log("doSex " + SelfName)
-			self.doSex(akAggr)
+			AppUtil.Log("doBleedOut " + SelfName)
+			self.doBleedOut(akAggr)
 		endif
 	endif
 	
@@ -157,9 +157,9 @@ EndFunction
 
 ; _readySexAggr / _endSexAggr to StopCombatEffect.psc
 
-Function doSex(Actor aggr)
+Function doBleedOut(Actor aggr)
 	Actor victim = self.GetActorRef()
-	SelfName = victim.GetActorBase().GetName()
+	SelfName = victim.GetLeveledActorBase().GetName()
 
  	if (!self._isValidActors(victim, aggr))
 		return
@@ -173,51 +173,59 @@ Function doSex(Actor aggr)
 		
 		self._readySexVictim()
 		
-		actor[] sexActors = new actor[2]
-		sexActors[0] = victim
-		sexActors[1] = aggr
-		sslBaseAnimation[] anims = AppUtil.BuildAnimation(sexActors)
-		
-		AppUtil.Log("run SexLab " + SelfName)
-		int tid = self._quickSex(sexActors, anims, victim = victim)
-		sslThreadController controller = SexLab.GetController(tid)
-		AppUtil.Log("run SexLab [" + tid + "] " + SelfName)
-		
-		if (controller)
-			; wait for sync, max 12 sec.
-			self._waitSetup(controller)
-			self._waitSetup(controller)
-			self._waitSetup(controller)
-			self._waitSetup(controller)
-			
-			if (self.IsPlayer)
-				self._stopCombatOneMore(aggr, victim)
-			endif
-			; self._stopCombatOneMore(aggr, victim)
-			Utility.Wait(1.0)
-			; self._endSexAggr(aggr)
-			aggr.SetGhost(false) ; _endSexAggr()
-			AppUtil.Log("aggr setghost disable " + SelfName)
-		else
-			AppUtil.Log("###FIXME### controller not found, recover setup " + SelfName)
-			self.EndSexEvent(aggr)
-		endif
+		;if (self.IsPlayer && Config.knockDownOnly)
+		;else
+		self.doSex(aggr)
+		;endif
 	else
-		AppUtil.Log("already filled aggr reference, pass doSex " + SelfName)
+		AppUtil.Log("already filled aggr reference, pass doBleedOut " + SelfName)
+	endif
+EndFunction
+
+Function doSex(Actor aggr)
+	Actor victim = self.GetActorRef()
+	SelfName = victim.GetLeveledActorBase().GetName()
+
+	actor[] sexActors = new actor[2]
+	sexActors[0] = victim
+	sexActors[1] = aggr
+	sslBaseAnimation[] anims = AppUtil.BuildAnimation(sexActors)
+	
+	AppUtil.Log("run SexLab " + SelfName)
+	int tid = self._quickSex(sexActors, anims, victim = victim)
+	sslThreadController controller = SexLab.GetController(tid)
+	AppUtil.Log("run SexLab [" + tid + "] " + SelfName)
+	
+	if (controller)
+		; wait for sync, max 12 sec.
+		self._waitSetup(controller)
+		self._waitSetup(controller)
+		self._waitSetup(controller)
+		self._waitSetup(controller)
+		
+		if (self.IsPlayer)
+			self._stopCombatOneMore(aggr, victim)
+		endif
+		Utility.Wait(1.0)
+		aggr.SetGhost(false) ; _endSexAggr()
+		AppUtil.Log("aggr setghost disable " + SelfName)
+	else
+		AppUtil.Log("###FIXME### controller not found, recover setup " + SelfName)
+		self.EndSexEvent(aggr)
 	endif
 EndFunction
 
 bool Function _isValidActors(Actor victim, Actor aggr)
 	if (victim.IsGhost() || aggr.IsGhost())
-		AppUtil.Log("ghosted Actor found, pass doSex " + SelfName)
+		AppUtil.Log("ghosted Actor found, pass doBleedOut " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 		return false
 	elseif (Aggressor.GetActorRef() || aggr.IsDead() || !aggr.Is3DLoaded() || aggr.IsDisabled())
-		AppUtil.Log("already filled ref, dead actor, or not loaded, pass doSex " + SelfName)
+		AppUtil.Log("already filled ref, dead actor, or not loaded, pass doBleedOut " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 		return false
 	elseif (victim.IsInFaction(SSLAnimatingFaction)) ; second check
-		AppUtil.Log("victim already animating, pass doSex " + SelfName)
+		AppUtil.Log("victim already animating, pass doBleedOut " + SelfName)
 		aggr.RemoveFromFaction(SSLYACRActiveFaction) ; from OnEnterBleedOut
 		return false
 	elseif (!AppUtil.ValidateAggr(victim, aggr, Config.GetMatchedSex(self.IsPlayer)))
@@ -718,7 +726,7 @@ Function _searchBleedOutPartner()
 		if (!aggr.HasKeyWordString("SexLabActive") && !aggr.IsInFaction(SSLYACRActiveFaction))
 			AppUtil.Log("OnEnterBleedOut, actor found " + SelfName)
 			aggr.AddToFaction(SSLYACRActiveFaction)
-			self.doSex(aggr)
+			self.doBleedOut(aggr)
 		else
 			AppUtil.Log("OnEnterBleedOut, valid faction actor not found " + SelfName)
 			RegisterForSingleUpdate(BleedOutUpdatePeriod)
@@ -785,11 +793,10 @@ Faction Property SSLYACRActiveFaction  Auto
 Faction Property SSLYACRPurgedFollowerFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
+WEAPON Property Unarmed  Auto  
 
 ; not use
 SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
-;Faction Property dunPrisonerExtendedFaction  Auto  
 
-WEAPON Property Unarmed  Auto  
