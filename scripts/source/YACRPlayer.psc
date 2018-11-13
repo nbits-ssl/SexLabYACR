@@ -240,12 +240,12 @@ Function doSexLoop()
 	Actor[] actors
 	Actor aggr = Aggressor.GetActorRef()
 	Actor victim = self.GetActorRef()
-	bool locked = AppUtil.GetHelperSearcherLock(aggr)
 	
-	if (locked)
-		actors = AppUtil.GetHelpersCombined(victim, aggr)
+	actors = AppUtil.GetHelpersCombined(victim, aggr)
+	
+	int helpersCount = actors.Length - 2
+	if (helpersCount > 0)
 		self._forceRefHelpers(actors)
-		int helpersCount = actors.Length - 2
 		
 		AppUtil.Log("LOOPING run SexLab aggr " + aggr + ", helpers count " + helpersCount)
 		AppUtil.Log("LOOPING actors: " + actors)
@@ -283,10 +283,6 @@ Function doSexLoop()
 	else
 		AppUtil.Log("LOOPING ###FIXME### controller not found, recover setup " + SelfName)
 		self.EndSexEvent(aggr)
-	endif
-	
-	if (locked)
-		AppUtil.ReleaseHelperSearcherLock(aggr)
 	endif
 EndFunction
 
@@ -414,15 +410,12 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 		self._sexLoopOneMoreFromSecond(controller)
 	else
 		int origLength = controller.Positions.Length
-		bool locked = AppUtil.GetHelperSearcherLock(aggr)
 		
-		if (locked)
-			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr)
+		if (rndint < Config.GetGlobal("MultiPlay"))
+			Actor[] actors = AppUtil.GetHelpersCombined(selfact, aggr, fullquery = true)
 			AppUtil.Log("endless sex loop...actors are " + actors)
 			
-			if (rndint < Config.GetGlobal("MultiPlay") && \
-				(AppUtil.ArrayCount(actors) > 2 && origLength != 3))
-				
+			if (AppUtil.ArrayCount(actors) > 2)
 				self._sexLoopSendToMultiplay(controller)
 			else
 				self._sexLoopChangeAnim(controller)
@@ -430,12 +423,7 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 		else
 			self._sexLoopChangeAnim(controller)
 		endif
-		
-		if (locked)
-			AppUtil.ReleaseHelperSearcherLock(aggr)
-		endif
 	endif
-	; GetHelpersCombined() is heavy, when test with 40 npcs sometimes 1.5sec is too short time.
 EndFunction
 
 Function _sexLoopOneMore(sslThreadController controller)

@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20181109
+	return 20181113
 EndFunction
 
 Function Log(String msg)
@@ -252,59 +252,25 @@ Function rejoinFollower(Actor act, Faction fact)
 	endif
 EndFunction
 
-bool Function GetHelperSearcherLock(Actor aggr)
-	Quest searcherQuest = self._getSearcherQuest(aggr)
-	
-	if (searcherQuest.IsRunning())
-		self.Log("GetHelperSearcherLock(): failed")
-		return false
-	else
-		self.Log("GetHelperSearcherLock(): success")
-		searcherQuest.Start()
-		return true
-	endif
-EndFunction
-
-Function ReleaseHelperSearcherLock(Actor aggr)
-	self.Log("ReleaseHelperSearcherLock()")
-	self._getSearcherQuest(aggr).Stop()
-EndFunction
-
-Function ForceReleaseHelperSearcherLock() ; for _reload()
-	SSLYACRHelperHumanSearcher.Stop()
-	SSLYACRHelperCreatureSearcher.Stop()
-EndFunction
-
-Actor[] Function GetHelpersCombined(Actor victim, Actor aggr)
-	SSLYACRHelperMainAggr.ForceRefTo(aggr)
-	Quest searcherQuest = self._getSearcherQuest(aggr)
-	
-	return self._getHelpersCombined(victim, aggr, searcherQuest)
-EndFunction
-
-Quest Function _getSearcherQuest(Actor aggr)
-	if (aggr.HasKeyWord(ActorTypeNPC))
-		return SSLYACRHelperHumanSearcher
-	else
-		return SSLYACRHelperCreatureSearcher
-	endif
-EndFunction
-
-Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst)
+Actor[] Function GetHelpersCombined(Actor victim, Actor aggr, bool fullquery = false)
 	Actor[] tmpArray
 	Actor[] actors
 	sslBaseAnimation[] anims
 	int idx = 0
 	
-	; qst.IsRunning by QuestLock
-	
-	tmpArray = (qst as YACRHelperSearch).Gather()
+	SSLYACRHelperMainAggr.ForceRefTo(aggr)
+	Quest qst = self._getSearcherQuest(aggr)
+	if (!qst.IsRunning())
+		qst.Start()
+		tmpArray = (qst as YACRHelperSearch).Gather()
+		qst.Stop()
+	endif
 	ArraySort(tmpArray)
 	idx = ArrayCount(tmpArray)
-	int rndint = Utility.RandomInt()
 	
+	int rndint = Utility.RandomInt()
 	if (idx == 3)
-		if (rndint < Config.GetGlobal("5P"))
+		if (!fullquery && rndint < Config.GetGlobal("5P"))
 			actors = new Actor[5]
 			actors[4] = tmpArray[2]
 			actors[3] = tmpArray[1]
@@ -322,7 +288,7 @@ Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst)
 	endif
 		
 	if (idx == 2)
-		if (rndint < Config.GetGlobal("4P"))
+		if (!fullquery && rndint < Config.GetGlobal("4P"))
 			actors = new Actor[4]
 			actors[3] = tmpArray[1]
 			actors[2] = tmpArray[0]
@@ -357,6 +323,14 @@ Actor[] Function _getHelpersCombined(Actor victim, Actor aggr, Quest qst)
 	endif
 	
 	return actors
+EndFunction
+
+Quest Function _getSearcherQuest(Actor aggr)
+	if (aggr.HasKeyWord(ActorTypeNPC))
+		return SSLYACRHelperHumanSearcher
+	else
+		return SSLYACRHelperCreatureSearcher
+	endif
 EndFunction
 
 sslBaseAnimation[] Function _pickAnimationsByActors(Actor[] actors, bool aggressive = false)

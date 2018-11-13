@@ -6,8 +6,6 @@ Actor[] Function Gather()
 	Actor ahelper2 = Helper2.GetActorRef()
 	Actor ahelper3 = Helper3.GetActorRef()
 	
-	int i = 0
-	
 	if (ahelper3)
 		helpers = new Actor[3]
 		helpers[0] = ahelper1

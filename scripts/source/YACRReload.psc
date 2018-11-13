@@ -22,7 +22,6 @@ Function _reload()
 		SSLYACR.Stop()
 	endif
 	SSLYACR.Start()
-	AppUtil.ForceReleaseHelperSearcherLock()
 EndFunction
 
 Quest Property SSLYACR  Auto  
