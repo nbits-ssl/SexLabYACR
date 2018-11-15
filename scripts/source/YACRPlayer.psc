@@ -5,7 +5,8 @@ string SelfName
 bool AlreadyInPrisonerFaction = false ; not use
 bool EndlessSexLoop = false
 bool AlreadyKeyDown = false
-float ForceUpdatePeriod = 30.0  ; still need ? 2.0alpha3
+float ForceUpdatePeriod = 30.0
+float PCBleedOutUpdatePeriod = 5.0
 float BleedOutUpdatePeriod = 10.0
 int StartingHealthForRegist = 0
 int StartingArousalForRegist = 0
@@ -173,13 +174,30 @@ Function doBleedOut(Actor aggr)
 		
 		self._readySexVictim()
 		
-		;if (self.IsPlayer && Config.knockDownOnly)
-		;else
-		self.doSex(aggr)
-		;endif
+		if (self.IsPlayer && Config.knockDownOnly)
+			self.doPCKnockDown(aggr)
+		else
+			self.doSex(aggr)
+		endif
 	else
 		AppUtil.Log("already filled aggr reference, pass doBleedOut " + SelfName)
 	endif
+EndFunction
+
+Function doPCKnockDown(Actor aggr)
+	Actor victim = PlayerActor
+	SelfName = victim.GetLeveledActorBase().GetName()
+
+	self._stopCombatOneMore(aggr, victim)
+	if (victim.IsWeaponDrawn())
+		victim.SheatheWeapon()
+	endif
+	Game.DisablePlayerControls()
+	Utility.Wait(1.0)
+	aggr.SetGhost(false) ; _endSexAggr()
+	Aggressor.Clear()
+	AppUtil.Log("aggr setghost disable & clear alias " + SelfName)
+	RegisterForSingleUpdate(PCBleedOutUpdatePeriod)
 EndFunction
 
 Function doSex(Actor aggr)
@@ -481,16 +499,21 @@ Function _reEnableHotkeysForKeyControlConfigUser(sslThreadController controller)
 	endif
 EndFunction
 
+bool Function _knockDownOnlyMode()
+	return (PlayerActor.GetAnimationVariableBool("IsBleedingOut") && Config.knockDownOnly)
+EndFunction
+
 Event OnKeyDown(int keyCode)
 	Actor selfact = self.GetActorRef()
 	Actor aggr = Aggressor.GetActorRef()
+	bool knockdownonly = self._knockDownOnlyMode()
 
-	if (!self.IsPlayer || !aggr || Utility.IsInMenuMode())
+	if (!self.IsPlayer || (!aggr && !knockdownonly) || Utility.IsInMenuMode())
 		return
-	elseif !(selfact.HasKeyWordString("SexLabActive"))
+	elseif !(selfact.HasKeyWordString("SexLabActive") || knockdownonly)
 		AppUtil.Log("not in anim")
 		return
-	elseif (aggr.IsGhost())
+	elseif (aggr && aggr.IsGhost())
 		AppUtil.Log("aggr is ghost, please wait")
 		return
 	elseif (AlreadyKeyDown)
@@ -499,42 +522,68 @@ Event OnKeyDown(int keyCode)
 	endif
 	
 	if (keyCode == Config.keyCodeRegist)
-		AppUtil.Log("OnkeyDown: Regist")
-		AlreadyKeyDown = true
-		AppUtil.Flavor(Config.GetFlavor("REGISTING"))
-		Utility.Wait(2.0)
-		
-		if (Utility.RandomInt() < PlayerRegistPoint)
-			self._escapePlayer(aggr)
-		else
-			AppUtil.Flavor(Config.GetFlavor("REGISTING_FAIL"))
-		endif
+		self._pressRegistKey(aggr)
 	elseif (keyCode == Config.keyCodeHelp)
-		AppUtil.Log("OnkeyDown: CallHelp")
-		AlreadyKeyDown = true
-		AppUtil.Flavor(Config.GetFlavor("CALLHELP"))
-		Actor helper = AppUtil.CallHelp(aggr)
-		
-		if (helper)
-			AppUtil.Log("CallHelp, helper is " + helper.GetActorBase().GetName())
-			Utility.Wait(0.5)
-			self._escapePlayer(aggr)
-		else
-			Utility.Wait(2.0)
-			AppUtil.Flavor(Config.GetFlavor("CALLHELP_FAIL"))
-		endif
+		self._pressHelpKey(aggr)
 	elseif (keyCode == Config.keyCodeSubmit)
-		AppUtil.Log("OnkeyDown: Submit")
-		AlreadyKeyDown = true
-		AppUtil.Flavor(Config.GetFlavor("GIVEUP"))
-		Utility.Wait(3.0)
-		self._submitPlayer(aggr)
+		self._pressSubmitKey(aggr)
 	endif
 EndEvent
 
+Function _pressRegistKey(Actor aggr)
+	AppUtil.Log("OnkeyDown: Regist")
+	AlreadyKeyDown = true
+	AppUtil.Flavor(Config.GetFlavor("REGISTING"))
+	Utility.Wait(2.0)
+	int registpt 
+	
+	if (Config.knockDownOnly)
+		registpt = (PlayerActor.GetAVPercentage("health") * 100) as int
+	else
+		registpt = PlayerRegistPoint
+	endif
+	
+	if (Utility.RandomInt() < registpt)
+		self._escapePlayer(aggr)
+	else
+		AppUtil.Flavor(Config.GetFlavor("REGISTING_FAIL"))
+	endif
+EndFunction
+
+Function _pressHelpKey(Actor aggr)
+	AppUtil.Log("OnkeyDown: CallHelp")
+	AlreadyKeyDown = true
+	AppUtil.Flavor(Config.GetFlavor("CALLHELP"))
+	Actor helper = AppUtil.CallHelp(aggr)
+	
+	if (helper)
+		AppUtil.Log("CallHelp, helper is " + helper.GetActorBase().GetName())
+		Utility.Wait(0.5)
+		self._escapePlayer(aggr)
+	else
+		Utility.Wait(2.0)
+		AppUtil.Flavor(Config.GetFlavor("CALLHELP_FAIL"))
+	endif
+EndFunction
+
+Function _pressSubmitKey(Actor aggr)
+	AppUtil.Log("OnkeyDown: Submit")
+	AlreadyKeyDown = true
+	AppUtil.Flavor(Config.GetFlavor("GIVEUP"))
+	Utility.Wait(3.0)
+	self._submitPlayer(aggr)
+EndFunction
+
 Function _escapePlayer(Actor aggr) ; (almost rewritten by >>96.860)
 	Actor selfact = PlayerActor
-	if (self._stopPlayerRape(aggr))
+	
+	if (self._knockDownOnlyMode())
+		debug.SendAnimationEvent(selfact, "BleedOutStop")
+		Utility.Wait(1.0)
+		self._endSexVictim()
+		Game.EnablePlayerControls()
+		
+	elseif (self._stopPlayerRape(aggr))
 		; Wait 0.8 sec when stop animation. (0.5+ sec for more safety?)
 		Utility.Wait(0.8)
 		; Check aggr is dead (for SuccubusHeart)
@@ -559,7 +608,8 @@ EndFunction
 
 Function _submitPlayer(Actor aggr)
 	Actor selfact = PlayerActor
-	if (self._stopPlayerRape(aggr))
+	
+	if (self._knockDownOnlyMode() || self._stopPlayerRape(aggr))
 		if (Config.enableSimpleSlaverySupport && \
 			Utility.RandomInt() <= Config.simpleSlaveryChance)
 			
@@ -574,17 +624,16 @@ EndFunction
 
 bool Function _stopPlayerRape(Actor aggr)
 	Actor selfact = PlayerActor
-	bool ret
 	
 	if selfact.HasKeyWordString("SexLabActive")
 		AppUtil.Log("Player escaped, Stop rape")
 		; AppUtil.PlayImpactSound(selfact as ObjectReference)  ; not here for SuccubusHeart
 		sslThreadController controller = SexLab.GetActorController(selfact)
 		controller.EndAnimation()
-		ret = true
+		return true
 	endif
 	
-	return ret
+	return false
 EndFunction
 
 ; from rapespell, genius!
@@ -594,9 +643,12 @@ Event OnUpdate()
 		AppUtil.Log("OnUpdate, UpdateController is alive " + SelfName)
 		UpdateController.OnUpdate()
 		RegisterForSingleUpdate(ForceUpdatePeriod)
-	elseif (self.GetActorRef().IsBleedingOut())
+	elseif (!self.IsPlayer && self.GetActorRef().IsBleedingOut())
 		AppUtil.Log("OnUpdate, _searchBleedOutPartner " + SelfName)
 		self._searchBleedOutPartner()
+	elseif (self.IsPlayer && self._knockDownOnlyMode())
+		AlreadyKeyDown = false
+		RegisterForSingleUpdate(PCBleedOutUpdatePeriod)
 	else
 		AppUtil.Log("OnUpdate, Unregister for single update loop " + SelfName)
 		UnregisterForUpdate() ; for ForceUpdateController
@@ -676,7 +728,7 @@ Function EndSexEvent(Actor aggr)
 		self._cleanDeadBody(Helper1)
 		self._cleanDeadBody(Helper2)
 		self._cleanDeadBody(Helper3)
-
+		
 		Aggressor.Clear()
 		self._clearHelpers()
 		

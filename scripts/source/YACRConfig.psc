@@ -300,9 +300,17 @@ EndEvent
 
 string Function GetFlavor(string fkey)
 	if (fkey == "REGISTING")
-		return "$REGISTING"
+		if (knockDownOnly)
+			return "$REGISTING_KDONLY"
+		else
+			return "$REGISTING"
+		endif
 	elseif (fkey == "REGISTING_FAIL")
-		return "$REGISTING_FAIL"
+		if (knockDownOnly)
+			return "$REGISTING_FAIL_KDONLY"
+		else
+			return "$REGISTING_FAIL"
+		endif
 	elseif (fkey == "CALLHELP")
 		return "$CALLHELP"
 	elseif (fkey == "CALLHELP_FAIL")
