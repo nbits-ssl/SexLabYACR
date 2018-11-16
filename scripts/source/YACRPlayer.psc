@@ -185,6 +185,7 @@ Function doBleedOut(Actor aggr)
 EndFunction
 
 Function doPCKnockDown(Actor aggr)
+	Game.DisablePlayerControls()
 	Actor victim = PlayerActor
 	SelfName = victim.GetLeveledActorBase().GetName()
 
@@ -192,7 +193,6 @@ Function doPCKnockDown(Actor aggr)
 	if (victim.IsWeaponDrawn())
 		victim.SheatheWeapon()
 	endif
-	Game.DisablePlayerControls()
 	Utility.Wait(1.0)
 	aggr.SetGhost(false) ; _endSexAggr()
 	Aggressor.Clear()
@@ -500,7 +500,7 @@ Function _reEnableHotkeysForKeyControlConfigUser(sslThreadController controller)
 EndFunction
 
 bool Function _knockDownOnlyMode()
-	return (PlayerActor.GetAnimationVariableBool("IsBleedingOut") && Config.knockDownOnly)
+	return ((PlayerActor.GetAnimationVariableBool("IsBleedingOut") || !Game.IsActivateControlsEnabled()) && Config.knockDownOnly)
 EndFunction
 
 Event OnKeyDown(int keyCode)
