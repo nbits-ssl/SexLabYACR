@@ -579,9 +579,9 @@ Function _escapePlayer(Actor aggr) ; (almost rewritten by >>96.860)
 	
 	if (self._knockDownOnlyMode())
 		debug.SendAnimationEvent(selfact, "BleedOutStop")
-		Utility.Wait(1.0)
-		self._endSexVictim()
 		Game.EnablePlayerControls()
+		Utility.Wait(3.0)
+		self._endSexVictim()
 		
 	elseif (self._stopPlayerRape(aggr))
 		; Wait 0.8 sec when stop animation. (0.5+ sec for more safety?)
@@ -635,43 +635,6 @@ bool Function _stopPlayerRape(Actor aggr)
 	
 	return false
 EndFunction
-
-; from rapespell, genius!
-Event OnUpdate()
-	AppUtil.Log("# OnUpdate YACRPlayer " + SelfName)
-	if (UpdateController && UpdateController.GetState() == "animating")
-		AppUtil.Log("OnUpdate, UpdateController is alive " + SelfName)
-		UpdateController.OnUpdate()
-		RegisterForSingleUpdate(ForceUpdatePeriod)
-	elseif (!self.IsPlayer && self.GetActorRef().IsBleedingOut())
-		AppUtil.Log("OnUpdate, _searchBleedOutPartner " + SelfName)
-		self._searchBleedOutPartner()
-	elseif (self.IsPlayer && self._knockDownOnlyMode())
-		AlreadyKeyDown = false
-		RegisterForSingleUpdate(PCBleedOutUpdatePeriod)
-	else
-		AppUtil.Log("OnUpdate, Unregister for single update loop " + SelfName)
-		UnregisterForUpdate() ; for ForceUpdateController
-	endif
-EndEvent
-
-Event OnPackageChange(Package oldpkg) ; for missing _endSexVictim() when EndSexEvent
-	Actor victim
-	Actor aggr = Aggressor.GetActorRef()
-	if (aggr)
-		Utility.Wait(2.0)
-	endif
-	if (!Aggressor.GetActorRef() && !self.IsPlayer)
-		victim = self.GetActorRef()
-		if (!victim.IsPlayerTeammate() && victim.IsInFaction(SSLYACRPurgedFollowerFaction))
-			AppUtil.Log("######### OnPackageChange, detect non-teammate follower, recovery " + SelfName)
-			self._endSexVictim()
-			victim.StopCombat()
-			victim.EnableAI(false)
-			victim.EnableAI()
-		endif
-	endif
-EndEvent
 
 Function _getAudience()
 	AppUtil.Log("get audience " + SelfName)
@@ -761,6 +724,47 @@ Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
 	endif
 EndEvent
 
+; from rapespell, genius!
+Event OnUpdate()
+	AppUtil.Log("# OnUpdate YACRPlayer " + SelfName)
+	if (UpdateController && UpdateController.GetState() == "animating")
+		AppUtil.Log("OnUpdate, UpdateController is alive " + SelfName)
+		UpdateController.OnUpdate()
+		RegisterForSingleUpdate(ForceUpdatePeriod)
+	elseif (!self.IsPlayer && self.GetActorRef().IsBleedingOut())
+		AppUtil.Log("OnUpdate, _searchBleedOutPartner " + SelfName)
+		self._searchBleedOutPartner()
+	elseif (self.IsPlayer && self._knockDownOnlyMode())
+		AlreadyKeyDown = false
+		if (Config.knockDownAll)
+			AppUtil.KnockDownAll()
+		endif
+		
+		RegisterForSingleUpdate(PCBleedOutUpdatePeriod)
+	else
+		AppUtil.Log("OnUpdate, Unregister for single update loop " + SelfName)
+		UnregisterForUpdate() ; for ForceUpdateController
+	endif
+EndEvent
+
+Event OnPackageChange(Package oldpkg) ; for missing _endSexVictim() when EndSexEvent
+	Actor victim
+	Actor aggr = Aggressor.GetActorRef()
+	if (aggr)
+		Utility.Wait(2.0)
+	endif
+	if (!Aggressor.GetActorRef() && !self.IsPlayer)
+		victim = self.GetActorRef()
+		if (!victim.IsPlayerTeammate() && victim.IsInFaction(SSLYACRPurgedFollowerFaction))
+			AppUtil.Log("######### OnPackageChange, detect non-teammate follower, recovery " + SelfName)
+			self._endSexVictim()
+			victim.StopCombat()
+			victim.EnableAI(false)
+			victim.EnableAI()
+		endif
+	endif
+EndEvent
+
 Event OnEnterBleedOut()
 	self._searchBleedOutPartner()
 EndEvent
@@ -793,7 +797,7 @@ EndFunction
 Actor Function _getBleedOutPartner()
 	Actor aggr
 	Actor victim = Self.GetActorRef()
-	Actor[] npcs = MiscUtil.ScanCellNPCs(victim as ObjectReference, 1000.0)
+	Actor[] npcs = MiscUtil.ScanCellNPCs(victim as ObjectReference, 1500.0)
 
 	int len = npcs.Length
 	int idx = 0
