@@ -169,6 +169,7 @@ Function doBleedOut(Actor aggr)
 	if (Aggressor.ForceRefIfEmpty(aggr))
 		if (self.IsPlayer)
 			debug.SendAnimationEvent(victim, "BleedOutStart")
+			Game.ForceThirdPerson()
 			self._storePlayerRegist(victim)
 		endif
 		
