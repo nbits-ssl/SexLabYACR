@@ -719,6 +719,7 @@ Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
 	Actor victim = self.GetActorRef()
 	
 	if (aeCombatState == 0 && !victim.HasKeyWordString("SexLabActive"))
+		Utility.Wait(Utility.RandomFloat(0.0, 1.0)) ; for Stability
 		victim.EnableAI(false)
 		victim.EnableAI()
 		AppUtil.Log("OnCombatStateChanged, reset ai " + SelfName)
