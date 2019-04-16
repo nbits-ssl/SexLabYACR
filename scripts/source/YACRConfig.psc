@@ -56,9 +56,12 @@ int Property armorBreakChanceHeavyArmorNPCPA = 20 Auto
 int Property keyCodeRegist = 278 Auto
 int Property keyCodeHelp = 274 Auto
 int Property keyCodeSubmit = 280 Auto
+
 bool Property enableSimpleSlaverySupport = false Auto
 int Property simpleSlaveryChance = 100 Auto
+bool Property enableUtilOneSupport = false Auto
 bool Property enableDrippingWASupport = false Auto
+bool Property enableSendOrgasm = true Auto
 
 Race[] Property DisableRaces  Auto  
 Bool[] Property DisableRacesConfig  Auto  
@@ -75,7 +78,9 @@ int keyCodeHelpID
 int keyCodeSubmitID
 int enableSimpleSlaverySupportID
 int simpleSlaveryChanceID
+int enableUtilOneSupportID
 int enableDrippingWASupportID
+int enableSendOrgasmID
 
 ; Player ========================================
 int enablePlayerRapeID
@@ -150,11 +155,12 @@ EndEvent
 Event OnConfigInit()
 	knockDownAll = true ; always from 2.0alpha3
 	
-	Pages = new string[4]
+	Pages = new string[5]
 	Pages[0] = "$YACRRapeChance"
 	Pages[1] = "$YACRArmorBreak"
 	Pages[2] = "$YACREnemy"
 	Pages[3] = "$YACRSystem"
+	Pages[4] = "$YACRTeammates"
 	
 	matchedSexList = new string[3]
 	matchedSexList[0] = "$YACRSexStraight"
@@ -266,11 +272,6 @@ Event OnPageReset(string page)
 		keyCodeHelpID = AddKeyMapOption("$KeyCodeHelp", keyCodeHelp)
 		keyCodeSubmitID = AddKeyMapOption("$KeyCodeSubmit", keyCodeSubmit)
 		
-		enableSimpleSlaverySupportID = AddToggleOption("$EnableSimpleSlaverySupport", enableSimpleSlaverySupport)
-		simpleSlaveryChanceID = AddSliderOption("$SimpleSlaveryChance", simpleSlaveryChance)
-		
-		enableDrippingWASupportID = AddToggleOption("$EnableDrippingWASupport", enableDrippingWASupport)
-		
 		AddEmptyOption()
 		
 		AddHeaderOption("$YACRDebug")
@@ -280,6 +281,20 @@ Event OnPageReset(string page)
 		; knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll) ; not support from 2.0alpha1
 		
 		SetCursorPosition(1)
+		
+		AddHeaderOption("$YACRModLink")
+		
+		enableSimpleSlaverySupportID = AddToggleOption("$EnableSimpleSlaverySupport", enableSimpleSlaverySupport)
+		simpleSlaveryChanceID = AddSliderOption("$SimpleSlaveryChance", simpleSlaveryChance)
+		enableUtilOneSupportID = AddToggleOption("$EnableUtilOneSupport", enableUtilOneSupport)
+		enableDrippingWASupportID = AddToggleOption("$EnableDrippingWASupport", enableDrippingWASupport)
+		
+		enableSendOrgasmID = AddToggleOption("$EnableSendOrgasm", enableSendOrgasm)
+		
+	elseif (page == "$YACRTeammates")
+		SetCursorFillMode(TOP_TO_BOTTOM)
+		SetCursorPosition(0)
+
 		AddHeaderOption("$YACRTeammates")
 
 		Actor act
@@ -477,8 +492,12 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$SimpleSlaveryChanceInfo")
 	elseif (disableEnemyRacesIDS.Find(option) > -1)
 		SetInfoText("$DisableRacesInfo")
+	elseif (option == enableUtilOneSupportID)
+		SetInfoText("$EnableUtilOneSupportInfo")
 	elseif (option == enableDrippingWASupportID)
 		SetInfoText("$EnableDrippingWASupportInfo")
+	elseif (option == enableSendOrgasmID)
+		SetInfoText("$EnableSendOrgasmInfo")
 	endif
 EndEvent
 
@@ -515,9 +534,15 @@ Event OnOptionSelect(int option)
 	elseif (option == enableSimpleSlaverySupportID)
 		enableSimpleSlaverySupport = !enableSimpleSlaverySupport
 		SetToggleOptionValue(option, enableSimpleSlaverySupport)
+	elseif (option == enableUtilOneSupportID)
+		enableUtilOneSupport = !enableUtilOneSupport
+		SetToggleOptionValue(option, enableUtilOneSupport)
 	elseif (option == enableDrippingWASupportID)
 		enableDrippingWASupport = !enableDrippingWASupport
 		SetToggleOptionValue(option, enableDrippingWASupport)
+	elseif (option == enableSendOrgasmID)
+		enableSendOrgasm = !enableSendOrgasm
+		SetToggleOptionValue(option, enableSendOrgasm)
 		
 	;elseif (option == knockDownAllID)
 	;	knockDownAll = !knockDownAll
