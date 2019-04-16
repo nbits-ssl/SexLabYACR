@@ -103,7 +103,12 @@ EndState
 
 Function _readySexVictim()
 	Actor act = self.GetActorRef()
-	act.SetGhost(true)
+	
+	if (Config.enableUtilOneSupport)
+		; is in StageStartEvent
+	else
+		act.SetGhost(true)
+	endif
 	
 	if (!self.IsPlayer || Config.knockDownAll)
 		VictimAlias.ForceRefTo(act)
@@ -376,7 +381,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	AppUtil.Log("StageStartEvent: " + SelfName)
 	Actor selfact = self.GetActorRef()
 	Actor aggr = Aggressor.GetActorRef()
-		
+	
 	UnregisterForUpdate()
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
@@ -385,12 +390,14 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	self._getAudience()
 	self._reEnableHotkeysForKeyControlConfigUser(controller)
 	
-	if (Config.enableDrippingWASupport)
+	if (Config.enableDrippingWASupport || Config.enableUtilOneSupport)
 		if (controller.Stage >= stagecnt - 1)
 			selfact.SetGhost(false)  ; for DWA effect in last stage StageStartEventYACR
 		else
 			selfact.SetGhost(true)
 		endif
+	else
+		; default is in _readySexVictim() <=> UtilOne Support
 	endif
 	
 	; for Onhit missing de-ghost
@@ -424,9 +431,13 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 	endif
 	
 	selfact.SetGhost(false)
-	controller.SendThreadEvent("OrgasmEnd") ; for Aroused
+	if (Config.enableSendOrgasm)
+		controller.SendThreadEvent("OrgasmStart") ; for Util1
+		Utility.Wait(0.2)
+		controller.SendThreadEvent("OrgasmEnd") ; for Aroused
+	endif
 	SexLab.ActorLib.ApplyCum(controller.Positions[0], controller.Animation.GetCum(0))
-	if (!Config.enableDrippingWASupport)
+	if (!Config.enableDrippingWASupport && !Config.enableUtilOneSupport)
 		selfact.SetGhost(true)
 	endif
 	
