@@ -422,6 +422,11 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 	self._disableHotkeysForKeyControlConfigUser(controller)
 	controller.UnregisterForUpdate()
 	
+	if (Config.enableUtilOneSupport && Config.enableSendOrgasm)
+		selfact.SetGhost(false)
+		controller.SendThreadEvent("OrgasmStart") ; for Util1
+	endif
+	
 	float laststagewait = SexLab.Config.StageTimerAggr[4]
 	if (laststagewait > 1)
 		Utility.Wait(laststagewait - 1.5) 
@@ -432,8 +437,6 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 	
 	selfact.SetGhost(false)
 	if (Config.enableSendOrgasm)
-		controller.SendThreadEvent("OrgasmStart") ; for Util1
-		Utility.Wait(0.2)
 		controller.SendThreadEvent("OrgasmEnd") ; for Aroused
 	endif
 	SexLab.ActorLib.ApplyCum(controller.Positions[0], controller.Animation.GetCum(0))

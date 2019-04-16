@@ -338,7 +338,7 @@ EndFunction
 int Function GetGlobal(string str)
 	if (str == "OneMore")
 		return SSLYACROneMore.GetValue() as int
-	elseif (str == "OneMore2")
+	elseif (str == "OneMoreFromSecond")
 		return SSLYACROneMoreFromSecond.GetValue() as int
 	elseif (str == "MultiPlay")
 		return SSLYACRMultiPlay.GetValue() as int
