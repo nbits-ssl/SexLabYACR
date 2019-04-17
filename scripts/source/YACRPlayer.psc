@@ -27,8 +27,8 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 		AppUtil.Log("not if " + SelfName)
 		return
-	elseif (wpn == Unarmed && !AppUtil.IsDragon(akAggr) && selfact.GetDistance(akAggr) > 150.0)
-		AppUtil.Log("not if, mystery unarmed spell (explode) " + SelfName)
+	elseif (wpn == Unarmed && !AppUtil.IsDragon(akAggr) && selfact.GetDistance(akAggr) > 225.0) ; troll is 200
+		AppUtil.Log("not if, mystery unarmed spell (explode) " + SelfName + " (" + selfact.GetDistance(akAggr) + ")")
 		return
 	endif
 	
@@ -618,6 +618,16 @@ Function _escapePlayer(Actor aggr) ; (almost rewritten by >>96.860)
 			AppUtil.PlayImpactSound(selfact as ObjectReference) ; play impact sound
 			selfact.PushActorAway(aggr, 2.5) ; ..... go!
 		endif
+		
+		self._sexistGuardsDialogueStop()
+	endif
+EndFunction
+
+Function _sexistGuardsDialogueStop() ; thank you!! >> 106.407
+	if (Game.GetModByName("SexistGuards.esp") < 255)
+		AppUtil.Log("SexistGuards.esp detected, stop dialogue loop")
+		GlobalVariable SGStageTracker = Game.GetFormFromFile(0x03024234, "SexistGuards.esp") as GlobalVariable
+		SGStageTracker.SetValue(0)
 	endif
 EndFunction
 
