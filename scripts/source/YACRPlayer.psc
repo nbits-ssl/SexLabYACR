@@ -727,7 +727,7 @@ EndFunction
 Function _sexistGuardsDialogueStop() ; thank you!! >> 106.407
 	if (Game.GetModByName("SexistGuards.esp") < 255)
 		AppUtil.Log("SexistGuards.esp detected, stop dialogue loop")
-		GlobalVariable SGStageTracker = Game.GetFormFromFile(0x03024234, "SexistGuards.esp") as GlobalVariable
+		GlobalVariable SGStageTracker = Game.GetFormFromFile(0x00024234, "SexistGuards.esp") as GlobalVariable
 		SGStageTracker.SetValue(0)
 	endif
 EndFunction
