@@ -23,7 +23,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	if (akAggressor == None || akProjectile || PreSource ==  akSource || !wpn || \
 		selfact.IsGhost() || selfact.IsDead() || akAggr.IsPlayerTeammate() || akAggr == PlayerActor || \
 		selfact.IsInKillMove() || akAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape) || \
-		!selfact.HasKeyWord(ActorTypeNPC))
+		!selfact.HasKeyWord(ActorTypeNPC) || (self.IsPlayer && selfact.IsInFaction(SSLYACRDyingFaction)))
 	
 		AppUtil.Log("not if " + SelfName)
 		return
@@ -43,6 +43,9 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 	if (!abHitBlocked && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
 		AppUtil.Log("onhit success " + SelfName)
+		if (self.IsPlayer)
+			LastAggr = akAggr
+		endif
 		
 		int rndintRP = Utility.RandomInt()
 		int rndintAB = Utility.RandomInt()
@@ -59,31 +62,18 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 				; ##FIXME## Instead ActorLib.ValidateActor ?
 			endif
 		elseif (selfarmor)
-			if (healthper <= Config.GetHealthLimit(self.IsPlayer) && \
-				healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
-				rndintRP < Config.GetRapeChanceNotNaked(self.IsPlayer, abPowerAttack))
-				
+			if (self._shouldBleedOut(healthper, rndintRP, abPowerAttack))
 				AppUtil.Log("doBleedOut " + SelfName)
 				self.doBleedOut(akAggr)
-			elseif (Config.GetEnableArmorBreak(self.IsPlayer))
-				int[] chances = Config.GetBreakChances(self.IsPlayer, abPowerAttack)
-				if ((selfarmor.HasKeyWord(ArmorClothing) && rndintAB < chances[0]) || \
-					(selfarmor.HasKeyWord(ArmorLight) && rndintAB < chances[1]) || \
-					(selfarmor.HasKeyWord(ArmorHeavy) && rndintAB < chances[2]))
-					
-					if (Config.GetEnableArmorUnequipMode(self.IsPlayer))
-						selfact.UnEquipItem(selfarmor)
-					else
-						selfact.RemoveItem(selfarmor)
-					endif
-					AppUtil.Log(" Armor break " + SelfName)
+			elseif (self._shouldArmorBreak(selfarmor, rndintAB, abPowerAttack))
+				AppUtil.Log(" Armor break " + SelfName)
+				if (Config.GetEnableArmorUnequipMode(self.IsPlayer))
+					selfact.UnEquipItem(selfarmor)
+				else
+					selfact.RemoveItem(selfarmor)
 				endif
 			endif
-		elseif (!selfarmor && \
-			healthper <= Config.GetHealthLimit(self.IsPlayer) && \
-			healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
-			rndintRP < Config.GetRapeChance(self.IsPlayer, abPowerAttack))
-			
+		elseif (!selfarmor && self._shouldBleedOut(healthper, rndintRP, abPowerAttack))
 			AppUtil.Log("doBleedOut " + SelfName)
 			self.doBleedOut(akAggr)
 		endif
@@ -93,6 +83,24 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	PreSource = None
 	GotoState("")
 EndEvent
+
+bool Function _shouldArmorBreak(Armor selfarmor, int rndint, bool abPowerAttack)
+	if (Config.GetEnableArmorBreak(self.IsPlayer))
+		int[] chances = Config.GetBreakChances(self.IsPlayer, abPowerAttack)
+		
+		return ((selfarmor.HasKeyWord(ArmorClothing) && rndint < chances[0]) || \
+			(selfarmor.HasKeyWord(ArmorLight) && rndint < chances[1]) || \
+			(selfarmor.HasKeyWord(ArmorHeavy) && rndint < chances[2]))
+	else
+		return false
+	endif
+EndFunction
+
+bool Function _shouldBleedOut(float healthper, int rndint, bool abPowerAttack)
+	return (healthper <= Config.GetHealthLimit(self.IsPlayer) && \
+		healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
+		rndint < Config.GetRapeChance(self.IsPlayer, abPowerAttack))
+EndFunction
 
 State Busy
 	Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
@@ -162,6 +170,56 @@ Function _stopCombatOneMore(Actor aggr, Actor victim)
 EndFunction
 
 ; _readySexAggr / _endSexAggr to StopCombatEffect.psc
+
+
+; for we can't die
+
+bool Function ValidateDeathSex()
+	Actor selfact = self.GetActorRef()
+	
+	if (!LastAggr || LastAggr.GetDistance(selfact) > 500 || selfact.IsGhost() || selfact.IsDead() || \
+		selfact.IsInKillMove() || LastAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape) || \
+		!selfact.HasKeyWord(ActorTypeNPC) || (self.IsPlayer && selfact.IsInFaction(SSLYACRDyingFaction)) || \
+		LastAggr.IsPlayerTeammate() || !self._isValidActors(selfact, LastAggr))
+		
+		return false
+	endif
+	
+	return true
+EndFunction
+
+bool Function _isInWeCantDie()
+	if (!self.IsPlayer)
+		return false
+	elseif (!self.GetActorRef().IsInFaction(SSLYACRDyingFaction))
+		return false
+	endif
+	
+	return true
+EndFunction
+
+Function deathBleedOut()
+	Actor victim = self.GetActorRef()
+	
+	if (Aggressor.ForceRefIfEmpty(LastAggr))
+		debug.SendAnimationEvent(victim, "BleedOutStart")
+		Game.ForceThirdPerson()
+		
+		self._readySexVictim()
+		
+		victim.AddToFaction(SSLYACRDyingFaction)
+		if (Config.knockDownOnly)
+			self.doPCKnockDown(LastAggr)
+		else
+			self.doSex(LastAggr)
+		endif
+	else
+		AppUtil.Log("### deathBleedOut(), already filled aggr reference, pass")
+	endif
+EndFunction
+
+; / for we can't die
+
 
 Function doBleedOut(Actor aggr)
 	Actor victim = self.GetActorRef()
@@ -389,6 +447,7 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	
 	self._getAudience()
 	self._reEnableHotkeysForKeyControlConfigUser(controller)
+	; disable by _sexloop(), during _sexloop functions's stage advancing
 	
 	if (Config.enableDrippingWASupport || Config.enableUtilOneSupport)
 		if (controller.Stage >= stagecnt - 1)
@@ -420,6 +479,7 @@ EndEvent
 Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 	AppUtil.Log("endless sex loop for " + SelfName)
 	self._disableHotkeysForKeyControlConfigUser(controller)
+	; disable advance stage key, during _sexloop functions's stage advancing
 	controller.UnregisterForUpdate()
 	
 	if (Config.enableUtilOneSupport && Config.enableSendOrgasm)
@@ -518,6 +578,7 @@ bool Function _knockDownOnlyMode()
 	return ((PlayerActor.GetAnimationVariableBool("IsBleedingOut") || !Game.IsActivateControlsEnabled()) && Config.knockDownOnly)
 EndFunction
 
+
 Event OnKeyDown(int keyCode)
 	Actor selfact = self.GetActorRef()
 	Actor aggr = Aggressor.GetActorRef()
@@ -536,12 +597,22 @@ Event OnKeyDown(int keyCode)
 		return
 	endif
 	
-	if (keyCode == Config.keyCodeRegist)
-		self._pressRegistKey(aggr)
-	elseif (keyCode == Config.keyCodeHelp)
-		self._pressHelpKey(aggr)
-	elseif (keyCode == Config.keyCodeSubmit)
-		self._pressSubmitKey(aggr)
+	if (!self._isInWeCantDie())
+		if (keyCode == Config.keyCodeRegist)
+			self._pressRegistKey(aggr)
+		elseif (keyCode == Config.keyCodeHelp)
+			self._pressHelpKey(aggr)
+		elseif (keyCode == Config.keyCodeSubmit)
+			self._pressSubmitKey(aggr)
+		endif
+	else
+		if (keyCode == Config.keyCodeRegist)
+			self._pressDeathRegistKey(aggr)
+		elseif (keyCode == Config.keyCodeHelp)
+			self._pressDeathHelpKey()
+		elseif (keyCode == Config.keyCodeSubmit)
+			self._pressDeathSubmitKey(aggr)
+		endif
 	endif
 EndEvent
 
@@ -565,6 +636,16 @@ Function _pressRegistKey(Actor aggr)
 	endif
 EndFunction
 
+Function _pressDeathRegistKey(Actor aggr)
+	AppUtil.Log("OnkeyDown: Regist(death)")
+	AlreadyKeyDown = true
+	AppUtil.Flavor(Config.GetFlavor("REGISTING_DEATH"))
+	Utility.Wait(1.0)
+	
+	PlayerActor.AddToFaction(SSLYACRDyingFaction)
+	self._escapePlayer(aggr)
+EndFunction
+
 Function _pressHelpKey(Actor aggr)
 	AppUtil.Log("OnkeyDown: CallHelp")
 	AlreadyKeyDown = true
@@ -581,13 +662,31 @@ Function _pressHelpKey(Actor aggr)
 	endif
 EndFunction
 
+Function _pressDeathHelpKey()
+	AppUtil.Log("OnkeyDown: CallHelp (death)")
+	AlreadyKeyDown = true
+	AppUtil.Flavor(Config.GetFlavor("CALLHELP_DEATH"))
+EndFunction
+
 Function _pressSubmitKey(Actor aggr)
 	AppUtil.Log("OnkeyDown: Submit")
 	AlreadyKeyDown = true
 	AppUtil.Flavor(Config.GetFlavor("GIVEUP"))
 	Utility.Wait(3.0)
+	
 	self._submitPlayer(aggr)
 EndFunction
+
+Function _pressDeathSubmitKey(Actor aggr)
+	AppUtil.Log("OnkeyDown: Submit(death)")
+	AlreadyKeyDown = true
+	AppUtil.Flavor(Config.GetFlavor("GIVEUP_DEATH"))
+	Utility.Wait(2.0)
+	
+	PlayerActor.AddToFaction(SSLYACRDyingFaction)
+	self._submitPlayer(aggr)
+EndFunction
+
 
 Function _escapePlayer(Actor aggr) ; (almost rewritten by >>96.860)
 	Actor selfact = PlayerActor
@@ -615,7 +714,9 @@ Function _escapePlayer(Actor aggr) ; (almost rewritten by >>96.860)
 			selfact.SetPosition(fX,fY,fZ) ; set player's position to aggr's back
 			aggr.SetAngle(0.0,0.0,fAngle) ; invert aggr's angle, face to face
 			Utility.Wait(0.3) ; stand by stand by .....
-			AppUtil.PlayImpactSound(selfact as ObjectReference) ; play impact sound
+			if (!self._isInWeCantDie())
+				AppUtil.PlayImpactSound(selfact as ObjectReference) ; play impact sound
+			endif
 			selfact.PushActorAway(aggr, 2.5) ; ..... go!
 		endif
 		
@@ -697,7 +798,7 @@ EndEvent
 
 Function EndSexEvent(Actor aggr)
 	Actor selfact = self.GetActorRef()
-	if (EndlessSexLoop)
+	if (EndlessSexLoop && !self._isInWeCantDie())
 		AppUtil.Log("EndSexEvent, Goto to loop " + SelfName)
 		EndlessSexLoop = false
 		self._clearHelpers()
@@ -729,6 +830,11 @@ Function EndSexEvent(Actor aggr)
 		Utility.Wait(2.0)
 		PreSource = None
 		GotoState("")
+		
+		if (self._isInWeCantDie())
+			selfact.RemoveFromFaction(SSLYACRDyingFaction)
+			sendModEvent("WeCantDieDeath")
+		endif
 	endif
 EndFunction
 
@@ -855,6 +961,7 @@ YACRUtil Property AppUtil Auto
 SexLabFramework Property SexLab  Auto
 Faction property SSLAnimatingFaction Auto
 Actor Property PlayerActor  Auto
+Actor Property LastAggr  Auto  ; default none
 
 ReferenceAlias Property Aggressor  Auto
 ReferenceAlias Property VictimAlias  Auto  
@@ -872,6 +979,7 @@ String Property HookName  Auto
 SPELL Property SSLYACRParalyseMagic  Auto  
 
 Faction Property SSLYACRActiveFaction  Auto  
+Faction Property SSLYACRDyingFaction  Auto  
 Faction Property SSLYACRPurgedFollowerFaction  Auto  
 
 Quest Property AudienceQuest  Auto  
@@ -881,4 +989,3 @@ WEAPON Property Unarmed  Auto
 SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
-

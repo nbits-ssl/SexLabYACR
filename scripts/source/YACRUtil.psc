@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20190418
+	return 20190501
 EndFunction
 
 Function Log(String msg)
@@ -438,6 +438,7 @@ Quest Property SSLYACRDaedraBreaker  Auto
 SPELL Property SSLYACRParalyseMagic  Auto  
 
 ReferenceAlias[] Property Teammates  Auto  
+ReferenceAlias Property PlayerAlias  Auto  
 ReferenceAlias Property PlayerAggressor  Auto  
 SPELL Property PlayerHelperAngrySpell  Auto  
 
@@ -464,3 +465,4 @@ Quest Property SSLYACRHelperHumanMain  Auto
 ReferenceAlias Property SSLYACRHelperHumanMainAggr  Auto  
 Quest Property SSLYACRHelperCreatureMain  Auto  
 ReferenceAlias Property SSLYACRHelperCreatureMainAggr  Auto  
+

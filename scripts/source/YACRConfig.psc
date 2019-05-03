@@ -332,6 +332,13 @@ string Function GetFlavor(string fkey)
 		return "$CALLHELP_FAIL"
 	elseif (fkey == "GIVEUP")
 		return "$GIVEUP"
+		
+	elseif (fkey == "REGISTING_DEATH")
+		return "$REGISTING_DEATH"
+	elseif (fkey == "CALLHELP_DEATH")
+		return "$CALLHELP_DEATH"
+	elseif (fkey == "GIVEUP_DEATH")
+		return "$GIVEUP_DEATH"
 	endif
 EndFunction
 
