@@ -177,7 +177,7 @@ EndFunction
 bool Function ValidateDeathSex()
 	Actor selfact = self.GetActorRef()
 	
-	if (!LastAggr || LastAggr.GetDistance(selfact) > 500 || selfact.IsGhost() || selfact.IsDead() || \
+	if (!LastAggr || LastAggr.GetDistance(selfact) > 1000 || selfact.IsGhost() || selfact.IsDead() || \
 		selfact.IsInKillMove() || LastAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape) || \
 		!selfact.HasKeyWord(ActorTypeNPC) || (self.IsPlayer && selfact.IsInFaction(SSLYACRDyingFaction)) || \
 		LastAggr.IsPlayerTeammate() || !self._isValidActors(selfact, LastAggr))
@@ -205,6 +205,7 @@ Function deathBleedOut()
 		debug.SendAnimationEvent(victim, "BleedOutStart")
 		Game.ForceThirdPerson()
 		
+		victim.ResetHealthAndLimbs() ; cause runtime error?
 		self._readySexVictim()
 		
 		victim.AddToFaction(SSLYACRDyingFaction)
@@ -608,10 +609,6 @@ Event OnKeyDown(int keyCode)
 	else
 		if (keyCode == Config.keyCodeRegist)
 			self._pressDeathRegistKey(aggr)
-		elseif (keyCode == Config.keyCodeHelp)
-			self._pressDeathHelpKey()
-		elseif (keyCode == Config.keyCodeSubmit)
-			self._pressDeathSubmitKey(aggr)
 		endif
 	endif
 EndEvent
@@ -642,7 +639,6 @@ Function _pressDeathRegistKey(Actor aggr)
 	AppUtil.Flavor(Config.GetFlavor("REGISTING_DEATH"))
 	Utility.Wait(1.0)
 	
-	PlayerActor.AddToFaction(SSLYACRDyingFaction)
 	self._escapePlayer(aggr)
 EndFunction
 
@@ -662,28 +658,12 @@ Function _pressHelpKey(Actor aggr)
 	endif
 EndFunction
 
-Function _pressDeathHelpKey()
-	AppUtil.Log("OnkeyDown: CallHelp (death)")
-	AlreadyKeyDown = true
-	AppUtil.Flavor(Config.GetFlavor("CALLHELP_DEATH"))
-EndFunction
-
 Function _pressSubmitKey(Actor aggr)
 	AppUtil.Log("OnkeyDown: Submit")
 	AlreadyKeyDown = true
 	AppUtil.Flavor(Config.GetFlavor("GIVEUP"))
 	Utility.Wait(3.0)
 	
-	self._submitPlayer(aggr)
-EndFunction
-
-Function _pressDeathSubmitKey(Actor aggr)
-	AppUtil.Log("OnkeyDown: Submit(death)")
-	AlreadyKeyDown = true
-	AppUtil.Flavor(Config.GetFlavor("GIVEUP_DEATH"))
-	Utility.Wait(2.0)
-	
-	PlayerActor.AddToFaction(SSLYACRDyingFaction)
 	self._submitPlayer(aggr)
 EndFunction
 
@@ -798,7 +778,7 @@ EndEvent
 
 Function EndSexEvent(Actor aggr)
 	Actor selfact = self.GetActorRef()
-	if (EndlessSexLoop && !self._isInWeCantDie())
+	if (EndlessSexLoop)
 		AppUtil.Log("EndSexEvent, Goto to loop " + SelfName)
 		EndlessSexLoop = false
 		self._clearHelpers()
@@ -826,12 +806,16 @@ Function EndSexEvent(Actor aggr)
 			AppUtil.KnockDown(selfact, PlayerActor)
 		endif
 		
+		bool isWeCantDie = self._isInWeCantDie()
+		
 		GotoState("Busy")
-		Utility.Wait(2.0)
+		if (!isWeCantDie)
+			Utility.Wait(2.0)
+		endif
 		PreSource = None
 		GotoState("")
 		
-		if (self._isInWeCantDie())
+		if (isWeCantDie)
 			selfact.RemoveFromFaction(SSLYACRDyingFaction)
 			sendModEvent("WeCantDieDeath")
 		endif
