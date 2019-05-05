@@ -14,6 +14,7 @@ int Property matchedSex = 0 Auto
 int Property healthLimit = 50 Auto
 int Property healthLimitBottom = 0 Auto
 bool Property enableEndlessRape = true Auto
+int Property attackDistanceLimit = 750 Auto
 
 int Property rapeChance = 50 Auto
 int Property rapeChanceNotNaked = 10 Auto
@@ -35,6 +36,7 @@ int Property matchedSexNPC = 0 Auto
 int Property healthLimitNPC = 50 Auto
 int Property healthLimitBottomNPC = 0 Auto
 bool Property enableEndlessRapeNPC = true Auto
+int Property attackDistanceLimitNPC = 0 Auto
 
 int Property rapeChanceNPC = 50 Auto
 int Property rapeChanceNotNakedNPC = 10 Auto
@@ -57,6 +59,8 @@ int Property keyCodeRegist = 278 Auto
 int Property keyCodeHelp = 274 Auto
 int Property keyCodeSubmit = 280 Auto
 
+bool Property enableWeCantDieSupport = false Auto
+int Property weCantDieChance = 100 Auto
 bool Property enableSimpleSlaverySupport = false Auto
 int Property simpleSlaveryChance = 100 Auto
 bool Property enableUtilOneSupport = false Auto
@@ -76,6 +80,8 @@ int registNotifFlagID
 int keyCodeRegistID
 int keyCodeHelpID
 int keyCodeSubmitID
+int enableWeCantDieSupportID
+int weCantDieChanceID
 int enableSimpleSlaverySupportID
 int simpleSlaveryChanceID
 int enableUtilOneSupportID
@@ -90,6 +96,7 @@ int matchedSexID
 int healthLimitID
 int healthLimitBottomID
 int enableEndlessRapeID
+int attackDistanceLimitID
 
 int rapeChanceID
 int rapeChanceNotNakedID
@@ -111,6 +118,7 @@ int matchedSexNPCID
 int healthLimitNPCID
 int healthLimitBottomNPCID
 int enableEndlessRapeNPCID
+int attackDistanceLimitNPCID
 
 int rapeChanceNPCID
 int rapeChanceNotNakedNPCID
@@ -182,14 +190,13 @@ Event OnPageReset(string page)
 		healthLimitID = AddSliderOption("$HealthLimit", healthLimit)
 		healthLimitBottomID = AddSliderOption("$HealthLimitBottom", healthLimitBottom)
 		enableEndlessRapeID = AddToggleOption("$EndlessRape", enableEndlessRape)
+		attackDistanceLimitID = AddSliderOption("$AttackDistanceLimit", attackDistanceLimit)
 		
 		AddHeaderOption("$RapeChance")
 		rapeChanceID = AddSliderOption("$Naked", rapeChance)
 		rapeChanceNotNakedID = AddSliderOption("$NotNaked", rapeChanceNotNaked)
-
-		AddHeaderOption("$RapeChancePA")
-		rapeChancePAID = AddSliderOption("$Naked", rapeChancePA)
-		rapeChanceNotNakedPAID = AddSliderOption("$NotNaked", rapeChanceNotNakedPA)
+		rapeChancePAID = AddSliderOption("$NakedPowerAttack", rapeChancePA)
+		rapeChanceNotNakedPAID = AddSliderOption("$NotNakedPowerAttack", rapeChanceNotNakedPA)
 		
 		SetCursorPosition(1)
 		
@@ -200,14 +207,13 @@ Event OnPageReset(string page)
 		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
 		healthLimitBottomNPCID = AddSliderOption("$HealthLimitBottom", healthLimitBottomNPC)
 		enableEndlessRapeNPCID = AddToggleOption("$EndlessRape", enableEndlessRapeNPC)
+		attackDistanceLimitNPCID = AddSliderOption("$AttackDistanceLimit", attackDistanceLimitNPC)
 		
 		AddHeaderOption("$RapeChance")
 		rapeChanceNPCID = AddSliderOption("$Naked", rapeChanceNPC)
 		rapeChanceNotNakedNPCID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPC)
-		
-		AddHeaderOption("$RapeChancePA")
-		rapeChanceNPCPAID = AddSliderOption("$Naked", rapeChanceNPCPA)
-		rapeChanceNotNakedNPCPAID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPCPA)
+		rapeChanceNPCPAID = AddSliderOption("$NakedPowerAttack", rapeChanceNPCPA)
+		rapeChanceNotNakedNPCPAID = AddSliderOption("$NotNakedPowerAttack", rapeChanceNotNakedNPCPA)
 		
 	elseif (page == "$YACRArmorBreak")
 		SetCursorFillMode(TOP_TO_BOTTOM)
@@ -284,6 +290,8 @@ Event OnPageReset(string page)
 		
 		AddHeaderOption("$YACRModLink")
 		
+		enableWeCantDieSupportID = AddToggleOption("$EnableWeCantDieSupport", enableWeCantDieSupport)
+		weCantDieChanceID = AddSliderOption("$WeCantDieChance", weCantDieChance)
 		enableSimpleSlaverySupportID = AddToggleOption("$EnableSimpleSlaverySupport", enableSimpleSlaverySupport)
 		simpleSlaveryChanceID = AddSliderOption("$SimpleSlaveryChance", simpleSlaveryChance)
 		enableUtilOneSupportID = AddToggleOption("$EnableUtilOneSupport", enableUtilOneSupport)
@@ -412,6 +420,14 @@ bool Function GetEnableEndlessRape(bool IsPlayer = true)
 	endif
 EndFunction
 
+int Function GetAttackDistanceLimit(bool IsPlayer = true)
+	if (IsPlayer)
+		return self.attackDistanceLimit
+	else
+		return self.attackDistanceLimitNPC
+	endif
+EndFunction
+
 int Function GetMatchedSex(bool IsPlayer = true)
 	if (IsPlayer)
 		return self.matchedSex
@@ -481,6 +497,8 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$HealthLimitBottomInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
 		SetInfoText("$EndlessRapeInfo")
+	elseif (option == attackDistanceLimitID || option == attackDistanceLimitNPCID)
+		SetInfoText("$AttackDistanceLimitInfo")
 	elseif (option == registNotifFlagID)
 		SetInfoText("$OutputRegistNotifInfo")
 	;elseif (option == debugNotifFlagID)
@@ -493,6 +511,11 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$KeyCodeHelpInfo")
 	elseif (option == keyCodeSubmitID)
 		SetInfoText("$KeyCodeSubmitInfo")
+		
+	elseif (option == enableWeCantDieSupportID)
+		SetInfoText("$EnableWeCantDieSupportInfo")
+	elseif (option == weCantDieChanceID)
+		SetInfoText("$WeCantDieChanceInfo")
 	elseif (option == enableSimpleSlaverySupportID)
 		SetInfoText("$EnableSimpleSlaverySupportInfo")
 	elseif (option == simpleSlaveryChanceID)
@@ -513,13 +536,13 @@ Event OnOptionSelect(int option)
 	if (option == enableArmorBreakID)
 		enableArmorBreak = !enableArmorBreak
 		SetToggleOptionValue(option, enableArmorBreak)
-	elseif (option == enableEndlessRapeID)
-		enableEndlessRape = !enableEndlessRape
-		SetToggleOptionValue(option, enableEndlessRape)
-		
 	elseif (option == enableArmorBreakNPCID)
 		enableArmorBreakNPC = !enableArmorBreakNPC
 		SetToggleOptionValue(option, enableArmorBreakNPC)
+		
+	elseif (option == enableEndlessRapeID)
+		enableEndlessRape = !enableEndlessRape
+		SetToggleOptionValue(option, enableEndlessRape)
 	elseif (option == enableEndlessRapeNPCID)
 		enableEndlessRapeNPC = !enableEndlessRapeNPC
 		SetToggleOptionValue(option, enableEndlessRapeNPC)
@@ -538,6 +561,9 @@ Event OnOptionSelect(int option)
 		enableArmorUnequipModeNPC = !enableArmorUnequipModeNPC
 		SetToggleOptionValue(option, enableArmorUnequipModeNPC)
 
+	elseif (option == enableWeCantDieSupportID)
+		enableWeCantDieSupport = !enableWeCantDieSupport
+		SetToggleOptionValue(option, enableWeCantDieSupport)
 	elseif (option == enableSimpleSlaverySupportID)
 		enableSimpleSlaverySupport = !enableSimpleSlaverySupport
 		SetToggleOptionValue(option, enableSimpleSlaverySupport)
@@ -594,7 +620,10 @@ EndEvent
 
 Event OnOptionSliderOpen(int option)
 	; Player --------------------------------------
-	if (option == healthLimitID)
+	if (option == attackDistanceLimitID)
+		self._setSliderDialogWithDistance(attackDistanceLimit)
+		
+	elseif (option == healthLimitID)
 		self._setSliderDialogWithPercentage(healthLimit)
 	elseif (option == healthLimitBottomID)
 		self._setSliderDialogWithPercentage(healthLimitBottom)
@@ -624,6 +653,9 @@ Event OnOptionSliderOpen(int option)
 		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorPA)
 
 	; Follower --------------------------------------
+	elseif (option == attackDistanceLimitNPCID)
+		self._setSliderDialogWithDistance(attackDistanceLimitNPC)
+	
 	elseif (option == healthLimitNPCID)
 		self._setSliderDialogWithPercentage(healthLimitNPC)
 	elseif (option == healthLimitBottomNPCID)
@@ -652,8 +684,10 @@ Event OnOptionSliderOpen(int option)
 		self._setSliderDialogWithPercentage(armorBreakChanceLightArmorNPCPA)
 	elseif (option == armorBreakChanceHeavyArmorNPCPAID)
 		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorNPCPA)
-
-
+	
+	
+	elseif (option == weCantDieChanceID)
+		self._setSliderDialogWithPercentage(weCantDieChance)
 	elseif (option == simpleSlaveryChanceID)
 		self._setSliderDialogWithPercentage(simpleSlaveryChance)
 	endif
@@ -667,17 +701,21 @@ Function _setSliderDialogWithPercentage(int x)
 	SetSliderDialogInterval(1.0)
 EndFunction
 
-Function _setSliderDialogWithHelpers(int x)
+Function _setSliderDialogWithDistance(int x)
 	SetSliderDialogStartValue(x)
 	SetSliderDialogDefaultValue(x)
 	
-	SetSliderDialogRange(0.0, 3.0)
-	SetSliderDialogInterval(1.0)
+	SetSliderDialogRange(0.0, 2500.0)
+	SetSliderDialogInterval(50.0)
 EndFunction
 
 Event OnOptionSliderAccept(int option, float value)
 	; Player --------------------------------------
-	if (option == healthLimitID)
+	if (option == attackDistanceLimitID)
+		attackDistanceLimit = value as int
+		SetSliderOptionValue(option, attackDistanceLimit)
+		
+	elseif (option == healthLimitID)
 		healthLimit = value as int
 		SetSliderOptionValue(option, healthLimit)
 	elseif (option == healthLimitBottomID)
@@ -719,6 +757,10 @@ Event OnOptionSliderAccept(int option, float value)
 		SetSliderOptionValue(option, armorBreakChanceHeavyArmorPA)
 
 	; Follower --------------------------------------
+	elseif (option == attackDistanceLimitNPCID)
+		attackDistanceLimitNPC = value as int
+		SetSliderOptionValue(option, attackDistanceLimitNPC)
+		
 	elseif (option == healthLimitNPCID)
 		healthLimitNPC = value as int
 		SetSliderOptionValue(option, healthLimitNPC)
@@ -760,6 +802,9 @@ Event OnOptionSliderAccept(int option, float value)
 		armorBreakChanceHeavyArmorNPCPA = value as int
 		SetSliderOptionValue(option, armorBreakChanceHeavyArmorNPCPA)
 
+	elseif (option == weCantDieChanceID)
+		weCantDieChance = value as int
+		SetSliderOptionValue(option, weCantDieChance)
 	elseif (option == simpleSlaveryChanceID)
 		simpleSlaveryChance = value as int
 		SetSliderOptionValue(option, simpleSlaveryChance)

@@ -17,18 +17,34 @@ sslThreadController UpdateController
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 	Actor akAggr = akAggressor as Actor
 	Actor selfact = self.GetActorRef()
-	SelfName = selfact.GetLeveledActorBase().GetName()
 	Weapon wpn = akSource as Weapon
+	Explosion exp = akSource as Explosion
+	SelfName = selfact.GetLeveledActorBase().GetName()
 	
-	if (akAggressor == None || akProjectile || PreSource ==  akSource || !wpn || \
-		selfact.IsGhost() || selfact.IsDead() || akAggr.IsPlayerTeammate() || akAggr == PlayerActor || \
-		selfact.IsInKillMove() || akAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape) || \
-		!selfact.HasKeyWord(ActorTypeNPC) || (self.IsPlayer && selfact.IsInFaction(SSLYACRDyingFaction)))
+	; for mystery unarmed spell research
+	;/
+	AppUtil.Log("############## akProjectile " + akProjectile)
+	if (wpn)
+		AppUtil.Log("############## wpn " + wpn + ", type " + wpn.GetWeaponType())
+	elseif (exp)
+		AppUtil.Log("############## exp " + exp)
+	else
+		AppUtil.Log("############## wpn " + wpn + ", type none")
+	endif
+	AppUtil.Log("############## distance " + selfact.GetDistance(akAggr))
+	AppUtil.Log("##############")
+	/;
 	
+	if (akAggressor == None || PreSource ==  akSource || selfact.IsGhost() || selfact.IsDead() || \
+		akAggr.IsPlayerTeammate() || akAggr == PlayerActor || selfact.IsInKillMove() || akAggr.IsInKillMove() || \
+		akAggr.IsFlying() || akAggr.IsOnMount())
 		AppUtil.Log("not if " + SelfName)
 		return
-	elseif (wpn == Unarmed && !AppUtil.IsDragon(akAggr) && selfact.GetDistance(akAggr) > 225.0) ; troll is 200
-		AppUtil.Log("not if, mystery unarmed spell (explode) " + SelfName + " (" + selfact.GetDistance(akAggr) + ")")
+	elseif (!selfact.HasKeyWord(ActorTypeNPC))
+		AppUtil.Log("not if, non ActorTypeNPC " + SelfName)
+		return
+	elseif (self.IsPlayer && (!Config.enablePlayerRape || selfact.IsInFaction(SSLYACRDyingFaction)))
+		AppUtil.Log("not if, Player " + SelfName)
 		return
 	endif
 	
@@ -41,48 +57,82 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	endif
 	AppUtil.Log("############## healthper " + healthper + " " + SelfName + " abPowerAttack = " + abPowerAttack)
 	
-	if (!abHitBlocked && wpn.GetWeaponType() < 7) ; exclude Bow/Staff/Crossbow
-		AppUtil.Log("onhit success " + SelfName)
-		if (self.IsPlayer)
-			LastAggr = akAggr
-		endif
-		
-		int rndintRP = Utility.RandomInt()
-		int rndintAB = Utility.RandomInt()
-		Armor selfarmor = selfact.GetWornForm(0x00000004) as Armor
-			
-		if (selfact.IsInFaction(SSLAnimatingFaction)) ; first check
-			if selfact.HasKeyWordString("SexLabActive")  ; other sexlab's sex
-				AppUtil.Log("detect other SexLab's Sex, EndAnimation " + SelfName)
-				sslThreadController controller = SexLab.GetActorController(selfact)
-				controller.EndAnimation()
-			else  ; not animating, this is yacr's bug
-				AppUtil.Log("detect invalid SSLAnimatingFaction, delete " + SelfName)
-				selfact.RemoveFromFaction(SSLAnimatingFaction)
-				; ##FIXME## Instead ActorLib.ValidateActor ?
-			endif
-		elseif (selfarmor)
-			if (self._shouldBleedOut(healthper, rndintRP, abPowerAttack))
-				AppUtil.Log("doBleedOut " + SelfName)
-				self.doBleedOut(akAggr)
-			elseif (self._shouldArmorBreak(selfarmor, rndintAB, abPowerAttack))
-				AppUtil.Log(" Armor break " + SelfName)
-				if (Config.GetEnableArmorUnequipMode(self.IsPlayer))
-					selfact.UnEquipItem(selfarmor)
-				else
-					selfact.RemoveItem(selfarmor)
-				endif
-			endif
-		elseif (!selfarmor && self._shouldBleedOut(healthper, rndintRP, abPowerAttack))
-			AppUtil.Log("doBleedOut " + SelfName)
-			self.doBleedOut(akAggr)
-		endif
+	if (!abHitBlocked && self._validateAttack(akAggr, wpn, akProjectile))
+		self._onHit(selfact, akAggr, healthper, abPowerAttack)
 	endif
 	
 	Utility.Wait(1)
 	PreSource = None
 	GotoState("")
 EndEvent
+
+bool Function _validateAttack(Actor aggr, Weapon wpn, Projectile akProjectile)
+	Actor selfact = self.GetActorRef()
+	SelfName = selfact.GetLeveledActorBase().GetName()
+	float distanceLimit = Config.GetAttackDistanceLimit(self.IsPlayer)
+	
+	int weapontype
+	if (wpn)
+		weapontype = wpn.GetWeaponType()
+	endif
+
+	if (akProjectile || (wpn && weapontype < 7)) ; staff or magic or bow or crossbow
+		if (selfact.GetDistance(aggr) > distanceLimit)
+			return false
+		endif
+	elseif (wpn && wpn == Unarmed) ; fist or creature's attack or mystery unarmed spell (explode)
+		if (distanceLimit < 225)
+			distanceLimit = 225
+		endif
+		
+		if (aggr.HasKeyWord(ActorTypeNPC) && selfact.GetDistance(aggr) > distanceLimit)
+			AppUtil.Log("not if, unarmed spell (explode) " + SelfName + " (" + selfact.GetDistance(aggr) + ")")
+			return false
+		endif
+	endif
+	
+	return true
+EndFunction
+
+Function _onHit(Actor selfact, Actor akAggr, float healthper, bool abPowerAttack)
+	SelfName = selfact.GetLeveledActorBase().GetName()
+	AppUtil.Log("onhit success " + SelfName)
+
+	if (self.IsPlayer)
+		LastAggr = akAggr ; for WeCantDie
+	endif
+	
+	int rndintRP = Utility.RandomInt()
+	int rndintAB = Utility.RandomInt()
+	Armor selfarmor = selfact.GetWornForm(0x00000004) as Armor
+		
+	if (selfact.IsInFaction(SSLAnimatingFaction))    ; first check
+		if selfact.HasKeyWordString("SexLabActive")  ; other sexlab's sex
+			AppUtil.Log("detect other SexLab's Sex, EndAnimation " + SelfName)
+			sslThreadController controller = SexLab.GetActorController(selfact)
+			controller.EndAnimation()
+		else  ; not animating, this is yacr's bug
+			AppUtil.Log("detect invalid SSLAnimatingFaction, delete " + SelfName)
+			selfact.RemoveFromFaction(SSLAnimatingFaction)
+			; ##FIXME## Instead ActorLib.ValidateActor ?
+		endif
+	elseif (selfarmor)
+		if (self._shouldBleedOut(healthper, rndintRP, false, abPowerAttack))
+			AppUtil.Log("doBleedOut " + SelfName)
+			self.doBleedOut(akAggr)
+		elseif (self._shouldArmorBreak(selfarmor, rndintAB, abPowerAttack))
+			AppUtil.Log(" Armor break " + SelfName)
+			if (Config.GetEnableArmorUnequipMode(self.IsPlayer))
+				selfact.UnEquipItem(selfarmor)
+			else
+				selfact.RemoveItem(selfarmor)
+			endif
+		endif
+	elseif (!selfarmor && self._shouldBleedOut(healthper, rndintRP, true, abPowerAttack))
+		AppUtil.Log("doBleedOut " + SelfName)
+		self.doBleedOut(akAggr)
+	endif
+EndFunction
 
 bool Function _shouldArmorBreak(Armor selfarmor, int rndint, bool abPowerAttack)
 	if (Config.GetEnableArmorBreak(self.IsPlayer))
@@ -96,10 +146,17 @@ bool Function _shouldArmorBreak(Armor selfarmor, int rndint, bool abPowerAttack)
 	endif
 EndFunction
 
-bool Function _shouldBleedOut(float healthper, int rndint, bool abPowerAttack)
+bool Function _shouldBleedOut(float healthper, int rndint, bool naked, bool abPowerAttack)
+	int rapechance
+	if (naked)
+		rapechance = Config.GetRapeChance(self.IsPlayer, abPowerAttack)
+	else
+		rapechance = Config.GetRapeChanceNotNaked(self.IsPlayer, abPowerAttack)
+	endif
+
 	return (healthper <= Config.GetHealthLimit(self.IsPlayer) && \
 		healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
-		rndint < Config.GetRapeChance(self.IsPlayer, abPowerAttack))
+		rndint < rapechance)
 EndFunction
 
 State Busy
@@ -108,6 +165,7 @@ State Busy
 		; do nothing
 	EndEvent
 EndState
+
 
 Function _readySexVictim()
 	Actor act = self.GetActorRef()
@@ -175,12 +233,18 @@ EndFunction
 ; for we can't die
 
 bool Function ValidateDeathSex()
-	Actor selfact = self.GetActorRef()
+	bool _isPlayer = self.IsPlayer
+	if (!_isPlayer)
+		return false ;  fool proof
+	elseif !(Config.enableWeCantDieSupport && Utility.RandomInt() <= Config.weCantDieChance)
+		return false
+	endif
 	
-	if (!LastAggr || LastAggr.GetDistance(selfact) > 1000 || selfact.IsGhost() || selfact.IsDead() || \
-		selfact.IsInKillMove() || LastAggr.IsInKillMove() || (self.IsPlayer && !Config.enablePlayerRape) || \
-		!selfact.HasKeyWord(ActorTypeNPC) || (self.IsPlayer && selfact.IsInFaction(SSLYACRDyingFaction)) || \
-		LastAggr.IsPlayerTeammate() || !self._isValidActors(selfact, LastAggr))
+	Actor selfact = self.GetActorRef()
+	if (!LastAggr || LastAggr.GetDistance(selfact) > Config.GetAttackDistanceLimit(_isPlayer) + 500 || \
+		(_isPlayer && (!Config.enablePlayerRape || selfact.IsInFaction(SSLYACRDyingFaction))) || \
+		selfact.IsGhost() || selfact.IsDead() || selfact.IsInKillMove() || LastAggr.IsInKillMove() || \
+		!selfact.HasKeyWord(ActorTypeNPC) || LastAggr.IsPlayerTeammate() || !self._isValidActors(selfact, LastAggr))
 		
 		return false
 	endif
@@ -696,8 +760,8 @@ Function _escapePlayer(Actor aggr) ; (almost rewritten by >>96.860)
 			Utility.Wait(0.3) ; stand by stand by .....
 			if (!self._isInWeCantDie())
 				AppUtil.PlayImpactSound(selfact as ObjectReference) ; play impact sound
+				selfact.PushActorAway(aggr, 2.5) ; ..... go!
 			endif
-			selfact.PushActorAway(aggr, 2.5) ; ..... go!
 		endif
 		
 		self._sexistGuardsDialogueStop()
@@ -723,7 +787,10 @@ Function _submitPlayer(Actor aggr)
 			sendModEvent("SSLV Entry")
 		else
 			Utility.Wait(1.25)
-			selfact.Kill()
+			LastAggr = none ; for wcd
+			float health = selfact.GetAV("health")
+			selfact.DamageAV("health", health + 30.0)
+			; selfact.Kill() ; not action in wcd
 		endif
 	endif
 EndFunction
