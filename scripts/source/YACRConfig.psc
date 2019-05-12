@@ -8,7 +8,7 @@ bool Property knockDownAll = true Auto
 
 ; Player ========================================
 bool Property enablePlayerRape = true Auto
-bool Property knockDownOnly = true Auto
+bool Property knockDownOnly = false Auto
 
 int Property matchedSex = 0 Auto
 int Property healthLimit = 50 Auto

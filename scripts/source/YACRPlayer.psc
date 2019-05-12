@@ -68,7 +68,6 @@ EndEvent
 
 bool Function _validateAttack(Actor aggr, Weapon wpn, Projectile akProjectile)
 	Actor selfact = self.GetActorRef()
-	SelfName = selfact.GetLeveledActorBase().GetName()
 	float distanceLimit = Config.GetAttackDistanceLimit(self.IsPlayer)
 	
 	int weapontype
@@ -76,7 +75,7 @@ bool Function _validateAttack(Actor aggr, Weapon wpn, Projectile akProjectile)
 		weapontype = wpn.GetWeaponType()
 	endif
 
-	if (akProjectile || (wpn && weapontype < 7)) ; staff or magic or bow or crossbow
+	if (akProjectile || (wpn && weapontype > 6)) ; staff or magic or bow or crossbow
 		if (selfact.GetDistance(aggr) > distanceLimit)
 			return false
 		endif
@@ -95,7 +94,6 @@ bool Function _validateAttack(Actor aggr, Weapon wpn, Projectile akProjectile)
 EndFunction
 
 Function _onHit(Actor selfact, Actor akAggr, float healthper, bool abPowerAttack)
-	SelfName = selfact.GetLeveledActorBase().GetName()
 	AppUtil.Log("onhit success " + SelfName)
 
 	if (self.IsPlayer)
@@ -288,8 +286,7 @@ EndFunction
 
 Function doBleedOut(Actor aggr)
 	Actor victim = self.GetActorRef()
-	SelfName = victim.GetLeveledActorBase().GetName()
-
+	
  	if (!self._isValidActors(victim, aggr))
 		return
 	endif
@@ -316,7 +313,6 @@ EndFunction
 Function doPCKnockDown(Actor aggr)
 	Game.DisablePlayerControls()
 	Actor victim = PlayerActor
-	SelfName = victim.GetLeveledActorBase().GetName()
 
 	self._stopCombatOneMore(aggr, victim)
 	if (victim.IsWeaponDrawn())
@@ -331,8 +327,7 @@ EndFunction
 
 Function doSex(Actor aggr)
 	Actor victim = self.GetActorRef()
-	SelfName = victim.GetLeveledActorBase().GetName()
-
+	
 	actor[] sexActors = new actor[2]
 	sexActors[0] = victim
 	sexActors[1] = aggr
@@ -873,16 +868,16 @@ Function EndSexEvent(Actor aggr)
 			AppUtil.KnockDown(selfact, PlayerActor)
 		endif
 		
-		bool isWeCantDie = self._isInWeCantDie()
+		bool isInWeCantDie = self._isInWeCantDie()
 		
 		GotoState("Busy")
-		if (!isWeCantDie)
+		if (!isInWeCantDie)
 			Utility.Wait(2.0)
 		endif
 		PreSource = None
 		GotoState("")
 		
-		if (isWeCantDie)
+		if (isInWeCantDie)
 			selfact.RemoveFromFaction(SSLYACRDyingFaction)
 			sendModEvent("WeCantDieDeath")
 		endif
