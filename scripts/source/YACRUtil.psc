@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20190505
+	return 20190608
 EndFunction
 
 Function Log(String msg)
@@ -128,6 +128,7 @@ Function KnockDownAll()
 	ReferenceAlias ref
 	int len = Teammates.Length
 	
+	self.Log("KnockDownAll(): Teammates len " + len)
 	while len
 		len -= 1
 		ref = Teammates[len]
@@ -141,9 +142,13 @@ Function KnockDownAll()
 EndFunction
 
 Function KnockDown(Actor act, Actor PlayerActor)
+	string actname = act.GetLeveledActorBase().GetName()
+	self.Log("KnockDown():  " + actname)
+	
 	float health
 	if (act.HasKeyWord(ActorTypeNPC))
 		if (act.GetAV("health") > 0)
+			self.Log("KnockDown():  exec " + actname)
 			act.SetGhost()
 			act.StopCombat()
 			act.StopCombatAlarm()
@@ -158,6 +163,7 @@ Function KnockDown(Actor act, Actor PlayerActor)
 		endif
 	else
 		if (!act.HasSpell(SSLYACRParalyseMagic))
+			self.Log("KnockDown():  exec " + actname)
 			act.SetGhost()
 			act.StopCombat()
 			act.StopCombatAlarm()

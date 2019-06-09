@@ -505,7 +505,6 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
 	
-	self._getAudience()
 	self._reEnableHotkeysForKeyControlConfigUser(controller)
 	; disable by _sexloop(), during _sexloop functions's stage advancing
 	
@@ -531,7 +530,11 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		endif
 	endif
 	
+	if (controller.stage == 1)
+		self._getAudience()
+	endif
 	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
+		self._getAudience()
 		self._sexLoop(selfact, aggr, controller)
 	endif
 EndEvent
@@ -810,11 +813,11 @@ Function _getAudience()
 		AudienceQuest.Stop()
 	endif
 	AudienceQuest.Start()
-	if (self.IsPlayer)
-		Actor aggr = Aggressor.GetActorRef()
-		Actor victim = self.GetActorRef()
-		self._stopCombatOneMore(aggr, victim)
-	endif
+	;if (self.IsPlayer)
+	;	Actor aggr = Aggressor.GetActorRef()
+	;	Actor victim = self.GetActorRef()
+	;	self._stopCombatOneMore(aggr, victim)
+	;endif
 EndFunction
 
 Function _clearAudience()
@@ -982,7 +985,7 @@ Actor Function _getBleedOutPartner()
 	AppUtil.Log("_getBleedOutPartner, actors length " + len)
 	while idx < len
 		aggr = npcs[idx]
-		if (!aggr.IsInCombat() && \
+		if (!aggr.IsInCombat() && !aggr.IsGhost() && \
 			!aggr.HasKeyWordString("SexLabActive") && !aggr.IsInFaction(SSLYACRActiveFaction) && \
 			aggr != PlayerActor && !aggr.IsPlayerTeammate() && !AppUtil.ValidateHorse(aggr) && \
 			!aggr.IsDead() && aggr.Is3DLoaded() && !aggr.IsDisabled() && \
