@@ -50,6 +50,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 		return
 	elseif (spl && !spl.IsHostile())
 		AppUtil.Log("not if, not Hostile spell")
+		return
 	endif
 	
 	GotoState("Busy")
