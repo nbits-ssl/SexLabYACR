@@ -19,6 +19,8 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	Actor selfact = self.GetActorRef()
 	Weapon wpn = akSource as Weapon
 	Explosion exp = akSource as Explosion
+	Spell spl = akSource as Spell
+	
 	SelfName = selfact.GetLeveledActorBase().GetName()
 	
 	; for mystery unarmed spell research
@@ -46,6 +48,8 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	elseif (self.IsPlayer && (!Config.enablePlayerRape || selfact.IsInFaction(SSLYACRDyingFaction)))
 		AppUtil.Log("not if, Player " + SelfName)
 		return
+	elseif (spl && !spl.IsHostile())
+		AppUtil.Log("not if, not Hostile spell")
 	endif
 	
 	GotoState("Busy")
