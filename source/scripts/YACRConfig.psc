@@ -137,6 +137,8 @@ int armorBreakChanceHeavyArmorNPCPAID
 
 ; ========================================
 
+string configFile = "../SexLabYACRConfig.json"
+
 int[] disableEnemyRacesIDS
 string[] matchedSexList
 
@@ -842,6 +844,33 @@ Event OnOptionKeyMapChange(int option, int keyCode, string conflictControl, stri
 	endif
 	SetKeymapOptionValue(option, keyCode)
 EndEvent
+
+; Profile
+
+Function saveConfig()
+	JsonUtil.SetIntValue(configFile, "modEnabled", modEnabled as int)
+	JsonUtil.SetIntValue(configFile, "debugLogFlag", debugLogFlag as int)
+	
+	JsonUtil.SetIntValue(configFile, "colorChange", colorChange as int)
+	JsonUtil.SetIntValue(configFile, "transChange", transChange as int)
+	
+	JsonUtil.SetIntValue(configFile, "horizontal", horizontal)
+	JsonUtil.SetIntValue(configFile, "vertical", vertical)
+	
+	JsonUtil.Save(configFile)
+EndFunction
+
+Function loadConfig()
+	modEnabled = JsonUtil.GetIntValue(configFile, "modEnabled")
+	debugLogFlag = JsonUtil.GetIntValue(configFile, "debugLogFlag")
+	
+	colorChange = JsonUtil.GetIntValue(configFile, "colorChange")
+	transChange = JsonUtil.GetIntValue(configFile, "transChange")
+	
+	horizontal = JsonUtil.GetIntValue(configFile, "horizontal")
+	vertical = JsonUtil.GetIntValue(configFile, "vertical")
+EndFunction
+
 
 Quest Property SSLYACRQuestManager  Auto  
 Quest Property SSLYACR  Auto  
