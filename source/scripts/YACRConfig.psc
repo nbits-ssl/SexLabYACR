@@ -137,7 +137,13 @@ int armorBreakChanceHeavyArmorNPCPAID
 
 ; ========================================
 
-string configFile = "../SexLabYACRConfig.json"
+int configMaleSaveID
+int configMaleLoadID
+int configFemaleSaveID
+int configFemaleLoadID
+
+string configFileForMale = "../SexLabYACRMaleConfig.json"
+string configFileForFemale = "../SexLabYACRFemaleConfig.json"
 
 int[] disableEnemyRacesIDS
 string[] matchedSexList
@@ -165,12 +171,13 @@ EndEvent
 Event OnConfigInit()
 	knockDownAll = true ; always from 2.0alpha3
 	
-	Pages = new string[5]
+	Pages = new string[6]
 	Pages[0] = "$YACRRapeChance"
 	Pages[1] = "$YACRArmorBreak"
 	Pages[2] = "$YACREnemy"
 	Pages[3] = "$YACRSystem"
 	Pages[4] = "$YACRTeammates"
+	Pages[5] = "$YACRProfile"
 	
 	matchedSexList = new string[3]
 	matchedSexList[0] = "$YACRSexStraight"
@@ -320,6 +327,26 @@ Event OnPageReset(string page)
 			endif
 			n += 1
 		endWhile
+	elseif (page == "$YACRProfile")
+		SetCursorFillMode(TOP_TO_BOTTOM)
+
+		SetCursorPosition(0)
+		AddHeaderOption("$YACRConfigFemale")
+		configFemaleSaveID = AddTextOption("$YACRConfigSave", "$YACRDoIt")
+		if (JsonUtil.JsonExists(configFileForFemale))
+			configFemaleLoadID = AddTextOption("$YACRConfigLoad", "$YACRDoIt")
+		else
+			configFemaleLoadID = AddTextOption("$YACRConfigLoad", "$YACRDoIt", OPTION_FLAG_DISABLED)
+		endif
+
+		SetCursorPosition(1)
+		AddHeaderOption("$YACRConfigMale")
+		configMaleSaveID = AddTextOption("$YACRConfigSave", "$YACRDoIt")
+		if (JsonUtil.JsonExists(configFileForMale))
+			configMaleLoadID = AddTextOption("$YACRConfigLoad", "$YACRDoIt")
+		else
+			configMaleLoadID = AddTextOption("$YACRConfigLoad", "$YACRDoIt", OPTION_FLAG_DISABLED)
+		endif
 	endif
 EndEvent
 
@@ -530,6 +557,12 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$EnableDrippingWASupportInfo")
 	elseif (option == enableSendOrgasmID)
 		SetInfoText("$EnableSendOrgasmInfo")
+		
+	elseif (option == configMaleSaveID || option == configFemaleSaveID)
+		SetInfoText("$YACRConfigSaveInfo")
+	elseif (option == configMaleLoadID || option == configFemaleLoadID)
+		SetInfoText("$YACRConfigLoadInfo")
+
 	endif
 EndEvent
 
@@ -617,6 +650,20 @@ Event OnOptionSelect(int option)
 		bool opt = DisableRacesConfig[idx]
 		DisableRacesConfig[idx] = !opt
 		SetToggleOptionValue(option, !opt)
+	
+	elseif (option == configMaleSaveID)
+		self.saveConfig(configFileForMale)
+		SetTextOptionValue(option, "$YACRDone")
+	elseif (option == configFemaleSaveID)
+		self.saveConfig(configFileForFemale)
+		SetTextOptionValue(option, "$YACRDone")
+	elseif (option == configMaleLoadID)
+		self.loadConfig(configFileForMale)
+		SetTextOptionValue(option, "$YACRDone")
+	elseif (option == configFemaleLoadID)
+		self.loadConfig(configFileForFemale)
+		SetTextOptionValue(option, "$YACRDone")
+
 	endif
 EndEvent
 
@@ -847,29 +894,163 @@ EndEvent
 
 ; Profile
 
-Function saveConfig()
+Function saveConfig(string configFile)
 	JsonUtil.SetIntValue(configFile, "modEnabled", modEnabled as int)
+	JsonUtil.SetIntValue(configFile, "debugNotifFlag", debugNotifFlag as int)
 	JsonUtil.SetIntValue(configFile, "debugLogFlag", debugLogFlag as int)
+	JsonUtil.SetIntValue(configFile, "registNotifFlag", registNotifFlag as int)
+	JsonUtil.SetIntValue(configFile, "knockDownAll", knockDownAll as int)
+
+	JsonUtil.SetIntValue(configFile, "enablePlayerRape", enablePlayerRape as int)
+	JsonUtil.SetIntValue(configFile, "knockDownOnly", knockDownOnly as int)
+
+	JsonUtil.SetIntValue(configFile, "matchedSex", matchedSex)
+	JsonUtil.SetIntValue(configFile, "healthLimit", healthLimit)
+	JsonUtil.SetIntValue(configFile, "healthLimitBottom", healthLimitBottom)
+	JsonUtil.SetIntValue(configFile, "enableEndlessRape", enableEndlessRape as int)
+	JsonUtil.SetIntValue(configFile, "attackDistanceLimit", attackDistanceLimit)
+
+	JsonUtil.SetIntValue(configFile, "rapeChance", rapeChance)
+	JsonUtil.SetIntValue(configFile, "rapeChanceNotNaked", rapeChanceNotNaked)
+	JsonUtil.SetIntValue(configFile, "rapeChancePA", rapeChancePA)
+	JsonUtil.SetIntValue(configFile, "rapeChanceNotNakedPA", rapeChanceNotNakedPA)
+
+	JsonUtil.SetIntValue(configFile, "enableArmorBreak", enableArmorBreak as int)
+	JsonUtil.SetIntValue(configFile, "enableArmorUnequipMode", enableArmorUnequipMode as int)
+
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceCloth", armorBreakChanceCloth)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceLightArmor", armorBreakChanceLightArmor)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceHeavyArmor", armorBreakChanceHeavyArmor)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceClothPA", armorBreakChanceClothPA)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceLightArmorPA", armorBreakChanceLightArmorPA)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceHeavyArmorPA", armorBreakChanceHeavyArmorPA)
+
+	JsonUtil.SetIntValue(configFile, "matchedSexNPC", matchedSexNPC)
+	JsonUtil.SetIntValue(configFile, "healthLimitNPC", healthLimitNPC)
+	JsonUtil.SetIntValue(configFile, "healthLimitBottomNPC", healthLimitBottomNPC)
+	JsonUtil.SetIntValue(configFile, "enableEndlessRapeNPC", enableEndlessRapeNPC as int)
+	JsonUtil.SetIntValue(configFile, "attackDistanceLimitNPC", attackDistanceLimitNPC)
+
+	JsonUtil.SetIntValue(configFile, "rapeChanceNPC", rapeChanceNPC)
+	JsonUtil.SetIntValue(configFile, "rapeChanceNotNakedNPC", rapeChanceNotNakedNPC)
+	JsonUtil.SetIntValue(configFile, "rapeChanceNPCPA", rapeChanceNPCPA)
+	JsonUtil.SetIntValue(configFile, "rapeChanceNotNakedNPCPA", rapeChanceNotNakedNPCPA)
+
+	JsonUtil.SetIntValue(configFile, "enableArmorBreakNPC", enableArmorBreakNPC as int)
+	JsonUtil.SetIntValue(configFile, "enableArmorUnequipModeNPC", enableArmorUnequipModeNPC as int)
+
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceClothNPC", armorBreakChanceClothNPC)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceLightArmorNPC", armorBreakChanceLightArmorNPC)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceHeavyArmorNPC", armorBreakChanceHeavyArmorNPC)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceClothNPCPA", armorBreakChanceClothNPCPA)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceLightArmorNPCPA", armorBreakChanceLightArmorNPCPA)
+	JsonUtil.SetIntValue(configFile, "armorBreakChanceHeavyArmorNPCPA", armorBreakChanceHeavyArmorNPCPA)
+
+	JsonUtil.SetIntValue(configFile, "keyCodeRegist", keyCodeRegist)
+	JsonUtil.SetIntValue(configFile, "keyCodeHelp", keyCodeHelp)
+	JsonUtil.SetIntValue(configFile, "keyCodeSubmit", keyCodeSubmit)
+
+	JsonUtil.SetIntValue(configFile, "enableWeCantDieSupport", enableWeCantDieSupport as int)
+	JsonUtil.SetIntValue(configFile, "weCantDieChance", weCantDieChance)
+	JsonUtil.SetIntValue(configFile, "enableSimpleSlaverySupport", enableSimpleSlaverySupport as int)
+	JsonUtil.SetIntValue(configFile, "simpleSlaveryChance", simpleSlaveryChance)
+	JsonUtil.SetIntValue(configFile, "enableUtilOneSupport", enableUtilOneSupport as int)
+	JsonUtil.SetIntValue(configFile, "enableDrippingWASupport", enableDrippingWASupport as int)
+	JsonUtil.SetIntValue(configFile, "enableSendOrgasm", enableSendOrgasm as int)
 	
-	JsonUtil.SetIntValue(configFile, "colorChange", colorChange as int)
-	JsonUtil.SetIntValue(configFile, "transChange", transChange as int)
-	
-	JsonUtil.SetIntValue(configFile, "horizontal", horizontal)
-	JsonUtil.SetIntValue(configFile, "vertical", vertical)
-	
+	ExportBoolList(configFile, "DisableRacesConfig", DisableRacesConfig, DisableRacesConfig.Length)
 	JsonUtil.Save(configFile)
 EndFunction
 
-Function loadConfig()
+Function loadConfig(string configFile)
 	modEnabled = JsonUtil.GetIntValue(configFile, "modEnabled")
+	debugNotifFlag = JsonUtil.GetIntValue(configFile, "debugNotifFlag")
 	debugLogFlag = JsonUtil.GetIntValue(configFile, "debugLogFlag")
+	registNotifFlag = JsonUtil.GetIntValue(configFile, "registNotifFlag")
+	knockDownAll = JsonUtil.GetIntValue(configFile, "knockDownAll")
+
+	enablePlayerRape = JsonUtil.GetIntValue(configFile, "enablePlayerRape")
+	knockDownOnly = JsonUtil.GetIntValue(configFile, "knockDownOnly")
+
+	matchedSex = JsonUtil.GetIntValue(configFile, "matchedSex")
+	healthLimit = JsonUtil.GetIntValue(configFile, "healthLimit")
+	healthLimitBottom = JsonUtil.GetIntValue(configFile, "healthLimitBottom")
+	enableEndlessRape = JsonUtil.GetIntValue(configFile, "enableEndlessRape")
+	attackDistanceLimit = JsonUtil.GetIntValue(configFile, "attackDistanceLimit")
+
+	rapeChance = JsonUtil.GetIntValue(configFile, "rapeChance")
+	rapeChanceNotNaked = JsonUtil.GetIntValue(configFile, "rapeChanceNotNaked")
+	rapeChancePA = JsonUtil.GetIntValue(configFile, "rapeChancePA")
+	rapeChanceNotNakedPA = JsonUtil.GetIntValue(configFile, "rapeChanceNotNakedPA")
+
+	enableArmorBreak = JsonUtil.GetIntValue(configFile, "enableArmorBreak")
+	enableArmorUnequipMode = JsonUtil.GetIntValue(configFile, "enableArmorUnequipMode")
+
+	armorBreakChanceCloth = JsonUtil.GetIntValue(configFile, "armorBreakChanceCloth")
+	armorBreakChanceLightArmor = JsonUtil.GetIntValue(configFile, "armorBreakChanceLightArmor")
+	armorBreakChanceHeavyArmor = JsonUtil.GetIntValue(configFile, "armorBreakChanceHeavyArmor")
+	armorBreakChanceClothPA = JsonUtil.GetIntValue(configFile, "armorBreakChanceClothPA")
+	armorBreakChanceLightArmorPA = JsonUtil.GetIntValue(configFile, "armorBreakChanceLightArmorPA")
+	armorBreakChanceHeavyArmorPA = JsonUtil.GetIntValue(configFile, "armorBreakChanceHeavyArmorPA")
+
+	matchedSexNPC = JsonUtil.GetIntValue(configFile, "matchedSexNPC")
+	healthLimitNPC = JsonUtil.GetIntValue(configFile, "healthLimitNPC")
+	healthLimitBottomNPC = JsonUtil.GetIntValue(configFile, "healthLimitBottomNPC")
+	enableEndlessRapeNPC = JsonUtil.GetIntValue(configFile, "enableEndlessRapeNPC")
+	attackDistanceLimitNPC = JsonUtil.GetIntValue(configFile, "attackDistanceLimitNPC")
+
+	rapeChanceNPC = JsonUtil.GetIntValue(configFile, "rapeChanceNPC")
+	rapeChanceNotNakedNPC = JsonUtil.GetIntValue(configFile, "rapeChanceNotNakedNPC")
+	rapeChanceNPCPA = JsonUtil.GetIntValue(configFile, "rapeChanceNPCPA")
+	rapeChanceNotNakedNPCPA = JsonUtil.GetIntValue(configFile, "rapeChanceNotNakedNPCPA")
+
+	enableArmorBreakNPC = JsonUtil.GetIntValue(configFile, "enableArmorBreakNPC")
+	enableArmorUnequipModeNPC = JsonUtil.GetIntValue(configFile, "enableArmorUnequipModeNPC")
+
+	armorBreakChanceClothNPC = JsonUtil.GetIntValue(configFile, "armorBreakChanceClothNPC")
+	armorBreakChanceLightArmorNPC = JsonUtil.GetIntValue(configFile, "armorBreakChanceLightArmorNPC")
+	armorBreakChanceHeavyArmorNPC = JsonUtil.GetIntValue(configFile, "armorBreakChanceHeavyArmorNPC")
+	armorBreakChanceClothNPCPA = JsonUtil.GetIntValue(configFile, "armorBreakChanceClothNPCPA")
+	armorBreakChanceLightArmorNPCPA = JsonUtil.GetIntValue(configFile, "armorBreakChanceLightArmorNPCPA")
+	armorBreakChanceHeavyArmorNPCPA = JsonUtil.GetIntValue(configFile, "armorBreakChanceHeavyArmorNPCPA")
+
+	keyCodeRegist = JsonUtil.GetIntValue(configFile, "keyCodeRegist")
+	keyCodeHelp = JsonUtil.GetIntValue(configFile, "keyCodeHelp")
+	keyCodeSubmit = JsonUtil.GetIntValue(configFile, "keyCodeSubmit")
+
+	enableWeCantDieSupport = JsonUtil.GetIntValue(configFile, "enableWeCantDieSupport")
+	weCantDieChance = JsonUtil.GetIntValue(configFile, "weCantDieChance")
+	enableSimpleSlaverySupport = JsonUtil.GetIntValue(configFile, "enableSimpleSlaverySupport")
+	simpleSlaveryChance = JsonUtil.GetIntValue(configFile, "simpleSlaveryChance")
+	enableUtilOneSupport = JsonUtil.GetIntValue(configFile, "enableUtilOneSupport")
+	enableDrippingWASupport = JsonUtil.GetIntValue(configFile, "enableDrippingWASupport")
+	enableSendOrgasm = JsonUtil.GetIntValue(configFile, "enableSendOrgasm")
 	
-	colorChange = JsonUtil.GetIntValue(configFile, "colorChange")
-	transChange = JsonUtil.GetIntValue(configFile, "transChange")
-	
-	horizontal = JsonUtil.GetIntValue(configFile, "horizontal")
-	vertical = JsonUtil.GetIntValue(configFile, "vertical")
+	ImportBoolList(configFile, "DisableRacesConfig", DisableRacesConfig, DisableRacesConfig.Length)
 EndFunction
+
+; Boolean Arrays from SexLab
+function ExportBoolList(string FileName, string Name, bool[] Values, int len)
+	JsonUtil.IntListClear(FileName, Name)
+	int i
+	while i < len
+		JsonUtil.IntListAdd(FileName, Name, Values[i] as int)
+		i += 1
+	endWhile
+endFunction
+bool[] function ImportBoolList(string FileName, string Name, bool[] Values, int len)
+	if JsonUtil.IntListCount(FileName, Name) == len
+		if Values.Length != len
+			Values = Utility.CreateBoolArray(len)
+		endIf
+		int i
+		while i < len
+			Values[i] = JsonUtil.IntListGet(FileName, Name, i) as bool
+			i += 1
+		endWhile
+	endIf
+	return Values
+endFunction
 
 
 Quest Property SSLYACRQuestManager  Auto  
