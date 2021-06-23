@@ -23,20 +23,6 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	
 	SelfName = selfact.GetLeveledActorBase().GetName()
 	
-	; for mystery unarmed spell research
-	;/
-	AppUtil.Log("############## akProjectile " + akProjectile)
-	if (wpn)
-		AppUtil.Log("############## wpn " + wpn + ", type " + wpn.GetWeaponType())
-	elseif (exp)
-		AppUtil.Log("############## exp " + exp)
-	else
-		AppUtil.Log("############## wpn " + wpn + ", type none")
-	endif
-	AppUtil.Log("############## distance " + selfact.GetDistance(akAggr))
-	AppUtil.Log("##############")
-	/;
-	
 	if (akAggressor == None || PreSource ==  akSource || selfact.IsGhost() || selfact.IsDead() || \
 		akAggr.IsPlayerTeammate() || akAggr == PlayerActor || selfact.IsInKillMove() || akAggr.IsInKillMove() || \
 		akAggr.IsFlying() || akAggr.IsOnMount())
@@ -60,7 +46,7 @@ Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile,
 	if (healthper > 100.0)
 		healthper = 100.0
 	endif
-	AppUtil.Log("############## healthper " + healthper + " " + SelfName + " abPowerAttack = " + abPowerAttack)
+	AppUtil.Log("### healthper " + healthper + " " + SelfName + " abPowerAttack = " + abPowerAttack)
 	
 	if (!abHitBlocked && self._validateAttack(akAggr, wpn, akProjectile))
 		self._onHit(selfact, akAggr, healthper, abPowerAttack)
@@ -107,8 +93,15 @@ Function _onHit(Actor selfact, Actor akAggr, float healthper, bool abPowerAttack
 	
 	int rndintRP = Utility.RandomInt()
 	int rndintAB = Utility.RandomInt()
+	
+	bool isNaked
 	Armor selfarmor = selfact.GetWornForm(0x00000004) as Armor
-		
+	if (Config.enableExtraNakedScript)
+		isNaked = ExtraNaked.isNaked(selfact)
+	else
+		isNaked = !selfarmor as bool
+	endif
+	
 	if (selfact.IsInFaction(SSLAnimatingFaction))    ; first check
 		if selfact.HasKeyWordString("SexLabActive")  ; other sexlab's sex
 			AppUtil.Log("detect other SexLab's Sex, EndAnimation " + SelfName)
@@ -119,7 +112,7 @@ Function _onHit(Actor selfact, Actor akAggr, float healthper, bool abPowerAttack
 			selfact.RemoveFromFaction(SSLAnimatingFaction)
 			; ##FIXME## Instead ActorLib.ValidateActor ?
 		endif
-	elseif (selfarmor)
+	elseif !(isNaked)
 		if (self._shouldBleedOut(healthper, rndintRP, false, abPowerAttack))
 			AppUtil.Log("doBleedOut " + SelfName)
 			self.doBleedOut(akAggr)
@@ -131,7 +124,7 @@ Function _onHit(Actor selfact, Actor akAggr, float healthper, bool abPowerAttack
 				selfact.RemoveItem(selfarmor)
 			endif
 		endif
-	elseif (!selfarmor && self._shouldBleedOut(healthper, rndintRP, true, abPowerAttack))
+	elseif (isNaked && self._shouldBleedOut(healthper, rndintRP, true, abPowerAttack))
 		AppUtil.Log("doBleedOut " + SelfName)
 		self.doBleedOut(akAggr)
 	endif
@@ -1012,6 +1005,7 @@ EndEvent
 
 YACRConfig Property Config Auto
 YACRUtil Property AppUtil Auto
+YACRExtraNaked Property ExtraNaked Auto
 SexLabFramework Property SexLab  Auto
 Faction property SSLAnimatingFaction Auto
 Actor Property PlayerActor  Auto

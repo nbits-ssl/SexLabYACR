@@ -65,6 +65,7 @@ bool Property enableSimpleSlaverySupport = false Auto
 int Property simpleSlaveryChance = 100 Auto
 bool Property enableUtilOneSupport = false Auto
 bool Property enableDrippingWASupport = false Auto
+bool Property enableExtraNakedScript = false Auto
 bool Property enableSendOrgasm = true Auto
 
 Race[] Property DisableRaces  Auto  
@@ -86,6 +87,7 @@ int enableSimpleSlaverySupportID
 int simpleSlaveryChanceID
 int enableUtilOneSupportID
 int enableDrippingWASupportID
+int enableExtraNakedScriptID
 int enableSendOrgasmID
 
 ; Player ========================================
@@ -305,6 +307,7 @@ Event OnPageReset(string page)
 		simpleSlaveryChanceID = AddSliderOption("$SimpleSlaveryChance", simpleSlaveryChance)
 		enableUtilOneSupportID = AddToggleOption("$EnableUtilOneSupport", enableUtilOneSupport)
 		enableDrippingWASupportID = AddToggleOption("$EnableDrippingWASupport", enableDrippingWASupport)
+		enableExtraNakedScriptID = AddToggleOption("$EnableExtraNakedScript", enableExtraNakedScript)
 		
 		enableSendOrgasmID = AddToggleOption("$EnableSendOrgasm", enableSendOrgasm)
 		
@@ -555,6 +558,8 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$EnableUtilOneSupportInfo")
 	elseif (option == enableDrippingWASupportID)
 		SetInfoText("$EnableDrippingWASupportInfo")
+	elseif (option == enableExtraNakedScriptID)
+		SetInfoText("$EnableExtraNakedScriptInfo")
 	elseif (option == enableSendOrgasmID)
 		SetInfoText("$EnableSendOrgasmInfo")
 		
@@ -608,6 +613,9 @@ Event OnOptionSelect(int option)
 	elseif (option == enableDrippingWASupportID)
 		enableDrippingWASupport = !enableDrippingWASupport
 		SetToggleOptionValue(option, enableDrippingWASupport)
+	elseif (option == enableExtraNakedScriptID)
+		enableExtraNakedScript = !enableExtraNakedScript
+		SetToggleOptionValue(option, enableExtraNakedScript)
 	elseif (option == enableSendOrgasmID)
 		enableSendOrgasm = !enableSendOrgasm
 		SetToggleOptionValue(option, enableSendOrgasm)
@@ -956,6 +964,7 @@ Function saveConfig(string configFile)
 	JsonUtil.SetIntValue(configFile, "simpleSlaveryChance", simpleSlaveryChance)
 	JsonUtil.SetIntValue(configFile, "enableUtilOneSupport", enableUtilOneSupport as int)
 	JsonUtil.SetIntValue(configFile, "enableDrippingWASupport", enableDrippingWASupport as int)
+	JsonUtil.SetIntValue(configFile, "enableExtraNakedScript", enableExtraNakedScript as int)
 	JsonUtil.SetIntValue(configFile, "enableSendOrgasm", enableSendOrgasm as int)
 	
 	ExportBoolList(configFile, "DisableRacesConfig", DisableRacesConfig, DisableRacesConfig.Length)
@@ -1024,6 +1033,7 @@ Function loadConfig(string configFile)
 	simpleSlaveryChance = JsonUtil.GetIntValue(configFile, "simpleSlaveryChance")
 	enableUtilOneSupport = JsonUtil.GetIntValue(configFile, "enableUtilOneSupport")
 	enableDrippingWASupport = JsonUtil.GetIntValue(configFile, "enableDrippingWASupport")
+	enableExtraNakedScript = JsonUtil.GetIntValue(configFile, "enableExtraNakedScript")
 	enableSendOrgasm = JsonUtil.GetIntValue(configFile, "enableSendOrgasm")
 	
 	ImportBoolList(configFile, "DisableRacesConfig", DisableRacesConfig, DisableRacesConfig.Length)
