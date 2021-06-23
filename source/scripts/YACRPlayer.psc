@@ -14,6 +14,11 @@ int PlayerRegistPoint = 0
 Faction baseFaction
 sslThreadController UpdateController
 
+int EABDBaseStatus = 0
+int EABDSeeTroughStatus = 0
+int EABDInTop = 0
+int EABDInBot = 0
+
 Event OnHit(ObjectReference akAggressor, Form akSource, Projectile akProjectile, bool abPowerAttack, bool abSneakAttack, bool abBashAttack, bool abHitBlocked)
 	Actor akAggr = akAggressor as Actor
 	Actor selfact = self.GetActorRef()
@@ -94,15 +99,20 @@ Function _onHit(Actor selfact, Actor akAggr, float healthper, bool abPowerAttack
 	int rndintRP = Utility.RandomInt()
 	int rndintAB = Utility.RandomInt()
 	
-	bool isNaked
 	Armor selfarmor = selfact.GetWornForm(0x00000004) as Armor
-	if (Config.enableExtraNakedScript)
-		isNaked = ExtraNaked.isNaked(selfact)
-	else
-		isNaked = !selfarmor as bool
+	bool isNaked = !selfarmor as bool
+
+	if (Config.EnableEABD && self.IsPlayer)
+		EABDBaseStatus = StorageUtil.GetIntValue(none, "EABDNakedStatus", 0)
+		EABDSeeTroughStatus = StorageUtil.GetIntValue(none, "EABDstStatus", 0)
+		EABDInTop = StorageUtil.GetIntValue(none, "EABDInnerStatusTop", 0)
+		EABDInBot = StorageUtil.GetIntValue(none, "EABDInnerStatusBot", 0)
+		if (EABDBaseStatus != 0) || (EABDSeeTroughStatus != 0) || (EABDInTop != 0) || (EABDInBot != 0)
+			isNaked = true
+		endif
 	endif
 	
-	if (selfact.IsInFaction(SSLAnimatingFaction))    ; first check
+	if (selfact.IsInFaction(SSLAnimatingFaction))   ; first check
 		if selfact.HasKeyWordString("SexLabActive")  ; other sexlab's sex
 			AppUtil.Log("detect other SexLab's Sex, EndAnimation " + SelfName)
 			sslThreadController controller = SexLab.GetActorController(selfact)
@@ -149,6 +159,25 @@ bool Function _shouldBleedOut(float healthper, int rndint, bool naked, bool abPo
 	else
 		rapechance = Config.GetRapeChanceNotNaked(self.IsPlayer, abPowerAttack)
 	endif
+
+	if (naked)
+		if (self.IsPlayer && Config.EnableEABD)
+			if (EABDBaseStatus == 3)
+				rapechance = Config.GetRapeChance(self.IsPlayer, abPowerAttack)
+			elseif (EABDBaseStatus == 1 || EABDBaseStatus == 2)
+				rapechance = Config.GetRapeChanceTBless(abPowerAttack)
+			elseif (EABDSeeTroughStatus != 0)
+				rapechance = Config.GetRapeChanceSeeThrough(abPowerAttack)
+			elseif (EABDInTop != 0) || (EABDInBot != 0)
+				rapechance = Config.GetRapeChanceUnderwear(abPowerAttack)
+			endif
+		else
+			rapechance = Config.GetRapeChance(self.IsPlayer, abPowerAttack)
+		endif
+	else
+		rapechance = Config.GetRapeChanceNotNaked(self.IsPlayer, abPowerAttack)
+	endif
+
 
 	return (healthper <= Config.GetHealthLimit(self.IsPlayer) && \
 		healthper > Config.GetHealthLimitBottom(self.IsPlayer) && \
@@ -1005,7 +1034,6 @@ EndEvent
 
 YACRConfig Property Config Auto
 YACRUtil Property AppUtil Auto
-YACRExtraNaked Property ExtraNaked Auto
 SexLabFramework Property SexLab  Auto
 Faction property SSLAnimatingFaction Auto
 Actor Property PlayerActor  Auto
@@ -1037,3 +1065,4 @@ WEAPON Property Unarmed  Auto
 SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
+YACRExtraNaked Property ExtraNaked Auto

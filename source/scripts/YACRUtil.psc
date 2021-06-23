@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20210623
+	return 20210625
 EndFunction
 
 Function Log(String msg)

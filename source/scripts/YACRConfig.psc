@@ -31,6 +31,15 @@ int Property armorBreakChanceClothPA = 75 Auto
 int Property armorBreakChanceLightArmorPA = 30 Auto
 int Property armorBreakChanceHeavyArmorPA = 20 Auto
 
+; EABDialogue ========================================
+bool Property EnableEABD = false auto
+int Property rapeChanceTBless = 40 Auto
+int Property rapeChanceSeeThrough = 30 Auto
+int Property rapeChanceUnderwear = 20 Auto
+int Property rapeChanceTBlessPA = 65 Auto
+int Property rapeChanceSeeThroughPA = 55 Auto
+int Property rapeChanceUnderwearPA = 45 Auto
+
 ; Follower ========================================
 int Property matchedSexNPC = 0 Auto
 int Property healthLimitNPC = 50 Auto
@@ -65,7 +74,6 @@ bool Property enableSimpleSlaverySupport = false Auto
 int Property simpleSlaveryChance = 100 Auto
 bool Property enableUtilOneSupport = false Auto
 bool Property enableDrippingWASupport = false Auto
-bool Property enableExtraNakedScript = false Auto
 bool Property enableSendOrgasm = true Auto
 
 Race[] Property DisableRaces  Auto  
@@ -87,7 +95,6 @@ int enableSimpleSlaverySupportID
 int simpleSlaveryChanceID
 int enableUtilOneSupportID
 int enableDrippingWASupportID
-int enableExtraNakedScriptID
 int enableSendOrgasmID
 
 ; Player ========================================
@@ -114,6 +121,15 @@ int armorBreakChanceHeavyArmorID
 int armorBreakChanceClothPAID
 int armorBreakChanceLightArmorPAID
 int armorBreakChanceHeavyArmorPAID
+
+; EABDialogue ========================================
+int EnableEABDID
+int rapeChanceTBlessID
+int rapeChanceSeeThroughID
+int rapeChanceUnderwearID
+int rapeChanceTBlessPAID
+int rapeChanceSeeThroughPAID
+int rapeChanceUnderwearPAID
 
 ; Follower ========================================
 int matchedSexNPCID
@@ -175,7 +191,7 @@ Event OnConfigInit()
 	
 	Pages = new string[6]
 	Pages[0] = "$YACRRapeChance"
-	Pages[1] = "$YACRArmorBreak"
+	Pages[1] = "$YACREABD"
 	Pages[2] = "$YACREnemy"
 	Pages[3] = "$YACRSystem"
 	Pages[4] = "$YACRTeammates"
@@ -226,6 +242,57 @@ Event OnPageReset(string page)
 		rapeChanceNPCPAID = AddSliderOption("$YACRNakedPowerAttack", rapeChanceNPCPA)
 		rapeChanceNotNakedNPCPAID = AddSliderOption("$YACRNotNakedPowerAttack", rapeChanceNotNakedNPCPA)
 		
+	elseif (page == "$YACREABD")
+		SetCursorFillMode(TOP_TO_BOTTOM)
+		SetCursorPosition(0)
+		
+		if Game.GetModByName("EABdialogue.esp") < 255
+			EnableEABDID = AddToggleOption("$YEABD_Use", EnableEABD)
+		else
+			EnableEABD = false
+			EnableEABDID = AddToggleOption("$YEABD_Use", EnableEABD, OPTION_FLAG_DISABLED)
+		endif
+		
+		AddHeaderOption("$YEABD_PCRapeChance")
+		rapeChanceID = AddSliderOption("$YACRNaked", rapeChance)
+		if (EnableEABD)
+			rapeChanceTBlessID = AddSliderOption("$YEABD_TBless", rapeChanceTBless)
+			rapeChanceSeeThroughID = AddSliderOption("$YEABD_SeeThrough", rapeChanceSeeThrough)
+			rapeChanceUnderwearID = AddSliderOption("$YEABD_Underwear", rapeChanceUnderwear)
+		else
+			rapeChanceTBlessID = AddSliderOption("$YEABD_TBless", rapeChanceTBless, "{0}", OPTION_FLAG_DISABLED)
+			rapeChanceSeeThroughID = AddSliderOption("$YEABD_SeeThrough", rapeChanceSeeThrough, "{0}",OPTION_FLAG_DISABLED)
+			rapeChanceUnderwearID = AddSliderOption("$YEABD_Underwear", rapeChanceUnderwear, "{0}",OPTION_FLAG_DISABLED)
+		endif
+		rapeChanceNotNakedID = AddSliderOption("$YACRNotNaked", rapeChanceNotNaked)
+		
+		rapeChancePAID = AddSliderOption("$YACRNakedPowerAttack", rapeChancePA)
+		if (EnableEABD)
+			rapeChanceTBlessPAID = AddSliderOption("$YEABD_TBlessPowerAttack", rapeChanceTBlessPA)
+			rapeChanceSeeThroughPAID = AddSliderOption("$YEABD_SeeThroughPowerAttack", rapeChanceSeeThroughPA)
+			rapeChanceUnderwearPAID = AddSliderOption("$YEABD_UnderwearPowerAttack", rapeChanceUnderwearPA)
+		else
+			rapeChanceTBlessPAID = AddSliderOption("$YEABD_TBlessPowerAttack", rapeChanceTBlessPA, "{0}",OPTION_FLAG_DISABLED)
+			rapeChanceSeeThroughPAID = AddSliderOption("$YEABD_SeeThroughPowerAttack", rapeChanceSeeThroughPA, "{0}",OPTION_FLAG_DISABLED)
+			rapeChanceUnderwearPAID = AddSliderOption("$YEABD_UnderwearPowerAttack", rapeChanceUnderwearPA, "{0}",OPTION_FLAG_DISABLED)
+		endif
+		rapeChanceNotNakedPAID = AddSliderOption("$YACRNotNakedPowerAttack", rapeChanceNotNakedPA)
+
+		SetCursorPosition(1)
+		AddTextOption("$YEABD_FollowerInfo", "", OPTION_FLAG_DISABLED)
+		
+		AddHeaderOption("$YEABD_FollowerRapeChance")
+		rapeChanceNPCID = AddSliderOption("$YACRNaked", rapeChanceNPC)
+		AddEmptyOption()
+		AddEmptyOption()
+		AddEmptyOption()
+		rapeChanceNotNakedNPCID = AddSliderOption("$YACRNotNaked", rapeChanceNotNakedNPC)
+		rapeChanceNPCPAID = AddSliderOption("$YACRNakedPowerAttack", rapeChanceNPCPA)
+		AddEmptyOption()
+		AddEmptyOption()
+		AddEmptyOption()
+		rapeChanceNotNakedNPCPAID = AddSliderOption("$YACRNotNakedPowerAttack", rapeChanceNotNakedNPCPA)
+
 	elseif (page == "$YACRArmorBreak")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
@@ -307,7 +374,6 @@ Event OnPageReset(string page)
 		simpleSlaveryChanceID = AddSliderOption("$YACRSimpleSlaveryChance", simpleSlaveryChance)
 		enableUtilOneSupportID = AddToggleOption("$YACREnableUtilOneSupport", enableUtilOneSupport)
 		enableDrippingWASupportID = AddToggleOption("$YACREnableDrippingWASupport", enableDrippingWASupport)
-		enableExtraNakedScriptID = AddToggleOption("$YACREnableExtraNakedScript", enableExtraNakedScript)
 		
 		enableSendOrgasmID = AddToggleOption("$YACREnableSendOrgasm", enableSendOrgasm)
 		
@@ -428,6 +494,30 @@ int Function GetRapeChance(bool IsPlayer = true, bool IsPowerAttack = false)
 	endif
 EndFunction
 
+int Function GetRapeChanceTBless(bool IsPowerAttack = false)
+	if (!IsPowerAttack)
+		return self.rapeChanceTBless
+	else
+		return self.rapeChanceTBlessPA
+	endif
+EndFunction
+
+int Function GetRapeChanceSeeThrough(bool IsPowerAttack = false)
+	if (!IsPowerAttack)
+		return self.rapeChanceSeeThrough
+	else
+		return self.rapeChanceSeeThroughPA
+	endif
+EndFunction
+
+int Function GetRapeChanceUnderwear(bool IsPowerAttack = false)
+	if (!IsPowerAttack)
+		return self.rapeChanceUnderwear
+	else
+		return self.rapeChanceUnderwearPA
+	endif
+EndFunction
+
 int Function GetRapeChanceNotNaked(bool IsPlayer = true, bool IsPowerAttack = false)
 	if (IsPlayer)
 		if (!IsPowerAttack)
@@ -513,8 +603,6 @@ int[] Function GetBreakChances(bool IsPlayer = true, bool IsPowerAttack = false)
 EndFunction
 
 Event OnOptionHighlight(int option)
-	;if (option == knockDownAllID)
-	;	SetInfoText("$KnockDownAllInfo")
 	if (option == enablePlayerRapeID)
 		SetInfoText("$YACREnablePlayerRapeInfo")
 	elseif (option == knockDownOnlyID)
@@ -531,10 +619,18 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$YACREndlessRapeInfo")
 	elseif (option == attackDistanceLimitID || option == attackDistanceLimitNPCID)
 		SetInfoText("$YACRAttackDistanceLimitInfo")
+		
+	elseif (option == EnableEABDID)
+		SetInfoText("$YEABD_UseInfo")
+	elseif (option == rapeChanceTBlessID || option == rapeChanceTBlessPAID)
+		SetInfoText("$YEABD_TBlessInfo")
+	elseif (option == rapeChanceSeeThroughID || option == rapeChanceSeeThroughPAID)
+		SetInfoText("$YEABD_SeeThroughInfo")
+	elseif (option == rapeChanceUnderwearID || option == rapeChanceUnderwearPAID)
+		SetInfoText("$YEABD_UnderwearInfo")
+		
 	elseif (option == registNotifFlagID)
 		SetInfoText("$YACROutputRegistNotifInfo")
-	;elseif (option == debugNotifFlagID)
-	;	SetInfoText("$OutputPapyrusNotifInfo")
 	;elseif (option == enableDisableID)
 	;	SetInfoText("$EnableDisableMainInfo")
 	elseif (option == keyCodeRegistID)
@@ -558,8 +654,6 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$YACREnableUtilOneSupportInfo")
 	elseif (option == enableDrippingWASupportID)
 		SetInfoText("$YACREnableDrippingWASupportInfo")
-	elseif (option == enableExtraNakedScriptID)
-		SetInfoText("$YACREnableExtraNakedScriptInfo")
 	elseif (option == enableSendOrgasmID)
 		SetInfoText("$YACREnableSendOrgasmInfo")
 		
@@ -593,6 +687,11 @@ Event OnOptionSelect(int option)
 	elseif (option == knockDownOnlyID)
 		knockDownOnly = !knockDownOnly
 		SetToggleOptionValue(option, knockDownOnly)
+
+	elseif (option == EnableEABDID)
+		EnableEABD = !EnableEABD
+		SetToggleOptionValue(option, EnableEABD)
+		ForcePageReset()
 		
 	elseif (option == enableArmorUnequipModeID)
 		enableArmorUnequipMode = !enableArmorUnequipMode
@@ -613,9 +712,6 @@ Event OnOptionSelect(int option)
 	elseif (option == enableDrippingWASupportID)
 		enableDrippingWASupport = !enableDrippingWASupport
 		SetToggleOptionValue(option, enableDrippingWASupport)
-	elseif (option == enableExtraNakedScriptID)
-		enableExtraNakedScript = !enableExtraNakedScript
-		SetToggleOptionValue(option, enableExtraNakedScript)
 	elseif (option == enableSendOrgasmID)
 		enableSendOrgasm = !enableSendOrgasm
 		SetToggleOptionValue(option, enableSendOrgasm)
@@ -705,6 +801,22 @@ Event OnOptionSliderOpen(int option)
 		self._setSliderDialogWithPercentage(armorBreakChanceLightArmorPA)
 	elseif (option == armorBreakChanceHeavyArmorPAID)
 		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorPA)
+
+	; EABD ------------------------------------------
+
+	elseif (option == rapeChanceTBlessID)
+		self._setSliderDialogWithPercentage(rapeChanceTBless)
+	elseif (option == rapeChanceSeeThroughID)
+		self._setSliderDialogWithPercentage(rapeChanceSeeThrough)
+	elseif (option == rapeChanceUnderwearID)
+		self._setSliderDialogWithPercentage(rapeChanceUnderwear)
+	; PA
+	elseif (option == rapeChanceTBlessPAID)
+		self._setSliderDialogWithPercentage(rapeChanceTBlessPA)
+	elseif (option == rapeChanceSeeThroughPAID)
+		self._setSliderDialogWithPercentage(rapeChanceSeeThroughPA)
+	elseif (option == rapeChanceUnderwearPAID)
+		self._setSliderDialogWithPercentage(rapeChanceUnderwearPA)
 
 	; Follower --------------------------------------
 	elseif (option == attackDistanceLimitNPCID)
@@ -809,6 +921,18 @@ Event OnOptionSliderAccept(int option, float value)
 	elseif (option == armorBreakChanceHeavyArmorPAID)
 		armorBreakChanceHeavyArmorPA = value as int
 		SetSliderOptionValue(option, armorBreakChanceHeavyArmorPA)
+
+	; EABD ------------------------------------------
+
+	elseif (option == rapeChanceTBlessID)
+		rapeChanceTBless = value as int
+		SetSliderOptionValue(option, rapeChanceTBless)
+	elseif (option == rapeChanceSeeThroughID)
+		rapeChanceSeeThrough = value as int
+		SetSliderOptionValue(option, rapeChanceSeeThrough)
+	elseif (option == rapeChanceUnderwearID)
+		rapeChanceUnderwear = value as int
+		SetSliderOptionValue(option, rapeChanceUnderwear)
 
 	; Follower --------------------------------------
 	elseif (option == attackDistanceLimitNPCID)
@@ -919,6 +1043,14 @@ Function saveConfig(string configFile)
 	JsonUtil.SetIntValue(configFile, "rapeChanceNotNaked", rapeChanceNotNaked)
 	JsonUtil.SetIntValue(configFile, "rapeChancePA", rapeChancePA)
 	JsonUtil.SetIntValue(configFile, "rapeChanceNotNakedPA", rapeChanceNotNakedPA)
+	
+	JsonUtil.SetIntValue(configFile, "EnableEABD", EnableEABD as int)
+	JsonUtil.SetIntValue(configFile, "rapeChanceTBless", rapeChanceTBless)
+	JsonUtil.SetIntValue(configFile, "rapeChanceSeeThrough", rapeChanceSeeThrough)
+	JsonUtil.SetIntValue(configFile, "rapeChanceUnderwear", rapeChanceUnderwear)
+	JsonUtil.SetIntValue(configFile, "rapeChanceTBlessPA", rapeChanceTBlessPA)
+	JsonUtil.SetIntValue(configFile, "rapeChanceSeeThroughPA", rapeChanceSeeThroughPA)
+	JsonUtil.SetIntValue(configFile, "rapeChanceUnderwearPA", rapeChanceUnderwearPA)
 
 	JsonUtil.SetIntValue(configFile, "enableArmorBreak", enableArmorBreak as int)
 	JsonUtil.SetIntValue(configFile, "enableArmorUnequipMode", enableArmorUnequipMode as int)
@@ -961,8 +1093,19 @@ Function saveConfig(string configFile)
 	JsonUtil.SetIntValue(configFile, "simpleSlaveryChance", simpleSlaveryChance)
 	JsonUtil.SetIntValue(configFile, "enableUtilOneSupport", enableUtilOneSupport as int)
 	JsonUtil.SetIntValue(configFile, "enableDrippingWASupport", enableDrippingWASupport as int)
-	JsonUtil.SetIntValue(configFile, "enableExtraNakedScript", enableExtraNakedScript as int)
 	JsonUtil.SetIntValue(configFile, "enableSendOrgasm", enableSendOrgasm as int)
+	
+	JsonUtil.SetIntValue(configFile, "SSLYACRAudienceChance1", SSLYACRAudienceChance1.GetValue() as int)
+	JsonUtil.SetIntValue(configFile, "SSLYACRAudienceChance2", SSLYACRAudienceChance2.GetValue() as int)
+	JsonUtil.SetIntValue(configFile, "SSLYACRAudienceChance3", SSLYACRAudienceChance3.GetValue() as int)
+	JsonUtil.SetIntValue(configFile, "SSLYACRAudienceChance4", SSLYACRAudienceChance4.GetValue() as int)
+	JsonUtil.SetIntValue(configFile, "SSLYACRAudienceChance5", SSLYACRAudienceChance5.GetValue() as int)
+	
+	JsonUtil.SetIntValue(configFile, "SSLYACROneMore", SSLYACROneMore.GetValue() as int)
+	JsonUtil.SetIntValue(configFile, "SSLYACROneMoreFromSecond", SSLYACROneMoreFromSecond.GetValue() as int)
+	JsonUtil.SetIntValue(configFile, "SSLYACRMultiPlay", SSLYACRMultiPlay.GetValue() as int)
+	JsonUtil.SetIntValue(configFile, "SSLYACRMultiPlay5P", SSLYACRMultiPlay5P.GetValue() as int)
+	JsonUtil.SetIntValue(configFile, "SSLYACRMultiPlay4P", SSLYACRMultiPlay4P.GetValue() as int)
 	
 	ExportBoolList(configFile, "DisableRacesConfig", DisableRacesConfig, DisableRacesConfig.Length)
 	JsonUtil.Save(configFile)
@@ -988,6 +1131,14 @@ Function loadConfig(string configFile)
 	rapeChanceNotNaked = JsonUtil.GetIntValue(configFile, "rapeChanceNotNaked")
 	rapeChancePA = JsonUtil.GetIntValue(configFile, "rapeChancePA")
 	rapeChanceNotNakedPA = JsonUtil.GetIntValue(configFile, "rapeChanceNotNakedPA")
+
+	EnableEABD = JsonUtil.GetIntValue(configFile, "EnableEABD")
+	rapeChanceTBless = JsonUtil.GetIntValue(configFile, "rapeChanceTBless")
+	rapeChanceSeeThrough = JsonUtil.GetIntValue(configFile, "rapeChanceSeeThrough")
+	rapeChanceUnderwear = JsonUtil.GetIntValue(configFile, "rapeChanceUnderwear")
+	rapeChanceTBlessPA = JsonUtil.GetIntValue(configFile, "rapeChanceTBlessPA")
+	rapeChanceSeeThroughPA = JsonUtil.GetIntValue(configFile, "rapeChanceSeeThroughPA")
+	rapeChanceUnderwearPA = JsonUtil.GetIntValue(configFile, "rapeChanceUnderwearPA")
 
 	enableArmorBreak = JsonUtil.GetIntValue(configFile, "enableArmorBreak")
 	enableArmorUnequipMode = JsonUtil.GetIntValue(configFile, "enableArmorUnequipMode")
@@ -1030,8 +1181,19 @@ Function loadConfig(string configFile)
 	simpleSlaveryChance = JsonUtil.GetIntValue(configFile, "simpleSlaveryChance")
 	enableUtilOneSupport = JsonUtil.GetIntValue(configFile, "enableUtilOneSupport")
 	enableDrippingWASupport = JsonUtil.GetIntValue(configFile, "enableDrippingWASupport")
-	enableExtraNakedScript = JsonUtil.GetIntValue(configFile, "enableExtraNakedScript")
 	enableSendOrgasm = JsonUtil.GetIntValue(configFile, "enableSendOrgasm")
+
+	SSLYACRAudienceChance1.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRAudienceChance1"))
+	SSLYACRAudienceChance2.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRAudienceChance2"))
+	SSLYACRAudienceChance3.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRAudienceChance3"))
+	SSLYACRAudienceChance4.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRAudienceChance4"))
+	SSLYACRAudienceChance5.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRAudienceChance5"))
+
+	SSLYACROneMore.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACROneMore"))
+	SSLYACROneMoreFromSecond.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACROneMoreFromSecond"))
+	SSLYACRMultiPlay.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRMultiPlay"))
+	SSLYACRMultiPlay5P.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRMultiPlay5P"))
+	SSLYACRMultiPlay4P.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRMultiPlay4P"))
 	
 	ImportBoolList(configFile, "DisableRacesConfig", DisableRacesConfig, DisableRacesConfig.Length)
 EndFunction
@@ -1068,3 +1230,9 @@ GlobalVariable Property SSLYACROneMoreFromSecond  Auto
 GlobalVariable Property SSLYACRMultiPlay  Auto  
 GlobalVariable Property SSLYACRMultiPlay5P  Auto  
 GlobalVariable Property SSLYACRMultiPlay4P  Auto  
+
+GlobalVariable Property SSLYACRAudienceChance1 Auto
+GlobalVariable Property SSLYACRAudienceChance2 Auto
+GlobalVariable Property SSLYACRAudienceChance3 Auto
+GlobalVariable Property SSLYACRAudienceChance4 Auto
+GlobalVariable Property SSLYACRAudienceChance5 Auto
