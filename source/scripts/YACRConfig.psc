@@ -194,71 +194,71 @@ Event OnPageReset(string page)
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
 		
-		enablePlayerRapeID = AddToggleOption("$EnablePlayerRape", enablePlayerRape)
+		enablePlayerRapeID = AddToggleOption("$YACREnablePlayerRape", enablePlayerRape)
 		
-		AddHeaderOption("$PlayerCharactor")
-		matchedSexID = AddMenuOption("$MatchedSex", matchedSexList[matchedSex])
-		healthLimitID = AddSliderOption("$HealthLimit", healthLimit)
-		healthLimitBottomID = AddSliderOption("$HealthLimitBottom", healthLimitBottom)
-		enableEndlessRapeID = AddToggleOption("$EndlessRape", enableEndlessRape)
-		attackDistanceLimitID = AddSliderOption("$AttackDistanceLimit", attackDistanceLimit)
+		AddHeaderOption("$YACRPlayerCharactor")
+		matchedSexID = AddMenuOption("$YACRMatchedSex", matchedSexList[matchedSex])
+		healthLimitID = AddSliderOption("$YACRHealthLimit", healthLimit)
+		healthLimitBottomID = AddSliderOption("$YACRHealthLimitBottom", healthLimitBottom)
+		enableEndlessRapeID = AddToggleOption("$YACREndlessRape", enableEndlessRape)
+		attackDistanceLimitID = AddSliderOption("$YACRAttackDistanceLimit", attackDistanceLimit)
 		
-		AddHeaderOption("$RapeChance")
-		rapeChanceID = AddSliderOption("$Naked", rapeChance)
-		rapeChanceNotNakedID = AddSliderOption("$NotNaked", rapeChanceNotNaked)
-		rapeChancePAID = AddSliderOption("$NakedPowerAttack", rapeChancePA)
-		rapeChanceNotNakedPAID = AddSliderOption("$NotNakedPowerAttack", rapeChanceNotNakedPA)
+		AddHeaderOption("$YACRRapeChance")
+		rapeChanceID = AddSliderOption("$YACRNaked", rapeChance)
+		rapeChanceNotNakedID = AddSliderOption("$YACRNotNaked", rapeChanceNotNaked)
+		rapeChancePAID = AddSliderOption("$YACRNakedPowerAttack", rapeChancePA)
+		rapeChanceNotNakedPAID = AddSliderOption("$YACRNotNakedPowerAttack", rapeChanceNotNakedPA)
 		
 		SetCursorPosition(1)
 		
-		knockDownOnlyID = AddToggleOption("$KnockDownOnly", knockDownOnly)
+		knockDownOnlyID = AddToggleOption("$YACRKnockDownOnly", knockDownOnly)
 		
-		AddHeaderOption("$Follower")
-		matchedSexNPCID = AddMenuOption("$MatchedSex", matchedSexList[matchedSexNPC])
-		healthLimitNPCID = AddSliderOption("$HealthLimit", healthLimitNPC)
-		healthLimitBottomNPCID = AddSliderOption("$HealthLimitBottom", healthLimitBottomNPC)
-		enableEndlessRapeNPCID = AddToggleOption("$EndlessRape", enableEndlessRapeNPC)
-		attackDistanceLimitNPCID = AddSliderOption("$AttackDistanceLimit", attackDistanceLimitNPC)
+		AddHeaderOption("$YACRFollower")
+		matchedSexNPCID = AddMenuOption("$YACRMatchedSex", matchedSexList[matchedSexNPC])
+		healthLimitNPCID = AddSliderOption("$YACRHealthLimit", healthLimitNPC)
+		healthLimitBottomNPCID = AddSliderOption("$YACRHealthLimitBottom", healthLimitBottomNPC)
+		enableEndlessRapeNPCID = AddToggleOption("$YACREndlessRape", enableEndlessRapeNPC)
+		attackDistanceLimitNPCID = AddSliderOption("$YACRAttackDistanceLimit", attackDistanceLimitNPC)
 		
-		AddHeaderOption("$RapeChance")
-		rapeChanceNPCID = AddSliderOption("$Naked", rapeChanceNPC)
-		rapeChanceNotNakedNPCID = AddSliderOption("$NotNaked", rapeChanceNotNakedNPC)
-		rapeChanceNPCPAID = AddSliderOption("$NakedPowerAttack", rapeChanceNPCPA)
-		rapeChanceNotNakedNPCPAID = AddSliderOption("$NotNakedPowerAttack", rapeChanceNotNakedNPCPA)
+		AddHeaderOption("$YACRRapeChance")
+		rapeChanceNPCID = AddSliderOption("$YACRNaked", rapeChanceNPC)
+		rapeChanceNotNakedNPCID = AddSliderOption("$YACRNotNaked", rapeChanceNotNakedNPC)
+		rapeChanceNPCPAID = AddSliderOption("$YACRNakedPowerAttack", rapeChanceNPCPA)
+		rapeChanceNotNakedNPCPAID = AddSliderOption("$YACRNotNakedPowerAttack", rapeChanceNotNakedNPCPA)
 		
 	elseif (page == "$YACRArmorBreak")
 		SetCursorFillMode(TOP_TO_BOTTOM)
 		SetCursorPosition(0)
 		
-		AddHeaderOption("$PlayerCharactor")
-		enableArmorBreakID = AddToggleOption("$Enable", enableArmorBreak)
-		enableArmorUnequipModeID = AddToggleOption("$EnableArmorUnequipMode", enableArmorUnequipMode)
+		AddHeaderOption("$YACRPlayerCharactor")
+		enableArmorBreakID = AddToggleOption("$YACREnable", enableArmorBreak)
+		enableArmorUnequipModeID = AddToggleOption("$YACREnableArmorUnequipMode", enableArmorUnequipMode)
 		
 		AddHeaderOption("$YACRArmorBreakAttack")
-		armorBreakChanceClothID = AddSliderOption("$Cloth", armorBreakChanceCloth)
-		armorBreakChanceLightArmorID = AddSliderOption("$LightArmor", armorBreakChanceLightArmor)
-		armorBreakChanceHeavyArmorID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmor)
+		armorBreakChanceClothID = AddSliderOption("$YACRCloth", armorBreakChanceCloth)
+		armorBreakChanceLightArmorID = AddSliderOption("$YACRLightArmor", armorBreakChanceLightArmor)
+		armorBreakChanceHeavyArmorID = AddSliderOption("$YACRHeavyArmor", armorBreakChanceHeavyArmor)
 		
 		AddHeaderOption("$YACRArmorBreakPowerAttack")
-		armorBreakChanceClothPAID = AddSliderOption("$Cloth", armorBreakChanceClothPA)
-		armorBreakChanceLightArmorPAID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorPA)
-		armorBreakChanceHeavyArmorPAID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorPA)
+		armorBreakChanceClothPAID = AddSliderOption("$YACRCloth", armorBreakChanceClothPA)
+		armorBreakChanceLightArmorPAID = AddSliderOption("$YACRLightArmor", armorBreakChanceLightArmorPA)
+		armorBreakChanceHeavyArmorPAID = AddSliderOption("$YACRHeavyArmor", armorBreakChanceHeavyArmorPA)
 		
 		SetCursorPosition(1)
 		
-		AddHeaderOption("$Follower")
-		enableArmorBreakNPCID = AddToggleOption("$Enable", enableArmorBreakNPC)
-		enableArmorUnequipModeNPCID = AddToggleOption("$EnableArmorUnequipMode", enableArmorUnequipModeNPC)
+		AddHeaderOption("$YACRFollower")
+		enableArmorBreakNPCID = AddToggleOption("$YACREnable", enableArmorBreakNPC)
+		enableArmorUnequipModeNPCID = AddToggleOption("$YACREnableArmorUnequipMode", enableArmorUnequipModeNPC)
 		
 		AddHeaderOption("$YACRArmorBreakAttack")
-		armorBreakChanceClothNPCID = AddSliderOption("$Cloth", armorBreakChanceClothNPC)
-		armorBreakChanceLightArmorNPCID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPC)
-		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPC)
+		armorBreakChanceClothNPCID = AddSliderOption("$YACRCloth", armorBreakChanceClothNPC)
+		armorBreakChanceLightArmorNPCID = AddSliderOption("$YACRLightArmor", armorBreakChanceLightArmorNPC)
+		armorBreakChanceHeavyArmorNPCID = AddSliderOption("$YACRHeavyArmor", armorBreakChanceHeavyArmorNPC)
 		
 		AddHeaderOption("$YACRArmorBreakPowerAttack")
-		armorBreakChanceClothNPCPAID = AddSliderOption("$Cloth", armorBreakChanceClothNPCPA)
-		armorBreakChanceLightArmorNPCPAID = AddSliderOption("$LightArmor", armorBreakChanceLightArmorNPCPA)
-		armorBreakChanceHeavyArmorNPCPAID = AddSliderOption("$HeavyArmor", armorBreakChanceHeavyArmorNPCPA)
+		armorBreakChanceClothNPCPAID = AddSliderOption("$YACRCloth", armorBreakChanceClothNPCPA)
+		armorBreakChanceLightArmorNPCPAID = AddSliderOption("$YACRLightArmor", armorBreakChanceLightArmorNPCPA)
+		armorBreakChanceHeavyArmorNPCPAID = AddSliderOption("$YACRHeavyArmor", armorBreakChanceHeavyArmorNPCPA)
 
 	elseif	(page == "$YACREnemy")
 		SetCursorFillMode(TOP_TO_BOTTOM)
@@ -285,31 +285,31 @@ Event OnPageReset(string page)
 		;modEnabled = SSLYACR.IsRunning()
 		;enableDisableID = AddToggleOption("$EnableDisableMain", modEnabled)
 		
-		keyCodeRegistID = AddKeyMapOption("$KeyCodeRegist", keyCodeRegist)
-		keyCodeHelpID = AddKeyMapOption("$KeyCodeHelp", keyCodeHelp)
-		keyCodeSubmitID = AddKeyMapOption("$KeyCodeSubmit", keyCodeSubmit)
+		keyCodeRegistID = AddKeyMapOption("$YACRKeyCodeRegist", keyCodeRegist)
+		keyCodeHelpID = AddKeyMapOption("$YACRKeyCodeHelp", keyCodeHelp)
+		keyCodeSubmitID = AddKeyMapOption("$YACRKeyCodeSubmit", keyCodeSubmit)
 		
 		AddEmptyOption()
 		
 		AddHeaderOption("$YACRDebug")
-		registNotifFlagID = AddToggleOption("$OutputRegistNotif", registNotifFlag)
-		; debugNotifFlagID = AddToggleOption("$OutputPapyrusNotif", debugNotifFlag)
-		debugLogFlagID = AddToggleOption("$OutputPapyrusLog", debugLogFlag)
-		; knockDownAllID = AddToggleOption("$KnockDownAll", knockDownAll) ; not support from 2.0alpha1
+		registNotifFlagID = AddToggleOption("$YACROutputRegistNotif", registNotifFlag)
+		; debugNotifFlagID = AddToggleOption("$YACROutputPapyrusNotif", debugNotifFlag)
+		debugLogFlagID = AddToggleOption("$YACROutputPapyrusLog", debugLogFlag)
+		; knockDownAllID = AddToggleOption("$YACRKnockDownAll", knockDownAll) ; not support from 2.0alpha1
 		
 		SetCursorPosition(1)
 		
 		AddHeaderOption("$YACRModLink")
 		
-		enableWeCantDieSupportID = AddToggleOption("$EnableWeCantDieSupport", enableWeCantDieSupport)
-		weCantDieChanceID = AddSliderOption("$WeCantDieChance", weCantDieChance)
-		enableSimpleSlaverySupportID = AddToggleOption("$EnableSimpleSlaverySupport", enableSimpleSlaverySupport)
-		simpleSlaveryChanceID = AddSliderOption("$SimpleSlaveryChance", simpleSlaveryChance)
-		enableUtilOneSupportID = AddToggleOption("$EnableUtilOneSupport", enableUtilOneSupport)
-		enableDrippingWASupportID = AddToggleOption("$EnableDrippingWASupport", enableDrippingWASupport)
-		enableExtraNakedScriptID = AddToggleOption("$EnableExtraNakedScript", enableExtraNakedScript)
+		enableWeCantDieSupportID = AddToggleOption("$YACREnableWeCantDieSupport", enableWeCantDieSupport)
+		weCantDieChanceID = AddSliderOption("$YACRWeCantDieChance", weCantDieChance)
+		enableSimpleSlaverySupportID = AddToggleOption("$YACREnableSimpleSlaverySupport", enableSimpleSlaverySupport)
+		simpleSlaveryChanceID = AddSliderOption("$YACRSimpleSlaveryChance", simpleSlaveryChance)
+		enableUtilOneSupportID = AddToggleOption("$YACREnableUtilOneSupport", enableUtilOneSupport)
+		enableDrippingWASupportID = AddToggleOption("$YACREnableDrippingWASupport", enableDrippingWASupport)
+		enableExtraNakedScriptID = AddToggleOption("$YACREnableExtraNakedScript", enableExtraNakedScript)
 		
-		enableSendOrgasmID = AddToggleOption("$EnableSendOrgasm", enableSendOrgasm)
+		enableSendOrgasmID = AddToggleOption("$YACREnableSendOrgasm", enableSendOrgasm)
 		
 	elseif (page == "$YACRTeammates")
 		SetCursorFillMode(TOP_TO_BOTTOM)
@@ -356,29 +356,29 @@ EndEvent
 string Function GetFlavor(string fkey)
 	if (fkey == "REGISTING")
 		if (knockDownOnly)
-			return "$REGISTING_KDONLY"
+			return "$YACRREGISTING_KDONLY"
 		else
-			return "$REGISTING"
+			return "$RYACREGISTING"
 		endif
 	elseif (fkey == "REGISTING_FAIL")
 		if (knockDownOnly)
-			return "$REGISTING_FAIL_KDONLY"
+			return "$YACRREGISTING_FAIL_KDONLY"
 		else
-			return "$REGISTING_FAIL"
+			return "$YACRREGISTING_FAIL"
 		endif
 	elseif (fkey == "CALLHELP")
-		return "$CALLHELP"
+		return "$YACRCALLHELP"
 	elseif (fkey == "CALLHELP_FAIL")
-		return "$CALLHELP_FAIL"
+		return "$YACRCALLHELP_FAIL"
 	elseif (fkey == "GIVEUP")
-		return "$GIVEUP"
+		return "$YACRGIVEUP"
 		
 	elseif (fkey == "REGISTING_DEATH")
-		return "$REGISTING_DEATH"
+		return "$YACRREGISTING_DEATH"
 	elseif (fkey == "CALLHELP_DEATH")
-		return "$CALLHELP_DEATH"
+		return "$YACRCALLHELP_DEATH"
 	elseif (fkey == "GIVEUP_DEATH")
-		return "$GIVEUP_DEATH"
+		return "$YACRGIVEUP_DEATH"
 	endif
 EndFunction
 
@@ -516,52 +516,52 @@ Event OnOptionHighlight(int option)
 	;if (option == knockDownAllID)
 	;	SetInfoText("$KnockDownAllInfo")
 	if (option == enablePlayerRapeID)
-		SetInfoText("$EnablePlayerRapeInfo")
+		SetInfoText("$YACREnablePlayerRapeInfo")
 	elseif (option == knockDownOnlyID)
-		SetInfoText("$KnockDownOnlyInfo")
+		SetInfoText("$YACRKnockDownOnlyInfo")
 	elseif (option == enableArmorUnequipModeID || option == enableArmorUnequipModeNPCID)
-		SetInfoText("$EnableArmorUnequipModeInfo")
+		SetInfoText("$YACREnableArmorUnequipModeInfo")
 	elseif (option == matchedSexID || option == matchedSexNPCID)
-		SetInfoText("$MatchedSexInfo")
+		SetInfoText("$YACRMatchedSexInfo")
 	elseif (option == healthLimitID || option == healthLimitNPCID)
-		SetInfoText("$HealthLimitInfo")
+		SetInfoText("$YACRHealthLimitInfo")
 	elseif (option == healthLimitBottomID || option == healthLimitBottomNPCID)
-		SetInfoText("$HealthLimitBottomInfo")
+		SetInfoText("$YACRHealthLimitBottomInfo")
 	elseif (option == enableEndlessRapeID || option == enableEndlessRapeNPCID)
-		SetInfoText("$EndlessRapeInfo")
+		SetInfoText("$YACREndlessRapeInfo")
 	elseif (option == attackDistanceLimitID || option == attackDistanceLimitNPCID)
-		SetInfoText("$AttackDistanceLimitInfo")
+		SetInfoText("$YACRAttackDistanceLimitInfo")
 	elseif (option == registNotifFlagID)
-		SetInfoText("$OutputRegistNotifInfo")
+		SetInfoText("$YACROutputRegistNotifInfo")
 	;elseif (option == debugNotifFlagID)
 	;	SetInfoText("$OutputPapyrusNotifInfo")
 	;elseif (option == enableDisableID)
 	;	SetInfoText("$EnableDisableMainInfo")
 	elseif (option == keyCodeRegistID)
-		SetInfoText("$KeyCodeRegistInfo")
+		SetInfoText("$YACRKeyCodeRegistInfo")
 	elseif (option == keyCodeHelpID)
-		SetInfoText("$KeyCodeHelpInfo")
+		SetInfoText("$YACRKeyCodeHelpInfo")
 	elseif (option == keyCodeSubmitID)
-		SetInfoText("$KeyCodeSubmitInfo")
+		SetInfoText("$YACRKeyCodeSubmitInfo")
 		
 	elseif (option == enableWeCantDieSupportID)
-		SetInfoText("$EnableWeCantDieSupportInfo")
+		SetInfoText("$YACREnableWeCantDieSupportInfo")
 	elseif (option == weCantDieChanceID)
-		SetInfoText("$WeCantDieChanceInfo")
+		SetInfoText("$YACRWeCantDieChanceInfo")
 	elseif (option == enableSimpleSlaverySupportID)
-		SetInfoText("$EnableSimpleSlaverySupportInfo")
+		SetInfoText("$YACREnableSimpleSlaverySupportInfo")
 	elseif (option == simpleSlaveryChanceID)
-		SetInfoText("$SimpleSlaveryChanceInfo")
+		SetInfoText("$YACRSimpleSlaveryChanceInfo")
 	elseif (disableEnemyRacesIDS.Find(option) > -1)
-		SetInfoText("$DisableRacesInfo")
+		SetInfoText("$YACRDisableRacesInfo")
 	elseif (option == enableUtilOneSupportID)
-		SetInfoText("$EnableUtilOneSupportInfo")
+		SetInfoText("$YACREnableUtilOneSupportInfo")
 	elseif (option == enableDrippingWASupportID)
-		SetInfoText("$EnableDrippingWASupportInfo")
+		SetInfoText("$YACREnableDrippingWASupportInfo")
 	elseif (option == enableExtraNakedScriptID)
-		SetInfoText("$EnableExtraNakedScriptInfo")
+		SetInfoText("$YACREnableExtraNakedScriptInfo")
 	elseif (option == enableSendOrgasmID)
-		SetInfoText("$EnableSendOrgasmInfo")
+		SetInfoText("$YACREnableSendOrgasmInfo")
 		
 	elseif (option == configMaleSaveID || option == configFemaleSaveID)
 		SetInfoText("$YACRConfigSaveInfo")
@@ -626,9 +626,6 @@ Event OnOptionSelect(int option)
 	elseif (option == debugLogFlagID)
 		debugLogFlag = !debugLogFlag
 		SetToggleOptionValue(option, debugLogFlag)
-	;elseif (option == debugNotifFlagID)
-	;	debugNotifFlag = !debugNotifFlag
-	;	SetToggleOptionValue(option, debugNotifFlag)
 	elseif (option == registNotifFlagID)
 		registNotifFlag = !registNotifFlag
 		SetToggleOptionValue(option, registNotifFlag)
