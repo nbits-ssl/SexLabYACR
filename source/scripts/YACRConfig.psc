@@ -933,6 +933,17 @@ Event OnOptionSliderAccept(int option, float value)
 	elseif (option == rapeChanceUnderwearID)
 		rapeChanceUnderwear = value as int
 		SetSliderOptionValue(option, rapeChanceUnderwear)
+	
+	; PA
+	elseif (option == rapeChanceTBlessPAID)
+		rapeChanceTBlessPA = value as int
+		SetSliderOptionValue(option, rapeChanceTBlessPA)
+	elseif (option == rapeChanceSeeThroughPAID)
+		rapeChanceSeeThroughPA = value as int
+		SetSliderOptionValue(option, rapeChanceSeeThroughPA)
+	elseif (option == rapeChanceUnderwearPAID)
+		rapeChanceUnderwearPA = value as int
+		SetSliderOptionValue(option, rapeChanceUnderwearPA)
 
 	; Follower --------------------------------------
 	elseif (option == attackDistanceLimitNPCID)
