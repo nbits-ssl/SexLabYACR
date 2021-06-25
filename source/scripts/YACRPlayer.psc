@@ -498,6 +498,7 @@ int function _quickSex(Actor[] Positions, sslBaseAnimation[] Anims, Actor Victim
 	Thread.SetHook("YACR" + HookName)
 	RegisterForModEvent("HookStageStart_YACR" + HookName, "StageStartEventYACR")
 	RegisterForModEvent("HookAnimationEnd_YACR" + HookName, "EndSexEventYACR")
+	RegisterForModEvent("HookOrgasmStart_YACR" + HookName, "LastStageStartEventYACR")
 	
 	if Thread.StartThread()
 		return Thread.tid
@@ -531,25 +532,24 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 	UpdateController = SexLab.GetController(tid)
 	sslThreadController controller = UpdateController
 	int stagecnt = controller.Animation.StageCount
+	int currentstage = controller.Stage
+	AppUtil.Log("StageStartEvent: " + SelfName + ", " + currentstage + "/" + stagecnt)
 	
 	self._reEnableHotkeysForKeyControlConfigUser(controller)
 	; disable by _sexloop(), during _sexloop functions's stage advancing
 	
 	if (Config.enableDrippingWASupport || Config.enableUtilOneSupport)
-		if (controller.Stage >= stagecnt - 1)
-			selfact.SetGhost(false)  ; for DWA effect in last stage StageStartEventYACR
-		else
+		if (currentstage < stagecnt - 1)
 			selfact.SetGhost(true)
 		endif
-	else
-		; default is in _readySexVictim() <=> UtilOne Support
 	endif
 	
 	; for Onhit missing de-ghost
-	if (controller.Stage > 1 && aggr.IsGhost())
+	if (currentstage > 1 && aggr.IsGhost())
 		aggr.SetGhost(false)
 		AppUtil.Log("###FIXME### Onhit missing de-ghost " + SelfName)
 	endif
+	
 	if (self.IsPlayer)
 		AlreadyKeyDown = false
 		if (Config.knockDownAll)
@@ -557,12 +557,26 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		endif
 	endif
 	
-	if (controller.stage == 1)
+	if (currentstage == 1)
 		self._getAudience()
 	endif
-	if (controller.Stage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
+	
+	if (currentstage == stagecnt && Config.GetEnableEndlessRape(self.IsPlayer))
 		self._getAudience()
 		self._sexLoop(selfact, aggr, controller)
+	endif
+EndEvent
+
+Event LastStageStartEventYACR(int tid, bool HasPlayer)
+	AppUtil.Log("LastStageStartEvent: " + SelfName)
+	Actor selfact = self.GetActorRef()
+	sslThreadController controller = SexLab.GetController(tid)
+
+	selfact.SetGhost(false)
+	SexLab.ActorLib.ApplyCum(controller.Positions[0], controller.Animation.GetCum(0))
+	
+	if (!Config.enableDrippingWASupport && !Config.enableUtilOneSupport)
+		selfact.SetGhost(true)
 	endif
 EndEvent
 
@@ -572,11 +586,6 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 	; disable advance stage key, during _sexloop functions's stage advancing
 	controller.UnregisterForUpdate()
 	
-	if (Config.enableUtilOneSupport && Config.enableSendOrgasm)
-		selfact.SetGhost(false)
-		controller.SendThreadEvent("OrgasmStart") ; for Util1
-	endif
-	
 	float laststagewait = SexLab.Config.StageTimerAggr[4]
 	if (laststagewait > 1)
 		Utility.Wait(laststagewait - 1.5) 
@@ -585,13 +594,8 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 		return
 	endif
 	
-	selfact.SetGhost(false)
 	if (Config.enableSendOrgasm)
 		controller.SendThreadEvent("OrgasmEnd") ; for Aroused
-	endif
-	SexLab.ActorLib.ApplyCum(controller.Positions[0], controller.Animation.GetCum(0))
-	if (!Config.enableDrippingWASupport && !Config.enableUtilOneSupport)
-		selfact.SetGhost(true)
 	endif
 	
 	int rndint = Utility.RandomInt()

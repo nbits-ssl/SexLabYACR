@@ -425,7 +425,7 @@ string Function GetFlavor(string fkey)
 		if (knockDownOnly)
 			return "$YACRREGISTING_KDONLY"
 		else
-			return "$RYACREGISTING"
+			return "$YACRREGISTING"
 		endif
 	elseif (fkey == "REGISTING_FAIL")
 		if (knockDownOnly)
