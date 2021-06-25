@@ -189,13 +189,14 @@ EndEvent
 Event OnConfigInit()
 	knockDownAll = true ; always from 2.0alpha3
 	
-	Pages = new string[6]
+	Pages = new string[7]
 	Pages[0] = "$YACRRapeChance"
 	Pages[1] = "$YACREABD"
-	Pages[2] = "$YACREnemy"
-	Pages[3] = "$YACRSystem"
-	Pages[4] = "$YACRTeammates"
-	Pages[5] = "$YACRProfile"
+	Pages[2] = "$YACRArmorBreak"
+	Pages[3] = "$YACREnemy"
+	Pages[4] = "$YACRSystem"
+	Pages[5] = "$YACRTeammates"
+	Pages[6] = "$YACRProfile"
 	
 	matchedSexList = new string[3]
 	matchedSexList[0] = "$YACRSexStraight"
