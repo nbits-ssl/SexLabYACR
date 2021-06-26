@@ -49,10 +49,9 @@ State Busy
 EndState
 
 Event OnDying(Actor akKiller)
-	ObjectReference wobj = self.GetActorRef() as ObjectReference
-	wobj.SetPosition(wobj.GetPositionX(), wobj.GetPositionY() + 10.0, wobj.GetPositionZ())
-	debug.sendAnimationEvent(wobj, "ragdoll")
-	AppUtil.Log("enemy OnDying, sendAnimationEvent " + self.GetActorRef().GetActorBase().GetName())
+	Actor selfact = self.GetActorRef()
+	AppUtil.CleanFlyingDeadBody(selfact)
+	AppUtil.Log("enemy OnDying, CleanFlyingDeadBody() " + selfact.GetActorBase().GetName())
 EndEvent
 
 Event OnDeath(Actor akKiller)

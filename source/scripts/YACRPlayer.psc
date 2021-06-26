@@ -524,7 +524,6 @@ Function _waitSetup(sslThreadController controller)
 EndFunction
 
 Event StageStartEventYACR(int tid, bool HasPlayer)
-	AppUtil.Log("StageStartEvent: " + SelfName)
 	Actor selfact = self.GetActorRef()
 	Actor aggr = Aggressor.GetActorRef()
 	
@@ -542,6 +541,13 @@ Event StageStartEventYACR(int tid, bool HasPlayer)
 		if (currentstage < stagecnt - 1)
 			selfact.SetGhost(true)
 		endif
+	endif
+	
+	if (!aggr || aggr.GetAV("health") <= 0)
+		AppUtil.Log("###FIXME### missing aggr, force end event " + SelfName)
+		controller.EndAnimation()
+		self.EndSexEvent(aggr)
+		return
 	endif
 	
 	; for Onhit missing de-ghost
@@ -590,7 +596,8 @@ Function _sexLoop(Actor selfact, Actor aggr, sslThreadController controller)
 	if (laststagewait > 1)
 		Utility.Wait(laststagewait - 1.5) 
 	endif
-	if !(Aggressor.GetActorRef())  ; already escape because some reason 
+	if !(Aggressor.GetActorRef())
+		AppUtil.Log("Aggr already escape because some reason " + SelfName)
 		return
 	endif
 	
@@ -865,7 +872,7 @@ Function _clearHelpers()
 EndFunction
 
 Event EndSexEventYACR(int tid, bool HasPlayer)
-	AppUtil.Log("EndSexEvent " + SelfName)
+	AppUtil.Log("EndSexEvent(Event) " + SelfName)
 	if (HasPlayer && EndlessSexLoop)
 		debug.SendAnimationEvent(self.GetActorRef(), "BleedOutStart")
 	endif
@@ -874,7 +881,7 @@ EndEvent
 
 Function EndSexEvent(Actor aggr)
 	Actor selfact = self.GetActorRef()
-	if (EndlessSexLoop)
+	if (EndlessSexLoop && aggr)
 		AppUtil.Log("EndSexEvent, Goto to loop " + SelfName)
 		EndlessSexLoop = false
 		self._clearHelpers()
@@ -889,7 +896,7 @@ Function EndSexEvent(Actor aggr)
 		AppUtil.Log("EndSexEvent, truely end " + SelfName)
 		self._endSexVictim()
 		
-		AppUtil.CleanFlyingDeadBody(aggr)
+		self._cleanDeadBody(aggr)
 		self._cleanDeadBody(Helper1)
 		self._cleanDeadBody(Helper2)
 		self._cleanDeadBody(Helper3)

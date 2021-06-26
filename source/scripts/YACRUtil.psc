@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20210628
+	return 20210629
 EndFunction
 
 Function Log(String msg)
@@ -106,11 +106,18 @@ bool Function ValidateAggr(Actor victim, Actor aggr, int cfg)
 EndFunction
 
 Function CleanFlyingDeadBody(Actor act)
+	if (act.IsDead() && act.GetMass() == 0)
+		self.Log("Clean dead body(Util)")
+		act.ForceAddRagdollToWorld()
+	endif
+	
+	;/
 	if (act.IsDead())
 		ObjectReference wobj = act as ObjectReference
 		wobj.SetPosition(wobj.GetPositionX(), wobj.GetPositionY() + 10.0, wobj.GetPositionZ())
 		debug.sendAnimationEvent(wobj, "ragdoll")
 	endif
+	/;
 EndFunction
 
 Function BanishAllDaedra()

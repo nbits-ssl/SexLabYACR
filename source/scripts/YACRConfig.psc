@@ -89,6 +89,7 @@ int registNotifFlagID
 int keyCodeRegistID
 int keyCodeHelpID
 int keyCodeSubmitID
+int audienceDistanceID
 int enableWeCantDieSupportID
 int weCantDieChanceID
 int enableSimpleSlaverySupportID
@@ -356,6 +357,7 @@ Event OnPageReset(string page)
 		keyCodeRegistID = AddKeyMapOption("$YACRKeyCodeRegist", keyCodeRegist)
 		keyCodeHelpID = AddKeyMapOption("$YACRKeyCodeHelp", keyCodeHelp)
 		keyCodeSubmitID = AddKeyMapOption("$YACRKeyCodeSubmit", keyCodeSubmit)
+		audienceDistanceID = AddSliderOption("$YACRAudienceDistance", SSLYACRAudienceDistance.GetValue() as int)
 		
 		AddEmptyOption()
 		
@@ -640,6 +642,8 @@ Event OnOptionHighlight(int option)
 		SetInfoText("$YACRKeyCodeHelpInfo")
 	elseif (option == keyCodeSubmitID)
 		SetInfoText("$YACRKeyCodeSubmitInfo")
+	elseif (option == audienceDistanceID)
+		SetInfoText("$YACRAudienceDistanceInfo")
 		
 	elseif (option == enableWeCantDieSupportID)
 		SetInfoText("$YACREnableWeCantDieSupportInfo")
@@ -851,7 +855,9 @@ Event OnOptionSliderOpen(int option)
 		self._setSliderDialogWithPercentage(armorBreakChanceLightArmorNPCPA)
 	elseif (option == armorBreakChanceHeavyArmorNPCPAID)
 		self._setSliderDialogWithPercentage(armorBreakChanceHeavyArmorNPCPA)
-	
+
+	elseif (option == audienceDistanceID)
+		self._setSliderDialogWithDistance(SSLYACRAudienceDistance.GetValue() as int)
 	
 	elseif (option == weCantDieChanceID)
 		self._setSliderDialogWithPercentage(weCantDieChance)
@@ -877,128 +883,97 @@ Function _setSliderDialogWithDistance(int x)
 EndFunction
 
 Event OnOptionSliderAccept(int option, float value)
+	int ivalue = value as int
+
 	; Player --------------------------------------
 	if (option == attackDistanceLimitID)
-		attackDistanceLimit = value as int
-		SetSliderOptionValue(option, attackDistanceLimit)
-		
+		attackDistanceLimit = ivalue
 	elseif (option == healthLimitID)
-		healthLimit = value as int
-		SetSliderOptionValue(option, healthLimit)
+		healthLimit = ivalue
 	elseif (option == healthLimitBottomID)
-		healthLimitBottom = value as int
-		SetSliderOptionValue(option, healthLimitBottom)
+		healthLimitBottom = ivalue
 		
 	elseif (option == rapeChanceID)
-		rapeChance = value as int
-		SetSliderOptionValue(option, rapeChance)
+		rapeChance = ivalue
 	elseif (option == rapeChanceNotNakedID)
-		rapeChanceNotNaked = value as int
-		SetSliderOptionValue(option, rapeChanceNotNaked)
+		rapeChanceNotNaked = ivalue
 	; PA
 	elseif (option == rapeChancePAID)
-		rapeChancePA = value as int
-		SetSliderOptionValue(option, rapeChancePA)
+		rapeChancePA = ivalue
 	elseif (option == rapeChanceNotNakedPAID)
-		rapeChanceNotNakedPA = value as int
-		SetSliderOptionValue(option, rapeChanceNotNakedPA)
+		rapeChanceNotNakedPA = ivalue
 		
 	elseif (option == armorBreakChanceClothID)
-		armorBreakChanceCloth = value as int
-		SetSliderOptionValue(option, armorBreakChanceCloth)
+		armorBreakChanceCloth = ivalue
 	elseif (option == armorBreakChanceLightArmorID)
-		armorBreakChanceLightArmor = value as int
-		SetSliderOptionValue(option, armorBreakChanceLightArmor)
+		armorBreakChanceLightArmor = ivalue
 	elseif (option == armorBreakChanceHeavyArmorID)
-		armorBreakChanceHeavyArmor = value as int
-		SetSliderOptionValue(option, armorBreakChanceHeavyArmor)
+		armorBreakChanceHeavyArmor = ivalue
 	; PA
 	elseif (option == armorBreakChanceClothPAID)
-		armorBreakChanceClothPA = value as int
-		SetSliderOptionValue(option, armorBreakChanceClothPA)
+		armorBreakChanceClothPA = ivalue
 	elseif (option == armorBreakChanceLightArmorPAID)
-		armorBreakChanceLightArmorPA = value as int
-		SetSliderOptionValue(option, armorBreakChanceLightArmorPA)
+		armorBreakChanceLightArmorPA = ivalue
 	elseif (option == armorBreakChanceHeavyArmorPAID)
-		armorBreakChanceHeavyArmorPA = value as int
-		SetSliderOptionValue(option, armorBreakChanceHeavyArmorPA)
+		armorBreakChanceHeavyArmorPA = ivalue
 
 	; EABD ------------------------------------------
-
 	elseif (option == rapeChanceTBlessID)
-		rapeChanceTBless = value as int
-		SetSliderOptionValue(option, rapeChanceTBless)
+		rapeChanceTBless = ivalue
 	elseif (option == rapeChanceSeeThroughID)
-		rapeChanceSeeThrough = value as int
-		SetSliderOptionValue(option, rapeChanceSeeThrough)
+		rapeChanceSeeThrough = ivalue
 	elseif (option == rapeChanceUnderwearID)
-		rapeChanceUnderwear = value as int
-		SetSliderOptionValue(option, rapeChanceUnderwear)
+		rapeChanceUnderwear = ivalue
 	
 	; PA
 	elseif (option == rapeChanceTBlessPAID)
-		rapeChanceTBlessPA = value as int
-		SetSliderOptionValue(option, rapeChanceTBlessPA)
+		rapeChanceTBlessPA = ivalue
 	elseif (option == rapeChanceSeeThroughPAID)
-		rapeChanceSeeThroughPA = value as int
-		SetSliderOptionValue(option, rapeChanceSeeThroughPA)
+		rapeChanceSeeThroughPA = ivalue
 	elseif (option == rapeChanceUnderwearPAID)
-		rapeChanceUnderwearPA = value as int
-		SetSliderOptionValue(option, rapeChanceUnderwearPA)
+		rapeChanceUnderwearPA = ivalue
 
 	; Follower --------------------------------------
 	elseif (option == attackDistanceLimitNPCID)
-		attackDistanceLimitNPC = value as int
-		SetSliderOptionValue(option, attackDistanceLimitNPC)
-		
+		attackDistanceLimitNPC = ivalue
 	elseif (option == healthLimitNPCID)
-		healthLimitNPC = value as int
-		SetSliderOptionValue(option, healthLimitNPC)
+		healthLimitNPC = ivalue
 	elseif (option == healthLimitBottomNPCID)
-		healthLimitBottomNPC = value as int
-		SetSliderOptionValue(option, healthLimitBottomNPC)
+		healthLimitBottomNPC = ivalue
 		
 	elseif (option == rapeChanceNPCID)
-		rapeChanceNPC = value as int
-		SetSliderOptionValue(option, rapeChanceNPC)
+		rapeChanceNPC = ivalue
 	elseif (option == rapeChanceNotNakedNPCID)
-		rapeChanceNotNakedNPC = value as int
-		SetSliderOptionValue(option, rapeChanceNotNakedNPC)
+		rapeChanceNotNakedNPC = ivalue
 	; PA
 	elseif (option == rapeChanceNPCPAID)
-		rapeChanceNPCPA = value as int
-		SetSliderOptionValue(option, rapeChanceNPCPA)
+		rapeChanceNPCPA = ivalue
 	elseif (option == rapeChanceNotNakedNPCPAID)
-		rapeChanceNotNakedNPCPA = value as int
-		SetSliderOptionValue(option, rapeChanceNotNakedNPCPA)
+		rapeChanceNotNakedNPCPA = ivalue
 		
 	elseif (option == armorBreakChanceClothNPCID)
-		armorBreakChanceClothNPC = value as int
-		SetSliderOptionValue(option, armorBreakChanceClothNPC)
+		armorBreakChanceClothNPC = ivalue
 	elseif (option == armorBreakChanceLightArmorNPCID)
-		armorBreakChanceLightArmorNPC = value as int
-		SetSliderOptionValue(option, armorBreakChanceLightArmorNPC)
+		armorBreakChanceLightArmorNPC = ivalue
 	elseif (option == armorBreakChanceHeavyArmorNPCID)
-		armorBreakChanceHeavyArmorNPC = value as int
-		SetSliderOptionValue(option, armorBreakChanceHeavyArmorNPC)
+		armorBreakChanceHeavyArmorNPC = ivalue
 	; PA
 	elseif (option == armorBreakChanceClothNPCPAID)
-		armorBreakChanceClothNPCPA = value as int
-		SetSliderOptionValue(option, armorBreakChanceClothNPCPA)
+		armorBreakChanceClothNPCPA = ivalue
 	elseif (option == armorBreakChanceLightArmorNPCPAID)
-		armorBreakChanceLightArmorNPCPA = value as int
-		SetSliderOptionValue(option, armorBreakChanceLightArmorNPCPA)
+		armorBreakChanceLightArmorNPCPA = ivalue
 	elseif (option == armorBreakChanceHeavyArmorNPCPAID)
-		armorBreakChanceHeavyArmorNPCPA = value as int
-		SetSliderOptionValue(option, armorBreakChanceHeavyArmorNPCPA)
+		armorBreakChanceHeavyArmorNPCPA = ivalue
 
+	elseif (option == audienceDistanceID)
+		SSLYACRAudienceDistance.SetValue(ivalue)
 	elseif (option == weCantDieChanceID)
-		weCantDieChance = value as int
-		SetSliderOptionValue(option, weCantDieChance)
+		weCantDieChance = ivalue
 	elseif (option == simpleSlaveryChanceID)
-		simpleSlaveryChance = value as int
-		SetSliderOptionValue(option, simpleSlaveryChance)
+		simpleSlaveryChance = ivalue
 	endif
+	
+	SetSliderOptionValue(option, ivalue)
 EndEvent
 
 event OnOptionMenuOpen(int option)
@@ -1098,6 +1073,7 @@ Function saveConfig(string configFile)
 	JsonUtil.SetIntValue(configFile, "keyCodeRegist", keyCodeRegist)
 	JsonUtil.SetIntValue(configFile, "keyCodeHelp", keyCodeHelp)
 	JsonUtil.SetIntValue(configFile, "keyCodeSubmit", keyCodeSubmit)
+	JsonUtil.SetIntValue(configFile, "SSLYACRAudienceDistance", SSLYACRAudienceDistance.GetValue() as int)
 
 	JsonUtil.SetIntValue(configFile, "enableWeCantDieSupport", enableWeCantDieSupport as int)
 	JsonUtil.SetIntValue(configFile, "weCantDieChance", weCantDieChance)
@@ -1186,6 +1162,7 @@ Function loadConfig(string configFile)
 	keyCodeRegist = JsonUtil.GetIntValue(configFile, "keyCodeRegist")
 	keyCodeHelp = JsonUtil.GetIntValue(configFile, "keyCodeHelp")
 	keyCodeSubmit = JsonUtil.GetIntValue(configFile, "keyCodeSubmit")
+	SSLYACRAudienceDistance.SetValue(JsonUtil.GetIntValue(configFile, "SSLYACRAudienceDistance"))
 
 	enableWeCantDieSupport = JsonUtil.GetIntValue(configFile, "enableWeCantDieSupport")
 	weCantDieChance = JsonUtil.GetIntValue(configFile, "weCantDieChance")
@@ -1248,3 +1225,5 @@ GlobalVariable Property SSLYACRAudienceChance2 Auto
 GlobalVariable Property SSLYACRAudienceChance3 Auto
 GlobalVariable Property SSLYACRAudienceChance4 Auto
 GlobalVariable Property SSLYACRAudienceChance5 Auto
+
+GlobalVariable Property SSLYACRAudienceDistance  Auto  
