@@ -1,7 +1,7 @@
 Scriptname YACRUtil extends Quest  
 
 int Function GetVersion()
-	return 20210629
+	return 20210630
 EndFunction
 
 Function Log(String msg)
@@ -281,6 +281,8 @@ Actor[] Function GetHelpersCombined(Actor victim, Actor aggr, bool fullquery = f
 	ArraySort(tmpArray)
 	idx = ArrayCount(tmpArray)
 	
+	int i
+	
 	int rndint = Utility.RandomInt()
 	if (idx == 3)
 		if (!fullquery && rndint < Config.GetGlobal("5P"))
@@ -291,7 +293,14 @@ Actor[] Function GetHelpersCombined(Actor victim, Actor aggr, bool fullquery = f
 			actors[1] = aggr
 			actors[0] = victim
 			anims = self._pickAnimationsByActors(actors)
-			self.Log("###3### " + anims)
+			self.Log("###3### " + anims.Length + " " + anims)
+
+			i = 0
+			While i < anims.Length
+				self.Log(" " + anims[i].Name)
+				i += 1
+			EndWhile
+
 			if !(anims)
 				idx = 2
 			endif
@@ -308,7 +317,14 @@ Actor[] Function GetHelpersCombined(Actor victim, Actor aggr, bool fullquery = f
 			actors[1] = aggr
 			actors[0] = victim
 			anims = self._pickAnimationsByActors(actors)
-			self.Log("###2### " + anims)
+			self.Log("###2### " + anims.Length + " " + anims)
+
+			i = 0
+			While i < anims.Length
+				self.Log(" " + anims[i].Name)
+				i += 1
+			EndWhile
+
 			if !(anims)
 				idx = 1
 			endif
@@ -323,7 +339,14 @@ Actor[] Function GetHelpersCombined(Actor victim, Actor aggr, bool fullquery = f
 		actors[1] = aggr
 		actors[0] = victim
 		anims = self._pickAnimationsByActors(actors, Aggressive = true)
-		self.Log("###1### " + anims)
+		self.Log("###1### " + anims.Length + " " + anims)
+
+		i = 0
+		While i < anims.Length
+			self.Log(" " + anims[i].Name)
+			i += 1
+		EndWhile
+
 		if !(anims)
 			idx = 0
 		endif
