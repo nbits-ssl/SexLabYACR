@@ -106,7 +106,7 @@ bool Function ValidateAggr(Actor victim, Actor aggr, int cfg)
 EndFunction
 
 Function CleanFlyingDeadBody(Actor act)
-	if (act.IsDead() && act.GetMass() == 0)
+	if (act && act.IsDead() && act.GetMass() == 0)
 		self.Log("Clean dead body(Util)")
 		act.ForceAddRagdollToWorld()
 	endif

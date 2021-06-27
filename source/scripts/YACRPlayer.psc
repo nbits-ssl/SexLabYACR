@@ -896,10 +896,10 @@ Function EndSexEvent(Actor aggr)
 		AppUtil.Log("EndSexEvent, truely end " + SelfName)
 		self._endSexVictim()
 		
-		self._cleanDeadBody(aggr)
-		self._cleanDeadBody(Helper1)
-		self._cleanDeadBody(Helper2)
-		self._cleanDeadBody(Helper3)
+		AppUtil.CleanFlyingDeadBody(aggr)
+		self._cleanDeadBodyRef(Helper1)
+		self._cleanDeadBodyRef(Helper2)
+		self._cleanDeadBodyRef(Helper3)
 		
 		Aggressor.Clear()
 		self._clearHelpers()
@@ -925,11 +925,9 @@ Function EndSexEvent(Actor aggr)
 	endif
 EndFunction
 
-Function _cleanDeadBody(ReferenceAlias enemy)
+Function _cleanDeadBodyRef(ReferenceAlias enemy)
 	Actor act = enemy.GetActorRef()
-	if (act)
-		AppUtil.CleanFlyingDeadBody(act)
-	endif
+	AppUtil.CleanFlyingDeadBody(act)
 EndFunction
 
 Event OnCombatStateChanged(Actor akTarget, int aeCombatState)
@@ -1076,4 +1074,4 @@ WEAPON Property Unarmed  Auto
 SPELL Property SSLYACRKillmoveArmorSpell  Auto
 SPELL Property SSLYACRPlayerSlowMagic  Auto  
 Faction Property SSLYACRCalmFaction  Auto  
-YACRExtraNaked Property ExtraNaked Auto
+; YACRExtraNaked Property ExtraNaked Auto
