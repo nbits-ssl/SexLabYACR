@@ -222,11 +222,11 @@ SaveTool.exeなどをその後にかけるとより安全です。
 
 ## 更新履歴
 
-### 2021/06/** - 2.8 beta
+### 2021/06/29 - 2.8 beta
 
 * 設定ファイルのセーブ・ロード機能を追加
 * 発動時に出るピンクのパーティクルエフェクトを削除
-* EABDialogue pathをマージ (thanx bbspink!)
+* EABDialogue patchをマージ (thanx bbspink!)
 * 精液付着処理がエンドレスレイプ無効時に動いていなかったのを修正
 * あわせて精液付着処理のタイミングをステージスタート時に修正
 * Dripping when Aroused と Util1 のサポートを上記に合わせて修正
